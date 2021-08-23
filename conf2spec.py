@@ -43,16 +43,46 @@ def generate_extra_build_requires(config):
 
 
 def generate_check(config):
-    """    If defined in config file, return the applicable macro invocation.
-    If none was defined, return %py3_check_import with module name."""
+    """Generate valid check section.
+    If defined in config file, use applicable test method.
+    If additional unwanted tests are defined, provide their list.
+    If no test method was defined, return `%py3_check_import` with module name."""
 
-    # TODO: This list is far from complete
-    options = {
-        "tox": "%tox",
-        "pytest": "%pytest",
-    }
-    fallback = f"%py3_check_import {config['module_name']}"
-    return options.get(config["test"], fallback)
+    test_method = config.get("test", None)
+    if test_method:
+        unwanted_tests = generate_unwanted_tests(config)
+        check = generate_check_string(test_method, unwanted_tests)
+
+    else:
+        # If no tests were defined, run at least smoke import check
+        # This is mandatory as defined in Fedora Packaging Guidelines
+        # https://docs.fedoraproject.org/en-US/packaging-guidelines/Python/#_tests
+        check = f"%py3_check_import {config['module_name']}"
+
+    return check
+
+
+def generate_unwanted_tests(config):
+    """If defined in config file, get the unwanted tests.
+    Given the unwanted tests are [a, b], return `not a and\\\nnot b`."""
+
+    unwanted_tests = config.get("unwanted_tests")
+    if not unwanted_tests:
+        return ""
+    else:
+        formatted_unwanteds = "not " + " and \\\nnot ".join(unwanted_tests)
+        return formatted_unwanteds
+
+
+def generate_check_string(test_method, unwanted_tests):
+    """Return the valid macro invocation for %check section, depending on
+    whether there are unwanted tests and which test method is invoked."""
+
+    if not unwanted_tests:
+        return f"%{test_method}"
+
+    tox_flags = " -- --" if test_method == "tox" else ""
+    return f"%{test_method}{tox_flags} -k \"{unwanted_tests}\""
 
 
 def generate_manual_build_requires(config):
