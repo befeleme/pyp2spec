@@ -29,8 +29,17 @@ def generate_extra_build_requires(config):
     options = {
         "test": "-t",
         "runtime": "-r",
+        "extra": "-x",
     }
-    return options.get(config["extra_build_requires"], "")
+    extra_brs = ""
+    for extra_br in config["extra_build_requires"]:
+        if extra_br == "extra":
+            extra_brs += options.get(extra_br, "") + " "
+            extra_brs += ",".join(config["extra_test_env"])
+        else:
+            extra_brs += options.get(extra_br, "") + " "
+
+    return extra_brs.rstrip()
 
 
 def generate_check(config):
