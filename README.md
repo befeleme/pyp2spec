@@ -30,15 +30,17 @@ python -m pip install -r requirements.txt
 
 Until the configuration file specification is set, you can use the test files to run the script:
 ```
-python conf2spec.py -f tests/pyp2spec_click/pyp2spec_click.conf
+python conf2spec.py -f tests/test_config/pyp2spec_click.conf
 ```
 
 ### Tests
 
-To run the tests, install pytest & run it:
+Test framework used in the project is pytest.
+The tests use pytest-regresssions extension used to generate spec files to compare.
+To run the tests, run following commands:
 
 ```
-python -m pip install pytest
+python -m pip install pytest pytest-regresssions
 python -m pytest
 ```
 

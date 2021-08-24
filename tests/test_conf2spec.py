@@ -4,34 +4,22 @@ import pytest
 import conf2spec
 
 
-def get_test_cases():
-    """Go through all 'tests/' folders and get their names.
-    Yield the next folder name."""
+def get_config_files():
+    """Yield the relative paths to the config files placed in 'tests/test_configs'."""
 
-    source_path = Path("tests/")
-    for path in source_path.glob("pyp2spec_*"):
-        yield path.name
+    source_path = Path("tests/test_configs")
+    for path in source_path.iterdir():
+        yield path
 
 
-@pytest.mark.parametrize(
-        ("test_case"),
-        get_test_cases(),
-        )
-def test_generated_specfile(test_case):
-    # Get config and expected resulting file
-    config_file = Path("tests/") / test_case / f"{test_case}.conf"
-    expected_file = Path("tests/") / test_case / f"{test_case}.spec"
-
+@pytest.mark.parametrize(("config"), get_config_files())
+def test_generated_specfile(file_regression, config):
     # Run the conf2spec converter
-    conf = conf2spec.load_configuration(config_file)
+    conf = conf2spec.load_configuration(config)
     rendered_file = conf2spec.write_spec_file(conf)
 
     # Compare the results
     with open(rendered_file, "r") as rendered_f:
         rendered = rendered_f.read()
-    with open(expected_file, "r") as expected_f:
-        expected = expected_f.read()
-    assert rendered == expected
 
-    # Delete rendered file
-    Path(rendered_file).unlink()
+    file_regression.check(rendered, basename=config.stem, extension=".spec")

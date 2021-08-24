@@ -113,7 +113,7 @@ def fill_in_template(config):
         spec_template = Template(template_file.read())
 
     result = spec_template.render(
-        name=config["name"],
+        name=config["pypi_name"],
         python_name=config["python_name"],
         version=config["version"],
         release=config["release"],
