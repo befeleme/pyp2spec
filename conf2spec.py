@@ -123,6 +123,7 @@ def fill_in_template(config):
         source=config["source"],
         description=config["description"],
         module_name=config["module_name"],
+        archive_name=config["archive_name"],
         manual_build_requires=generate_manual_build_requires(config),
         extra_build_requires=generate_extra_build_requires(config),
         test=generate_check(config),
