@@ -98,6 +98,14 @@ def generate_manual_build_requires(config):
     return config.get("manual_build_requires", "")
 
 
+def generate_binary_files(config):
+    """If defined in config file, return binary_files.
+    If none were defined, return an empty string."""
+
+    return config["files"].get("binary_files", "")
+
+
+
 def fill_in_template(config):
     """Return template rendered with data from config file."""
 
@@ -120,7 +128,7 @@ def fill_in_template(config):
         test=generate_check(config),
         license_files=" ".join(config["files"]["license_files"]),
         doc_files=" ".join(config["files"]["doc_files"]),
-
+        binary_files=generate_binary_files(config),
         changelog_head=config["changelog"]["changelog_head"],
         changelog_msg=config["changelog"]["changelog_msg"],
     )

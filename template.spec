@@ -24,11 +24,11 @@ Summary:        %{summary}
 
 
 %prep
-%autosetup -p1 -n {{module_name}}-%{version}
+%autosetup -p1 -n {{name}}-%{version}
 
 
 %generate_buildrequires
-%pyproject_buildrequires {{extra_build_requires}}
+%pyproject_buildrequires{{extra_build_requires}}
 
 
 %build
@@ -47,7 +47,8 @@ Summary:        %{summary}
 %files -n python3-{{name}} -f %{pyproject_files}
 %doc {{doc_files}}
 %license {{license_files}}
-
+{% for bf in binary_files %}%{_bindir}/{{bf}}
+{% endfor %}
 
 %changelog
 * {{changelog_head}} - {{version}}-{{release}}
