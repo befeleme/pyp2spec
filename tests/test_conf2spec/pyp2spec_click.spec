@@ -5,7 +5,7 @@ Summary:        Simple wrapper around optparse for powerful command line utiliti
 
 License:        BSD
 URL:            https://github.com/mitsuhiko/click
-Source0:        %{url}/archive/%{version}/%{pypi_name}-%{version}.tar.gz
+Source0:        %{url}/archive/%{version}/click-%{version}.tar.gz
 
 BuildArch:      noarch
 BuildRequires:  python3-devel

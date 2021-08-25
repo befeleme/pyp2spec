@@ -5,7 +5,7 @@ Summary:        Tools to help build and install Jupyter Python packages
 
 License:        BSD
 URL:            https://github.com/jupyter/jupyter-packaging
-Source0:        %{pypi_source}
+Source0:        %{pypi_source jupyter_packaging}
 
 BuildArch:      noarch
 BuildRequires:  python3-devel
