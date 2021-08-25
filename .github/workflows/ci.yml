@@ -2,19 +2,27 @@ name: CI
 on:
   push:
   pull_request:
+
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  test:
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python 3.9
-      uses: actions/setup-python@v2
+    - name: Run tests
+      uses: fedora-python/tox-github-action@master
       with:
-        python-version: 3.9
-    - name: Install dependencies
-      run: |
-        python -m pip install -r requirements.txt
-        python -m pip install pytest pytest-regressions
-    - name: Run pytest
-      run: |
-        python -m pytest -v
+        tox_env: py39
+
+
+    # - name: Set up Python 3.9
+    #   uses: actions/setup-python@v2
+      # with:
+      #   python-version: 3.9
+    # - name: Install dependencies
+    #   run: |
+    #     python -m pip install -r requirements.txt
+    #     python -m pip install pytest pytest-regressions
+    # - name: Run pytest
+    #   run: |
+    #     python -m pytest -v
+
+    runs-on: ubuntu-latest
