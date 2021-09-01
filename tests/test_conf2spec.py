@@ -22,4 +22,7 @@ def test_generated_specfile(file_regression, config):
     with open(rendered_file, "r") as rendered_f:
         rendered = rendered_f.read()
 
-    file_regression.check(rendered, basename=config.stem, extension=".spec")
+    file_regression.check(
+        rendered,
+        fullpath=f"tests/expected_specfiles/{config.stem}.spec",
+    )
