@@ -18,10 +18,10 @@ Pluggable: Adds syntax extensions to extend the parser.
 High speed & safe by default
 }
 
-BuildRequires: python3-setuptools
-BuildRequires: python3-pytest
-BuildRequires: python3-pytest-benchmark
-BuildRequires: python3-psutil
+BuildRequires:  python3-setuptools
+BuildRequires:  python3-pytest
+BuildRequires:  python3-pytest-benchmark
+BuildRequires:  python3-psutil
 
 %description %_description
 

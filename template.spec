@@ -13,7 +13,7 @@ BuildRequires:  python3-devel
 %global _description %{expand:
 {{description}}}
 
-{% for br in manual_build_requires %}BuildRequires: {{br}}
+{% for br in manual_build_requires %}BuildRequires:  {{br}}
 {% endfor %}
 %description %_description
 

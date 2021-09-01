@@ -15,8 +15,8 @@ Tomli is a Python library for parsing TOML.
 Tomli is fully compatible with TOML v1.0.0.
 }
 
-BuildRequires: python3-pytest
-BuildRequires: python3-dateutil
+BuildRequires:  python3-pytest
+BuildRequires:  python3-dateutil
 
 %description %_description
 
