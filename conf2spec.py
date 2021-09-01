@@ -51,45 +51,50 @@ def generate_extra_build_requires(config):
 
 def generate_check(config):
     """Generate valid check section.
-    If defined in config file, use applicable test method.
-    If additional unwanted tests are defined, provide their list.
+    If defined in config file, use applicable test macro.
     If no test method was defined, return `%py3_check_import` with module name."""
 
-    test_method = config.get("test", None)
-    if test_method:
-        unwanted_tests = generate_unwanted_tests(config)
-        check = generate_check_string(test_method, unwanted_tests)
-
+    test_method = config.get("test_method")
+    if test_method == "pytest":
+        return generate_pytest(config)
+    elif test_method == "tox":
+        return generate_tox(config)
     else:
         # If no tests were defined, run at least smoke import check
         # This is mandatory as defined in Fedora Packaging Guidelines
         # https://docs.fedoraproject.org/en-US/packaging-guidelines/Python/#_tests
-        check = f"%py3_check_import {config['module_name']}"
+        return f"%py3_check_import {config['module_name']}"
 
-    return check
+
+def generate_pytest(config):
+    """Return valid pytest macro with unwanted tests (if defined)."""
+
+    if (unwanted_tests := generate_unwanted_tests(config)):
+        return f"%pytest {unwanted_tests}"
+    return "%pytest"
+
+
+def generate_tox(config):
+    """Return valid tox macro. If additional unwanted are defined,
+    raise NotImplementedError."""
+
+    if (unwanted_tests := generate_unwanted_tests(config)):
+        raise NotImplementedError
+    return "%tox"
 
 
 def generate_unwanted_tests(config):
     """If defined in config file, get the unwanted tests.
-    Given the unwanted tests are [a, b], return `not a and\\\nnot b`."""
+    Given the unwanted tests are [a, b], return `-k "not a and\\\nnot b"`."""
 
     unwanted_tests = config.get("unwanted_tests")
     if not unwanted_tests:
         return ""
     else:
-        formatted_unwanteds = "not " + " and \\\nnot ".join(unwanted_tests)
+        prep_unwanteds = [f"not {test}" for test in unwanted_tests]
+        unwanteds_as_str = " and \\\n".join(prep_unwanteds)
+        formatted_unwanteds = f"-k \"{unwanteds_as_str}\""
         return formatted_unwanteds
-
-
-def generate_check_string(test_method, unwanted_tests):
-    """Return the valid macro invocation for %check section, depending on
-    whether there are unwanted tests and which test method is invoked."""
-
-    if not unwanted_tests:
-        return f"%{test_method}"
-
-    tox_flags = " -- --" if test_method == "tox" else ""
-    return f"%{test_method}{tox_flags} -k \"{unwanted_tests}\""
 
 
 def generate_manual_build_requires(config):
@@ -104,7 +109,6 @@ def generate_binary_files(config):
     If none were defined, return an empty string."""
 
     return config.get("binary_files", "")
-
 
 
 def fill_in_template(config):
@@ -127,7 +131,7 @@ def fill_in_template(config):
         archive_name=config["archive_name"],
         manual_build_requires=generate_manual_build_requires(config),
         extra_build_requires=generate_extra_build_requires(config),
-        test=generate_check(config),
+        test_method=generate_check(config),
         license_files=" ".join(config["license_files"]),
         doc_files=" ".join(config["doc_files"]),
         binary_files=generate_binary_files(config),

@@ -41,7 +41,7 @@ Summary:        %{summary}
 
 
 %check
-{{test}}
+{{test_method}}
 
 
 %files -n python3-{{name}} -f %{pyproject_files}
