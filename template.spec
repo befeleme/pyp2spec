@@ -28,7 +28,7 @@ Summary:        %{summary}
 
 
 %generate_buildrequires
-%pyproject_buildrequires{{extra_build_requires}}
+%pyproject_buildrequires{% if extra_build_requires %} {{extra_build_requires}}{% endif %}
 
 
 %build

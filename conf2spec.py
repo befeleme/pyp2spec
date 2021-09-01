@@ -27,9 +27,9 @@ def generate_extra_build_requires(config):
 
     # TODO: This doesn't handle doubles like -xr
     options = {
-        "test": " -t",
-        "runtime": " -r",
-        "extra": " -x",
+        "test": "-t",
+        "runtime": "-r",
+        "extra": "-x",
     }
     extra_brs = config.get("extra_build_requires", None)
 
@@ -37,15 +37,16 @@ def generate_extra_build_requires(config):
     if not extra_brs:
         return ""
 
-    generated_brs = ""
+    generated_brs = []
+    add = generated_brs.append
     for extra_br in extra_brs:
         if extra_br == "extra":
-            generated_brs += options.get(extra_br, "") + " "
-            generated_brs += ",".join(config["extra_test_env"])
+            add(options.get(extra_br))
+            add(",".join(config["extra_test_env"]))
         else:
-            generated_brs += options.get(extra_br, "")
+            add(options.get(extra_br))
 
-    return generated_brs.rstrip()
+    return " ".join(generated_brs)
 
 
 def generate_check(config):
