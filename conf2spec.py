@@ -102,7 +102,7 @@ def generate_binary_files(config):
     """If defined in config file, return binary_files.
     If none were defined, return an empty string."""
 
-    return config["files"].get("binary_files", "")
+    return config.get("binary_files", "")
 
 
 
@@ -127,11 +127,11 @@ def fill_in_template(config):
         manual_build_requires=generate_manual_build_requires(config),
         extra_build_requires=generate_extra_build_requires(config),
         test=generate_check(config),
-        license_files=" ".join(config["files"]["license_files"]),
-        doc_files=" ".join(config["files"]["doc_files"]),
+        license_files=" ".join(config["license_files"]),
+        doc_files=" ".join(config["doc_files"]),
         binary_files=generate_binary_files(config),
-        changelog_head=config["changelog"]["changelog_head"],
-        changelog_msg=config["changelog"]["changelog_msg"],
+        changelog_head=config["changelog_head"],
+        changelog_msg=config["changelog_msg"],
     )
 
     return result
