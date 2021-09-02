@@ -115,13 +115,16 @@ def fill_in_template(config):
     return result
 
 
-def write_spec_file(config):
+def write_spec_file(config, output=None):
     """Save the spec file in the current directory.
     Return the saved file name"""
 
-    # TODO: make it possible to write the file to a given directory
     result = fill_in_template(config)
-    spec_file_name = config.get_value("python_name") + ".spec"
+    if output:
+        spec_file_name = output
+    else:
+        spec_file_name = config.get_value("python_name") + ".spec"
+
     with open(spec_file_name, "w") as spec_file:
         spec_file.write(result)
     print(f"Spec file {spec_file_name} was saved.")
@@ -134,9 +137,13 @@ def write_spec_file(config):
     required=True,
     help="Provide configuration file",
 )
-def main(filename):
+@click.option(
+    "--output", "-o",
+    help="Provide custom output where spec file will be saved",
+)
+def main(filename, output):
     config = ConfigFile(filename)
-    write_spec_file(config)
+    write_spec_file(config, output)
 
 
 if __name__ == "__main__":
