@@ -26,3 +26,6 @@ def test_generated_specfile(file_regression, config):
         rendered,
         fullpath=f"tests/expected_specfiles/{rendered_file}",
     )
+
+    # Cleanup - remove created file
+    Path.unlink(Path(rendered_file))
