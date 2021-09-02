@@ -1,24 +1,11 @@
 from pathlib import Path
 
 import click
-import tomli
-
 from jinja2 import Template
 
+from config import ConfigFile
 
 TEMPLATE_PATH = Path().resolve(__file__) / 'template.spec'
-
-
-def load_configuration(filename):
-    """Load TOML configuration file.
-    Raise exception if file's contents is not a valid TOML."""
-
-    with open(filename, "rb") as configuration_file:
-        try:
-            return tomli.load(configuration_file)
-        except tomli.TOMLDecodeError as err:
-            print("That's not a valid TOML file.")
-            raise err
 
 
 def generate_extra_build_requires(config):
@@ -31,7 +18,7 @@ def generate_extra_build_requires(config):
         "runtime": "-r",
         "extra": "-x",
     }
-    extra_brs = config.get("extra_build_requires", None)
+    extra_brs = config.get_value("extra_build_requires")
 
     # No extra BuildRequires were defined - return empty string
     if not extra_brs:
@@ -42,7 +29,7 @@ def generate_extra_build_requires(config):
     for extra_br in extra_brs:
         if extra_br == "extra":
             add(options.get(extra_br))
-            add(",".join(config["extra_test_env"]))
+            add(",".join(config.get_value("extra_test_env")))
         else:
             add(options.get(extra_br))
 
@@ -54,7 +41,7 @@ def generate_check(config):
     If defined in config file, use applicable test macro.
     If no test method was defined, return `%py3_check_import` with module name."""
 
-    test_method = config.get("test_method")
+    test_method = config.get_value("test_method")
     if test_method == "pytest":
         return generate_pytest(config)
     elif test_method == "tox":
@@ -63,7 +50,7 @@ def generate_check(config):
         # If no tests were defined, run at least smoke import check
         # This is mandatory as defined in Fedora Packaging Guidelines
         # https://docs.fedoraproject.org/en-US/packaging-guidelines/Python/#_tests
-        return f"%py3_check_import {config['module_name']}"
+        return f"%py3_check_import {config.get_value('module_name')}"
 
 
 def generate_pytest(config):
@@ -87,7 +74,7 @@ def generate_unwanted_tests(config):
     """If defined in config file, get the unwanted tests.
     Given the unwanted tests are [a, b], return `-k "not a and\\\nnot b"`."""
 
-    unwanted_tests = config.get("unwanted_tests")
+    unwanted_tests = config.get_value("unwanted_tests")
     if not unwanted_tests:
         return ""
     else:
@@ -97,20 +84,6 @@ def generate_unwanted_tests(config):
         return formatted_unwanteds
 
 
-def generate_manual_build_requires(config):
-    """If defined in config file, return manual build requires.
-    If none were defined, return an empty string."""
-
-    return config.get("manual_build_requires", "")
-
-
-def generate_binary_files(config):
-    """If defined in config file, return binary_files.
-    If none were defined, return an empty string."""
-
-    return config.get("binary_files", "")
-
-
 def fill_in_template(config):
     """Return template rendered with data from config file."""
 
@@ -118,25 +91,25 @@ def fill_in_template(config):
         spec_template = Template(template_file.read())
 
     result = spec_template.render(
-        name=config["pypi_name"],
-        python_name=config["python_name"],
-        version=config["version"],
-        release=config["release"],
-        summary=config["summary"],
-        license=config["license"],
-        url=config["url"],
-        source=config["source"],
-        description=config["description"],
-        module_name=config["module_name"],
-        archive_name=config["archive_name"],
-        manual_build_requires=generate_manual_build_requires(config),
+        archive_name=config.get_value("archive_name"),
+        binary_files=config.get_value("binary_files"),
+        changelog_head=config.get_value("changelog_head"),
+        changelog_msg=config.get_value("changelog_msg"),
+        description=config.get_value("description"),
+        doc_files=" ".join(config.get_value("doc_files")),
         extra_build_requires=generate_extra_build_requires(config),
+        license_files=" ".join(config.get_value("license_files")),
+        license=config.get_value("license"),
+        manual_build_requires=config.get_value("manual_build_requires"),
+        module_name=config.get_value("module_name"),
+        name=config.get_value("pypi_name"),
+        python_name=config.get_value("python_name"),
+        release=config.get_value("release"),
+        source=config.get_value("source"),
+        summary=config.get_value("summary"),
         test_method=generate_check(config),
-        license_files=" ".join(config["license_files"]),
-        doc_files=" ".join(config["doc_files"]),
-        binary_files=generate_binary_files(config),
-        changelog_head=config["changelog_head"],
-        changelog_msg=config["changelog_msg"],
+        url=config.get_value("url"),
+        version=config.get_value("version"),
     )
 
     return result
@@ -148,7 +121,7 @@ def write_spec_file(config):
 
     # TODO: make it possible to write the file to a given directory
     result = fill_in_template(config)
-    spec_file_name = config["python_name"] + ".spec"
+    spec_file_name = config.get_value("python_name") + ".spec"
     with open(spec_file_name, "w") as spec_file:
         spec_file.write(result)
     print(f"Spec file {spec_file_name} was saved.")
@@ -162,8 +135,7 @@ def write_spec_file(config):
     help="Provide configuration file",
 )
 def main(filename):
-    config = load_configuration(filename)
-    print(f"{filename} loaded successful")
+    config = ConfigFile(filename)
     write_spec_file(config)
 
 
