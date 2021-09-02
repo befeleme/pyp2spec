@@ -24,5 +24,5 @@ def test_generated_specfile(file_regression, config):
 
     file_regression.check(
         rendered,
-        fullpath=f"tests/expected_specfiles/{config.stem}.spec",
+        fullpath=f"tests/expected_specfiles/{rendered_file}",
     )
