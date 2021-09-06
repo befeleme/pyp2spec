@@ -1,3 +1,4 @@
 click
 jinja2
 tomli
+tomli-w
