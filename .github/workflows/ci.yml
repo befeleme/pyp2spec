@@ -17,4 +17,4 @@ jobs:
         python -m pip install pytest pytest-regressions
     - name: Run pytest
       run: |
-        python -m pytest -v
+        python -m pytest -vv
