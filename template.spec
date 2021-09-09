@@ -45,10 +45,17 @@ Summary:        %{summary}
 
 
 %files -n python3-{{name}} -f %{pyproject_files}
+{% if doc_files -%}
 %doc {{doc_files}}
+{% endif -%}
+{% if license_files -%}
 %license {{license_files}}
-{% for bf in binary_files %}%{_bindir}/{{bf}}
-{% endfor %}
+{% endif -%}
+{% if binary_files -%}
+{% for bf in binary_files -%}
+%{_bindir}/{{bf}}
+{% endfor -%}
+{% endif %}
 
 %changelog
 * {{changelog_head}} - {{version}}-{{release}}
