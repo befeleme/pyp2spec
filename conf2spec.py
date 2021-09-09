@@ -18,7 +18,7 @@ def generate_extra_build_requires(config):
         "runtime": "-r",
         "extra": "-x",
     }
-    extra_brs = config.get_value("extra_build_requires")
+    extra_brs = config.get_list("extra_build_requires")
 
     # No extra BuildRequires were defined - return empty string
     if not extra_brs:
@@ -29,7 +29,7 @@ def generate_extra_build_requires(config):
     for extra_br in extra_brs:
         if extra_br == "extra":
             add(options.get(extra_br))
-            add(",".join(config.get_value("extra_test_env")))
+            add(",".join(config.get_list("extra_test_env")))
         else:
             add(options.get(extra_br))
 
@@ -41,7 +41,7 @@ def generate_check(config):
     If defined in config file, use applicable test macro.
     If no test method was defined, return `%py3_check_import` with module name."""
 
-    test_method = config.get_value("test_method")
+    test_method = config.get_string("test_method")
     if test_method == "pytest":
         return generate_pytest(config)
     elif test_method == "tox":
@@ -50,7 +50,7 @@ def generate_check(config):
         # If no tests were defined, run at least smoke import check
         # This is mandatory as defined in Fedora Packaging Guidelines
         # https://docs.fedoraproject.org/en-US/packaging-guidelines/Python/#_tests
-        return f"%py3_check_import {config.get_value('module_name')}"
+        return f"%py3_check_import {config.get_string('module_name')}"
 
 
 def generate_pytest(config):
@@ -74,7 +74,7 @@ def generate_unwanted_tests(config):
     """If defined in config file, get the unwanted tests.
     Given the unwanted tests are [a, b], return `-k "not a and\\\nnot b"`."""
 
-    unwanted_tests = config.get_value("unwanted_tests")
+    unwanted_tests = config.get_list("unwanted_tests")
     if not unwanted_tests:
         return ""
     else:
@@ -91,25 +91,25 @@ def fill_in_template(config):
         spec_template = Template(template_file.read())
 
     result = spec_template.render(
-        archive_name=config.get_value("archive_name"),
-        binary_files=config.get_value("binary_files"),
-        changelog_head=config.get_value("changelog_head"),
-        changelog_msg=config.get_value("changelog_msg"),
-        description=config.get_value("description"),
-        doc_files=" ".join(config.get_value("doc_files")),
+        archive_name=config.get_string("archive_name"),
+        binary_files=config.get_list("binary_files"),
+        changelog_head=config.get_string("changelog_head"),
+        changelog_msg=config.get_string("changelog_msg"),
+        description=config.get_string("description"),
+        doc_files=" ".join(config.get_list("doc_files")),
         extra_build_requires=generate_extra_build_requires(config),
-        license_files=" ".join(config.get_value("license_files")),
-        license=config.get_value("license"),
-        manual_build_requires=config.get_value("manual_build_requires"),
-        module_name=config.get_value("module_name"),
-        name=config.get_value("pypi_name"),
-        python_name=config.get_value("python_name"),
-        release=config.get_value("release"),
-        source=config.get_value("source"),
-        summary=config.get_value("summary"),
+        license_files=" ".join(config.get_list("license_files")),
+        license=config.get_string("license"),
+        manual_build_requires=config.get_list("manual_build_requires"),
+        module_name=config.get_string("module_name"),
+        name=config.get_string("pypi_name"),
+        python_name=config.get_string("python_name"),
+        release=config.get_string("release"),
+        source=config.get_string("source"),
+        summary=config.get_string("summary"),
         test_method=generate_check(config),
-        url=config.get_value("url"),
-        version=config.get_value("version"),
+        url=config.get_string("url"),
+        version=config.get_string("version"),
     )
 
     return result
@@ -123,7 +123,7 @@ def write_spec_file(config, output=None):
     if output:
         spec_file_name = output
     else:
-        spec_file_name = config.get_value("python_name") + ".spec"
+        spec_file_name = config.get_string("python_name") + ".spec"
 
     with open(spec_file_name, "w") as spec_file:
         spec_file.write(result)
