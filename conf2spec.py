@@ -49,7 +49,8 @@ def generate_check(config):
         # If no tests were defined, run at least smoke import check
         # This is mandatory as defined in Fedora Packaging Guidelines
         # https://docs.fedoraproject.org/en-US/packaging-guidelines/Python/#_tests
-        return f"%py3_check_import {config.get_string('module_name')}"
+        modules = " ".join(config.get_list("modules"))
+        return f"%py3_check_import {modules}"
 
 
 def generate_pytest(config):
@@ -100,7 +101,7 @@ def fill_in_template(config):
         license_files=" ".join(config.get_list("license_files")),
         license=config.get_string("license"),
         manual_build_requires=config.get_list("manual_build_requires"),
-        module_name=config.get_string("module_name"),
+        modules=" ".join(config.get_list("modules")),
         name=config.get_string("pypi_name"),
         python_name=config.get_string("python_name"),
         release=config.get_string("release"),

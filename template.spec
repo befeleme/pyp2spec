@@ -40,7 +40,7 @@ Summary:        %{summary}
 
 %install
 %pyproject_install
-%pyproject_save_files {{module_name}}
+%pyproject_save_files {{modules}}
 
 
 %check
