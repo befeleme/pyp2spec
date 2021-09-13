@@ -37,7 +37,7 @@ Summary:        %{summary}
 
 %install
 %pyproject_install
-%pyproject_save_files aionotion
+%pyproject_save_files '*' +auto
 
 
 %check

@@ -41,7 +41,7 @@ Summary:        %{summary}
 
 %install
 %pyproject_install
-%pyproject_save_files boutdata
+%pyproject_save_files '*' +auto
 
 
 %check

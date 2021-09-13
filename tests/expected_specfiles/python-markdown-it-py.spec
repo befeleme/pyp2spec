@@ -45,7 +45,7 @@ Summary:        %{summary}
 
 %install
 %pyproject_install
-%pyproject_save_files markdown_it
+%pyproject_save_files '*' +auto
 
 
 %check

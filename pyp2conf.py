@@ -1,5 +1,3 @@
-import sys
-
 from datetime import date
 from subprocess import check_output
 from urllib.parse import urlparse
@@ -84,6 +82,11 @@ def get_summary(summary, package_data):
     return package_data["info"]["summary"]
 
 
+def get_description(package):
+    """Return a default package description."""
+    return f"This is package '{package}' generated automatically by pyp2spec."
+
+
 def is_url(package):
     parsed = urlparse(package)
     if all((parsed.scheme, parsed.netloc)):
@@ -102,6 +105,7 @@ def create_config_contents(package, description=None, release=None,
     contents["changelog_msg"] = changelog_msg(message)
     contents["changelog_head"] = changelog_head(email, name, date)
     contents["release"] = get_release(release)
+    contents["description"] = description or get_description(package)
 
     # `package` is not a URL -> it's a package name, look for it on PyPI
     if not is_url(package):
@@ -122,7 +126,6 @@ def create_config_contents(package, description=None, release=None,
             if entry["packagetype"] == "sdist":
                 contents["archive_name"] = get_archive_name(entry["filename"])
 
-        contents["description"] = description
     return contents
 
 
@@ -181,11 +184,6 @@ def write_config(contents, output=None):
 )
 def main(package, output, description, release, message, email, packagername,
     version, summary, date):
-
-    if not description:
-        print("Description wasn't provided. "
-        "Rerun the script with package description.")
-        sys.exit(1)
 
     contents = create_config_contents(
         package, description, release, message, email, packagername, version,

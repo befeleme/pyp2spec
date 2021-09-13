@@ -38,7 +38,7 @@ Summary:        %{summary}
 
 %install
 %pyproject_install
-%pyproject_save_files jupyter_packaging
+%pyproject_save_files '*' +auto
 
 
 %check

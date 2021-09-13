@@ -40,7 +40,7 @@ Summary:        %{summary}
 
 %install
 %pyproject_install
-%pyproject_save_files tomli
+%pyproject_save_files '*' +auto
 
 
 %check
