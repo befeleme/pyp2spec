@@ -2,6 +2,7 @@ import sys
 
 from datetime import date
 from subprocess import check_output
+from urllib.parse import urlparse
 
 import click
 import requests
@@ -83,33 +84,45 @@ def get_summary(summary, package_data):
     return package_data["info"]["summary"]
 
 
-def create_config_contents(package_data, description=None, release=None,
+def is_url(package):
+    parsed = urlparse(package)
+    if all((parsed.scheme, parsed.netloc)):
+        return True
+    return False
+
+
+def create_config_contents(package, description=None, release=None,
     message=None, email=None, name=None, version=None, summary=None, date=None):
     """Use `package_data` to create the whole config contents.
     Return contents.
     """
     contents = {}
 
-    pypi_name = package_data["info"]["name"]
-    contents["pypi_name"] = pypi_name
-    contents["python_name"] = get_python_name(pypi_name)
-    contents["modules"] = get_module_name(pypi_name)
-    version = get_version(version, package_data)
-    contents["version"] = version
-    contents["summary"] = get_summary(summary, package_data)
-    contents["license"] = package_data["info"]["license"]
-    contents["url"] = get_project_url(package_data)
-    contents["source"] = get_source_url(pypi_name)
-
-    for entry in package_data["releases"][version]:
-        if entry["packagetype"] == "sdist":
-            contents["archive_name"] = get_archive_name(entry["filename"])
-
-    contents["description"] = description
-    contents["release"] = get_release(release)
+    # These items don't depend on information gathered from the package source
     contents["changelog_msg"] = changelog_msg(message)
     contents["changelog_head"] = changelog_head(email, name, date)
+    contents["release"] = get_release(release)
 
+    # `package` is not a URL -> it's a package name, look for it on PyPI
+    if not is_url(package):
+        package_data = get_pypi_metadata(package)
+
+        pypi_name = package_data["info"]["name"]
+        contents["pypi_name"] = pypi_name
+        contents["python_name"] = get_python_name(pypi_name)
+        contents["modules"] = get_module_name(pypi_name)
+        version = get_version(version, package_data)
+        contents["version"] = version
+        contents["summary"] = get_summary(summary, package_data)
+        contents["license"] = package_data["info"]["license"]
+        contents["url"] = get_project_url(package_data)
+        contents["source"] = get_source_url(pypi_name)
+
+        for entry in package_data["releases"][version]:
+            if entry["packagetype"] == "sdist":
+                contents["archive_name"] = get_archive_name(entry["filename"])
+
+        contents["description"] = description
     return contents
 
 
@@ -166,16 +179,17 @@ def write_config(contents, output=None):
     "--date",
     help="Provide custom date for changelog",
 )
-def main(package, output, description, release, message, email, packagername, version, summary, date):
+def main(package, output, description, release, message, email, packagername,
+    version, summary, date):
+
     if not description:
         print("Description wasn't provided. "
         "Rerun the script with package description.")
         sys.exit(1)
 
-    pypi_metadata = get_pypi_metadata(package)
-
     contents = create_config_contents(
-        pypi_metadata, description, release, message, email, packagername, version, summary, date
+        package, description, release, message, email, packagername, version,
+        summary, date
     )
     write_config(contents, output)
 

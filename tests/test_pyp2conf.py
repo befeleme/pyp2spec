@@ -6,9 +6,8 @@ import tomli
 
 def test_config_is_valid():
     package = "aionotion"
-    resp = pyp2conf.get_pypi_metadata(package)
     config = pyp2conf.create_config_contents(
-        resp,
+        package=package,
         description="A asyncio-friendly library for Notion Home Monitoring devices.\n",
         release="4",
         message="Rebuilt for Python 3.10",
