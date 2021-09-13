@@ -37,11 +37,12 @@ python conf2spec.py -f tests/test_config/pyp2spec_click.conf
 
 Test framework used in the project is pytest.
 The tests use pytest-regresssions extension used to generate spec files to compare.
+The tests use betamax to record API calls and replay them from the prerecorded cassettes.
 To run the tests, run following commands:
 
 ```
-python -m pip install pytest pytest-regresssions
-python -m pytest
+python -m pip install pytest pytest-regresssions betamax
+python -m pytest -vv
 ```
 
 

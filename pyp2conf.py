@@ -7,9 +7,11 @@ import requests
 import tomli_w
 
 
-def get_pypi_metadata(package_name):
+def get_pypi_metadata(package_name, session=None):
     pypi_index = f'https://pypi.org/pypi/{package_name}/json'
-    response = requests.get(pypi_index)
+
+    s = session or requests.Session()
+    response = s.get(pypi_index)
     return response.json()
 
 
@@ -95,7 +97,8 @@ def is_url(package):
 
 
 def create_config_contents(package, description=None, release=None,
-    message=None, email=None, name=None, version=None, summary=None, date=None):
+    message=None, email=None, name=None, version=None, summary=None, date=None,
+    session=None):
     """Use `package_data` to create the whole config contents.
     Return contents.
     """
@@ -109,7 +112,7 @@ def create_config_contents(package, description=None, release=None,
 
     # `package` is not a URL -> it's a package name, look for it on PyPI
     if not is_url(package):
-        package_data = get_pypi_metadata(package)
+        package_data = get_pypi_metadata(package, session)
 
         pypi_name = package_data["info"]["name"]
         contents["pypi_name"] = pypi_name
