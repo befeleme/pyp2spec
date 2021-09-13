@@ -10,19 +10,18 @@ TEMPLATE_PATH = Path().resolve(__file__) / 'template.spec'
 
 def generate_extra_build_requires(config):
     """If defined in config file, return extra build requires.
-    If none were defined, return an empty string."""
+    If none were defined, return `-r` - runtime extra BRs`."""
 
-    # TODO: This doesn't handle doubles like -xr
+    # TODO: custom tox env (-e)
     options = {
-        "test": "-t",
-        "runtime": "-r",
+        "tox": "-t",
         "extra": "-x",
     }
     extra_brs = config.get_list("extra_build_requires")
 
-    # No extra BuildRequires were defined - return empty string
+    # No extra BuildRequires were defined - return `-r` = runtime
     if not extra_brs:
-        return ""
+        return "-r"
 
     generated_brs = []
     add = generated_brs.append

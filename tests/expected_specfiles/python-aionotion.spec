@@ -45,8 +45,6 @@ Summary:        %{summary}
 
 
 %files -n python3-aionotion -f %{pyproject_files}
-%doc README.md
-%license LICENSE
 
 
 %changelog
