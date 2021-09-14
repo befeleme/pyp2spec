@@ -22,10 +22,12 @@ def test_generated_specfile(file_regression, config_file):
     with open(rendered_file, "r") as rendered_f:
         rendered = rendered_f.read()
 
-    file_regression.check(
-        rendered,
-        fullpath=f"tests/expected_specfiles/{rendered_file}",
-    )
+    try:
+        file_regression.check(
+            rendered,
+            fullpath=f"tests/expected_specfiles/{rendered_file}",
+        )
 
-    # Cleanup - remove created file
-    Path.unlink(Path(rendered_file))
+    finally:
+        # Cleanup - remove created file
+        Path.unlink(Path(rendered_file))
