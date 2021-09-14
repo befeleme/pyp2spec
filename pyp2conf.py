@@ -7,12 +7,57 @@ import requests
 import tomli_w
 
 
-def get_pypi_metadata(package_name, session=None):
-    pypi_index = f'https://pypi.org/pypi/{package_name}/json'
+class PypiPackage():
+    def __init__(self, package, session=None):
+        self.package = package
+        self.package_data = self.get_package_metadata(session)
 
-    s = session or requests.Session()
-    response = s.get(pypi_index)
-    return response.json()
+    @property
+    def pypi_name(self):
+        return self.package_data["info"]["name"]
+
+    def get_package_metadata(self, session):
+        pkg_index = f'https://pypi.org/pypi/{self.package}/json'
+        s = session or requests.Session()
+        response = s.get(pkg_index)
+        return response.json()
+
+    def python_name(self):
+        if self.pypi_name.startswith("python"):
+            return self.pypi_name
+        else:
+            return f"python-{self.pypi_name}"
+
+    def modules(self):
+        """A naive way to get probable module name: replace any occurrence
+        of '-' in package PyPI name with '_' and return the result."""
+
+        return [self.pypi_name.replace("-", "_")]
+
+    def source_url(self):
+        return "%{pypi_source " + self.pypi_name + "}"
+
+    def version(self):
+        return self.package_data["info"]["version"]
+
+    def license(self):
+        return self.package_data["info"]["license"]
+
+    def summary(self):
+        return self.package_data["info"]["summary"]
+
+    def project_url(self):
+        try:
+            return self.package_data["info"]["project_urls"]["Homepage"]
+        # It may happen that no Homepage is listed with the project
+        # In this case fall back to the safe PyPI URL
+        except KeyError:
+            return self.package_data["info"]["package_url"]
+
+    def archive_name(self, version):
+        for entry in self.package_data["releases"][version]:
+            if entry["packagetype"] == "sdist":
+                return "-".join(entry["filename"].split("-")[:-1])
 
 
 def changelog_head(email, name, changelog_date):
@@ -28,64 +73,15 @@ def changelog_head(email, name, changelog_date):
     return f'{changelog_date} {result}'
 
 
-def changelog_msg(message):
-    if message:
-        return message
-    return f"Package generated with pyp2spec"
+def changelog_msg():
+    """Return a default changelog message."""
 
-
-def get_release(release):
-    if release:
-        return release
-    return "1"
-
-
-def get_project_url(package_data):
-    try:
-        return package_data["info"]["project_urls"]["Homepage"]
-    # It may happen that no Homepage is listed with the project
-    # In this case fall back to the safe PyPI URL
-    except KeyError:
-        return package_data["info"]["package_url"]
-
-
-def get_python_name(pypi_name):
-    if pypi_name.startswith("python"):
-        return pypi_name
-    else:
-        return f"python-{pypi_name}"
-
-
-def get_module_name(pypi_name):
-    """A naive way to get probable module name: replace any occurrence
-    of '-' in package PyPI name with '_' and return the result."""
-
-    return [pypi_name.replace("-", "_")]
-
-
-def get_source_url(pypi_name):
-    return "%{pypi_source " + pypi_name + "}"
-
-
-def get_archive_name(filename):
-    return "-".join(filename.split("-")[:-1])
-
-
-def get_version(version, package_data):
-    if version:
-        return version
-    # Custom version was not provided, return the latest available
-    return package_data["info"]["version"]
-
-
-def get_summary(summary, package_data):
-    if summary:
-        return summary
-    return package_data["info"]["summary"]
+    return "Package generated with pyp2spec"
 
 
 def get_description(package):
     """Return a default package description."""
+
     return f"This is package '{package}' generated automatically by pyp2spec."
 
 
@@ -97,37 +93,33 @@ def is_url(package):
 
 
 def create_config_contents(package, description=None, release=None,
-    message=None, email=None, name=None, version=None, summary=None, date=None,
-    session=None):
-    """Use `package_data` to create the whole config contents.
+                           message=None, email=None, name=None, version=None,
+                           summary=None, date=None, session=None):
+    """Use `package` and provided kwargs to create the whole config contents.
     Return contents.
     """
     contents = {}
 
     # These items don't depend on information gathered from the package source
-    contents["changelog_msg"] = changelog_msg(message)
+    contents["changelog_msg"] = message or changelog_msg()
     contents["changelog_head"] = changelog_head(email, name, date)
-    contents["release"] = get_release(release)
+    contents["release"] = release or "1"
     contents["description"] = description or get_description(package)
 
     # `package` is not a URL -> it's a package name, look for it on PyPI
     if not is_url(package):
-        package_data = get_pypi_metadata(package, session)
+        pkg = PypiPackage(package, session)
 
-        pypi_name = package_data["info"]["name"]
-        contents["pypi_name"] = pypi_name
-        contents["python_name"] = get_python_name(pypi_name)
-        contents["modules"] = get_module_name(pypi_name)
-        version = get_version(version, package_data)
-        contents["version"] = version
-        contents["summary"] = get_summary(summary, package_data)
-        contents["license"] = package_data["info"]["license"]
-        contents["url"] = get_project_url(package_data)
-        contents["source"] = get_source_url(pypi_name)
-
-        for entry in package_data["releases"][version]:
-            if entry["packagetype"] == "sdist":
-                contents["archive_name"] = get_archive_name(entry["filename"])
+    contents["pypi_name"] = pkg.pypi_name
+    contents["python_name"] = pkg.python_name()
+    contents["modules"] = pkg.modules()
+    contents["summary"] = summary or pkg.summary()
+    contents["license"] = pkg.license()
+    contents["url"] = pkg.project_url()
+    contents["source"] = pkg.source_url()
+    version = version or pkg.version()
+    contents["version"] = version
+    contents["archive_name"] = pkg.archive_name(version)
 
     return contents
 
@@ -186,7 +178,7 @@ def write_config(contents, output=None):
     help="Provide custom date for changelog",
 )
 def main(package, output, description, release, message, email, packagername,
-    version, summary, date):
+         version, summary, date):
 
     contents = create_config_contents(
         package, description, release, message, email, packagername, version,
