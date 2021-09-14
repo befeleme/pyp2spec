@@ -137,25 +137,33 @@ def create_config_contents(package, description=None, release=None,
     return contents
 
 
-def write_config(contents, output=None):
+def save_config(contents, output=None):
     """Write config file to a given destination.
     If none is provided, save it to current directory with package name as file name.
     """
-    if output:
-        dest = output
-    else:
+    if not output:
         package = contents["python_name"]
-        dest = f"./{package}.conf"
-    with open(dest, "wb") as f:
+        output = f"./{package}.conf"
+    with open(output, "wb") as f:
         tomli_w.dump(contents, f, multiline_strings=True)
-    return dest
+    return output
+
+
+def create_config(package, conf_output, description, release, message, email, packagername, version,
+                  summary, date):
+
+    contents = create_config_contents(
+        package, conf_output, description, release, message, email,
+        packagername, version, summary, date
+    )
+    return save_config(contents, conf_output)
 
 
 @click.command()
 @click.argument(
     "package")
 @click.option(
-    "--output", "-o",
+    "--conf-output", "-o",
     help="Provide custom output for configuration file",
 )
 @click.option(
@@ -190,14 +198,11 @@ def write_config(contents, output=None):
     "--date",
     help="Provide custom date for changelog",
 )
-def main(package, output, description, release, message, email, packagername,
+def main(package, conf_output, description, release, message, email, packagername,
          version, summary, date):
 
-    contents = create_config_contents(
-        package, description, release, message, email, packagername, version,
-        summary, date
-    )
-    write_config(contents, output)
+    create_config(package, conf_output, description, release, message, email, packagername,
+                  version, summary, date)
 
 
 if __name__ == "__main__":

@@ -2,7 +2,7 @@ from pathlib import Path
 import pytest
 
 import conf2spec
-import config
+
 
 def get_config_files():
     """Yield the relative paths to the config files placed in 'tests/test_configs'."""
@@ -15,8 +15,7 @@ def get_config_files():
 @pytest.mark.parametrize(("config_file"), get_config_files())
 def test_generated_specfile(file_regression, config_file):
     # Run the conf2spec converter
-    conf = config.ConfigFile(config_file)
-    rendered_file = conf2spec.write_spec_file(conf)
+    rendered_file = conf2spec.create_spec_file(config_file)
 
     # Compare the results
     with open(rendered_file, "r") as rendered_f:

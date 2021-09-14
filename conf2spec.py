@@ -115,7 +115,7 @@ def fill_in_template(config):
     return result
 
 
-def write_spec_file(config, output=None):
+def save_spec_file(config, output=None):
     """Save the spec file in the current directory.
     Return the saved file name"""
 
@@ -131,19 +131,20 @@ def write_spec_file(config, output=None):
     return spec_file_name
 
 
+def create_spec_file(config_file, spec_output=None):
+    """Create and save the generate spec file."""
+    config = ConfigFile(config_file)
+    return save_spec_file(config, spec_output)
+
+
 @click.command()
+@click.argument("config")
 @click.option(
-    "--filename", "-f",
-    required=True,
-    help="Provide configuration file",
-)
-@click.option(
-    "--output", "-o",
+    "--spec-output", "-s",
     help="Provide custom output where spec file will be saved",
 )
-def main(filename, output):
-    config = ConfigFile(filename)
-    write_spec_file(config, output)
+def main(config, spec_output):
+    create_spec_file(config, spec_output)
 
 
 if __name__ == "__main__":
