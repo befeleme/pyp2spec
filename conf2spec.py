@@ -5,7 +5,7 @@ from jinja2 import Template
 
 from config import ConfigFile
 
-TEMPLATE_PATH = Path().resolve(__file__) / 'template.spec'
+TEMPLATE_PATH = Path().resolve(__file__) / "template.spec"
 
 
 def generate_extra_build_requires(config):
@@ -56,7 +56,7 @@ def generate_check(config):
 def generate_pytest(config):
     """Return valid pytest macro with unwanted tests (if defined)."""
 
-    if (unwanted_tests := generate_unwanted_tests(config)):
+    if unwanted_tests := generate_unwanted_tests(config):
         return f"%pytest {unwanted_tests}"
     return "%pytest"
 
@@ -65,7 +65,7 @@ def generate_tox(config):
     """Return valid tox macro. If additional unwanted are defined,
     raise NotImplementedError."""
 
-    if (unwanted_tests := generate_unwanted_tests(config)):
+    if unwanted_tests := generate_unwanted_tests(config):
         raise NotImplementedError
     return "%tox"
 
@@ -80,7 +80,7 @@ def generate_unwanted_tests(config):
     else:
         prep_unwanteds = [f"not {test}" for test in unwanted_tests]
         unwanteds_as_str = " and \\\n".join(prep_unwanteds)
-        formatted_unwanteds = f"-k \"{unwanteds_as_str}\""
+        formatted_unwanteds = f'-k "{unwanteds_as_str}"'
         return formatted_unwanteds
 
 
@@ -140,8 +140,9 @@ def create_spec_file(config_file, spec_output=None):
 @click.command()
 @click.argument("config")
 @click.option(
-    "--spec-output", "-s",
-    help="Provide custom output where spec file will be saved",
+    "--spec-output",
+    "-s",
+    help="Provide custom output for spec file",
 )
 def main(config, spec_output):
     create_spec_file(config, spec_output)

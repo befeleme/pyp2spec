@@ -7,7 +7,9 @@ import requests
 import tomli_w
 
 
-class PypiPackage():
+class PypiPackage:
+    """Get and save package data from PyPI."""
+
     def __init__(self, package, session=None):
         self.package = package
         self.package_data = self.get_package_metadata(session)
@@ -17,7 +19,7 @@ class PypiPackage():
         return self.package_data["info"]["name"]
 
     def get_package_metadata(self, session):
-        pkg_index = f'https://pypi.org/pypi/{self.package}/json'
+        pkg_index = f"https://pypi.org/pypi/{self.package}/json"
         s = session or requests.Session()
         response = s.get(pkg_index)
         return response.json()
@@ -61,16 +63,16 @@ class PypiPackage():
 
 
 def changelog_head(email, name, changelog_date):
-    """ :returns f'{date} {name} <{email}>'"""
+    """Return f'{date} {name} <{email}>'"""
     if not changelog_date:
-        changelog_date = (date.today()).strftime('%a %b %d %Y')
+        changelog_date = (date.today()).strftime("%a %b %d %Y")
 
     if email or name:
-        return f'{changelog_date} {name} <{email}>'
+        return f"{changelog_date} {name} <{email}>"
 
-    result = check_output(['rpmdev-packager'])
+    result = check_output(["rpmdev-packager"])
     result = result.decode().strip()
-    return f'{changelog_date} {result}'
+    return f"{changelog_date} {result}"
 
 
 def changelog_msg():
@@ -86,17 +88,27 @@ def get_description(package):
 
 
 def is_url(package):
+    """Return True if string given as 'package' is valid URL, otherwise False."""
     parsed = urlparse(package)
     if all((parsed.scheme, parsed.netloc)):
         return True
     return False
 
 
-def create_config_contents(package, description=None, release=None,
-                           message=None, email=None, name=None, version=None,
-                           summary=None, date=None, session=None):
+def create_config_contents(
+    package,
+    description=None,
+    release=None,
+    message=None,
+    email=None,
+    name=None,
+    version=None,
+    summary=None,
+    date=None,
+    session=None,
+):
     """Use `package` and provided kwargs to create the whole config contents.
-    Return contents.
+    Return contents dictionary.
     """
     contents = {}
 
@@ -149,60 +161,105 @@ def save_config(contents, output=None):
     return output
 
 
-def create_config(package, conf_output, description, release, message, email, packagername, version,
-                  summary, date):
+def create_config(
+    package,
+    conf_output,
+    description,
+    release,
+    message,
+    email,
+    packagername,
+    version,
+    summary,
+    date,
+):
 
     contents = create_config_contents(
-        package, conf_output, description, release, message, email,
-        packagername, version, summary, date
+        package,
+        conf_output,
+        description,
+        release,
+        message,
+        email,
+        packagername,
+        version,
+        summary,
+        date,
     )
     return save_config(contents, conf_output)
 
 
 @click.command()
-@click.argument(
-    "package")
+@click.argument("package")
 @click.option(
-    "--conf-output", "-o",
+    "--conf-output",
+    "-o",
     help="Provide custom output for configuration file",
 )
 @click.option(
-    "--description", "-d",
+    "--description",
+    "-d",
     help="Provide description for the package",
 )
 @click.option(
-    "--release", "-r",
+    "--release",
+    "-r",
     help="Provide custom release (corresponds with Release in spec file)",
 )
 @click.option(
-    "--message", "-m",
+    "--message",
+    "-m",
     help="Provide changelog message for the package",
 )
 @click.option(
-    "--email", "-e",
+    "--email",
+    "-e",
     help="Provide e-mail for changelog",
 )
 @click.option(
-    "--packagername", "-n",
+    "--packagername",
+    "-n",
     help="Provide packager name for changelog",
 )
 @click.option(
-    "--version", "-v",
-    help="Provide package version to query PyPI for",
+    "--version",
+    "-v",
+    help="Provide package version to query the backend for",
 )
 @click.option(
-    "--summary", "-s",
+    "--summary",
+    "-s",
     help="Provide custom package summary",
 )
 @click.option(
     "--date",
     help="Provide custom date for changelog",
 )
-def main(package, conf_output, description, release, message, email, packagername,
-         version, summary, date):
+def main(
+    package,
+    conf_output,
+    description,
+    release,
+    message,
+    email,
+    packagername,
+    version,
+    summary,
+    date,
+):
 
-    create_config(package, conf_output, description, release, message, email, packagername,
-                  version, summary, date)
+    create_config(
+        package,
+        conf_output,
+        description,
+        release,
+        message,
+        email,
+        packagername,
+        version,
+        summary,
+        date,
+    )
 
 
 if __name__ == "__main__":
