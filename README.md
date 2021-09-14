@@ -8,11 +8,15 @@ It utilizes the benefits of [pyproject-rpm-macros](https://src.fedoraproject.org
 
 It is under development.
 
-## What it will do
+## What it does
 
-The project will consist of two parts:
-- *pyp2conf*: gathers of all the necessary information to produce a spec file and stores it in a configuration file - **not available yet**
-- *conf2spec*: produces working spec file using all the information from configuration file - **a limited set of functionalities is available**
+`pyp2spec.py` gathers all the necessary information from PyPI to produce a valid
+Fedora spec file and stores it in the current directory alongside with
+the config file used to produce the spec file.
+
+Inside, there are two parts:
+- *pyp2conf*: gathers of all the necessary information to produce a spec file and stores it in a configuration file
+- *conf2spec*: produces working spec file using all the information from configuration file
 
 ## Configuration file specification
 
@@ -28,9 +32,9 @@ To run whatever this project offers at this point, install to your virtual envir
 python -m pip install -r requirements.txt
 ```
 
-Until the configuration file specification is set, you can use the test files to run the script:
+To run the script and generate both the config and spec file, type:
 ```
-python conf2spec.py -f tests/test_config/pyp2spec_click.conf
+python pyp2spec.py <pypi_package_name>
 ```
 
 ### Tests
