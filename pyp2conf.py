@@ -100,25 +100,38 @@ def create_config_contents(package, description=None, release=None,
     """
     contents = {}
 
-    # These items don't depend on information gathered from the package source
-    contents["changelog_msg"] = message or changelog_msg()
-    contents["changelog_head"] = changelog_head(email, name, date)
-    contents["release"] = release or "1"
-    contents["description"] = description or get_description(package)
-
     # `package` is not a URL -> it's a package name, look for it on PyPI
     if not is_url(package):
         pkg = PypiPackage(package, session)
 
+    # If the arguments weren't provided via CLI,
+    # get them from the stored package object data or the default values
+    if not message:
+        message = changelog_msg()
+    if not description:
+        description = get_description(package)
+    if not summary:
+        summary = pkg.summary()
+    if not version:
+        version = pkg.version()
+
+    # These items don't depend on information gathered from the package source
+    contents["changelog_msg"] = message
+    contents["changelog_head"] = changelog_head(email, name, date)
+    contents["release"] = release or "1"
+    contents["description"] = description
+
+    # There items may be either set via CLI or gotten from package object
+    contents["summary"] = summary
+    contents["version"] = version
+
+    # Set the values from the package object
     contents["pypi_name"] = pkg.pypi_name
     contents["python_name"] = pkg.python_name()
     contents["modules"] = pkg.modules()
-    contents["summary"] = summary or pkg.summary()
     contents["license"] = pkg.license()
     contents["url"] = pkg.project_url()
     contents["source"] = pkg.source_url()
-    version = version or pkg.version()
-    contents["version"] = version
     contents["archive_name"] = pkg.archive_name(version)
 
     return contents
