@@ -43,7 +43,14 @@ class PypiPackage:
         return self.package_data["info"]["version"]
 
     def license(self):
-        return self.package_data["info"]["license"]
+        pkg_license = self.package_data["info"]["license"]
+        if pkg_license:
+            return pkg_license
+        else:
+            raise click.UsageError(
+                "Could not get license from PyPI. " +
+                "Specify --license explicitly."
+            )
 
     def summary(self):
         return self.package_data["info"]["summary"]
@@ -106,6 +113,7 @@ def create_config_contents(
     summary=None,
     date=None,
     session=None,
+    license=None,
 ):
     """Use `package` and provided kwargs to create the whole config contents.
     Return contents dictionary.
@@ -126,6 +134,9 @@ def create_config_contents(
         summary = pkg.summary()
     if not version:
         version = pkg.version()
+    if not license:
+        license = pkg.license()
+
 
     # These items don't depend on information gathered from the package source
     contents["changelog_msg"] = message
@@ -136,12 +147,12 @@ def create_config_contents(
     # There items may be either set via CLI or gotten from package object
     contents["summary"] = summary
     contents["version"] = version
+    contents["license"] = license
 
     # Set the values from the package object
     contents["pypi_name"] = pkg.pypi_name
     contents["python_name"] = pkg.python_name()
     contents["modules"] = pkg.modules()
-    contents["license"] = pkg.license()
     contents["url"] = pkg.project_url()
     contents["source"] = pkg.source_url(version)
     contents["archive_name"] = pkg.archive_name(version)
@@ -172,6 +183,7 @@ def create_config(
     version,
     summary,
     date,
+    license,
 ):
 
     contents = create_config_contents(
@@ -185,6 +197,7 @@ def create_config(
         version,
         summary,
         date,
+        license,
     )
     return save_config(contents, conf_output)
 
@@ -235,6 +248,11 @@ def create_config(
     "--date",
     help="Provide custom date for changelog",
 )
+@click.option(
+    "--license",
+    "-l",
+    help="Provide license",
+)
 def main(
     package,
     conf_output,
@@ -246,6 +264,7 @@ def main(
     version,
     summary,
     date,
+    license,
 ):
 
     create_config(
@@ -259,6 +278,7 @@ def main(
         version,
         summary,
         date,
+        license,
     )
 
 
