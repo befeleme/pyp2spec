@@ -36,8 +36,8 @@ class PypiPackage:
 
         return [self.pypi_name.replace("-", "_")]
 
-    def source_url(self):
-        return "%{pypi_source " + self.pypi_name + "}"
+    def source_url(self, version):
+        return "%{pypi_source " + self.archive_name(version) + "}"
 
     def version(self):
         return self.package_data["info"]["version"]
@@ -143,7 +143,7 @@ def create_config_contents(
     contents["modules"] = pkg.modules()
     contents["license"] = pkg.license()
     contents["url"] = pkg.project_url()
-    contents["source"] = pkg.source_url()
+    contents["source"] = pkg.source_url(version)
     contents["archive_name"] = pkg.archive_name(version)
 
     return contents
