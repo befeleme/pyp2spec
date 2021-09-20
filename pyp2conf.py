@@ -1,6 +1,5 @@
 from datetime import date
 from subprocess import check_output
-from urllib.parse import urlparse
 
 import click
 import requests
@@ -94,12 +93,14 @@ def get_description(package):
     return f"This is package '{package}' generated automatically by pyp2spec."
 
 
-def is_url(package):
-    """Return True if string given as 'package' is valid URL, otherwise False."""
-    parsed = urlparse(package)
-    if all((parsed.scheme, parsed.netloc)):
-        return True
-    return False
+def is_package_name(package):
+    """Check whether the string given as package contains `/`.
+    Return True if not, False otherwise."""
+
+    if "/" in package:
+        # It's probably URL
+        return False
+    return True
 
 
 def create_config_contents(
@@ -120,9 +121,12 @@ def create_config_contents(
     """
     contents = {}
 
-    # `package` is not a URL -> it's a package name, look for it on PyPI
-    if not is_url(package):
+    # a package name was given as the `package`, look for it on PyPI
+    if is_package_name(package):
         pkg = PypiPackage(package, session)
+    # a URL was given as the `package`
+    else:
+        raise NotImplementedError
 
     # If the arguments weren't provided via CLI,
     # get them from the stored package object data or the default values
