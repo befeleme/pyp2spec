@@ -3,6 +3,8 @@ Version:        0.1.3
 Release:        0.2%{?dist}
 Summary:        Python package for collecting BOUT++ data
 
+# Check if the automatically generated License and its spelling is correct for Fedora
+# https://docs.fedoraproject.org/en-US/packaging-guidelines/LicensingGuidelines/
 License:        LGPLv3+
 URL:            http://boutproject.github.io
 Source0:        %{pypi_source boutdata}

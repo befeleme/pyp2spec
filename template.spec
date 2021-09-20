@@ -3,6 +3,8 @@ Version:        {{version}}
 Release:        {{release}}%{?dist}
 Summary:        {{summary}}
 
+# Check if the automatically generated License and its spelling is correct for Fedora
+# https://docs.fedoraproject.org/en-US/packaging-guidelines/LicensingGuidelines/
 License:        {{license}}
 URL:            {{url}}
 Source0:        {{source}}

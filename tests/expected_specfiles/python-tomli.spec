@@ -3,6 +3,8 @@ Version:        1.1.0
 Release:        1%{?dist}
 Summary:        A little TOML parser for Python
 
+# Check if the automatically generated License and its spelling is correct for Fedora
+# https://docs.fedoraproject.org/en-US/packaging-guidelines/LicensingGuidelines/
 License:        MIT
 URL:            https://pypi.org/project/tomli/
 Source0:        https://github.com/hukkin/tomli/archive/refs/tags/%{version}.tar.gz

@@ -3,6 +3,8 @@ Version:        7.1.2
 Release:        6%{?dist}
 Summary:        Simple wrapper around optparse for powerful command line utilities
 
+# Check if the automatically generated License and its spelling is correct for Fedora
+# https://docs.fedoraproject.org/en-US/packaging-guidelines/LicensingGuidelines/
 License:        BSD
 URL:            https://github.com/mitsuhiko/click
 Source0:        %{url}/archive/%{version}/click-%{version}.tar.gz

@@ -3,6 +3,8 @@ Version:        0.10.4
 Release:        2%{?dist}
 Summary:        Tools to help build and install Jupyter Python packages
 
+# Check if the automatically generated License and its spelling is correct for Fedora
+# https://docs.fedoraproject.org/en-US/packaging-guidelines/LicensingGuidelines/
 License:        BSD
 URL:            https://github.com/jupyter/jupyter-packaging
 Source0:        %{pypi_source jupyter_packaging}
