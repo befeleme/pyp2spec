@@ -130,30 +130,31 @@ def create_config_contents(
 
     # If the arguments weren't provided via CLI,
     # get them from the stored package object data or the default values
-    if not message:
+    if message is None:
         message = changelog_msg()
-    if not description:
+
+    if description is None:
         description = get_description(package)
-    if not summary:
+
+    if summary is None:
         summary = pkg.summary()
-    if not version:
+
+    if version is None:
         version = pkg.version()
-    if not license:
+
+    if license is None:
         license = pkg.license()
 
+    if release is None:
+        release = "1"
 
-    # These items don't depend on information gathered from the package source
     contents["changelog_msg"] = message
     contents["changelog_head"] = changelog_head(email, name, date)
-    contents["release"] = release or "1"
     contents["description"] = description
-
-    # There items may be either set via CLI or gotten from package object
     contents["summary"] = summary
     contents["version"] = version
     contents["license"] = license
-
-    # Set the values from the package object
+    contents["release"] = release
     contents["pypi_name"] = pkg.pypi_name
     contents["python_name"] = pkg.python_name()
     contents["modules"] = pkg.modules()

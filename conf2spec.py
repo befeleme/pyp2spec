@@ -120,15 +120,11 @@ def save_spec_file(config, output=None):
     Return the saved file name"""
 
     result = fill_in_template(config)
-    if output:
-        spec_file_name = output
-    else:
-        spec_file_name = config.get_string("python_name") + ".spec"
-
-    with open(spec_file_name, "w") as spec_file:
+    if output is None:
+        output = config.get_string("python_name") + ".spec"
+    with open(output, "w") as spec_file:
         spec_file.write(result)
-    print(f"Spec file {spec_file_name} was saved.")
-    return spec_file_name
+    return output
 
 
 def create_spec_file(config_file, spec_output=None):
