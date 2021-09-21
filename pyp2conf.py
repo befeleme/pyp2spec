@@ -192,16 +192,15 @@ def create_config(
 
     contents = create_config_contents(
         package,
-        conf_output,
-        description,
-        release,
-        message,
-        email,
-        packagername,
-        version,
-        summary,
-        date,
-        license,
+        description=description,
+        release=release,
+        message=message,
+        email=email,
+        name=packagername,
+        version=version,
+        summary=summary,
+        date=date,
+        license=license,
     )
     return save_config(contents, conf_output)
 
