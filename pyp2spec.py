@@ -50,6 +50,11 @@ import click
     help="Provide custom date for changelog",
 )
 @click.option(
+    "--license",
+    "-l",
+    help="Provide license",
+)
+@click.option(
     "--spec-output",
     "-s",
     help="Provide custom output where spec file will be saved",
@@ -65,6 +70,7 @@ def main(
     version,
     summary,
     date,
+    license,
     spec_output,
 ):
     config_file = create_config(
@@ -78,6 +84,7 @@ def main(
         version,
         summary,
         date,
+        license,
     )
     create_spec_file(config_file, spec_output)
 
