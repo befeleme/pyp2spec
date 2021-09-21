@@ -123,7 +123,9 @@ def save_spec_file(config, output=None):
     if output is None:
         output = config.get_string("python_name") + ".spec"
     with open(output, "w") as spec_file:
+        click.secho(f"Saving spec file to '{output}'", fg='yellow')
         spec_file.write(result)
+    click.secho("Spec file was saved successfully", fg="green")
     return output
 
 

@@ -99,7 +99,9 @@ def is_package_name(package):
 
     if "/" in package:
         # It's probably URL
+        click.secho(f"Assuming '{package}' is a URL", fg='yellow')
         return False
+    click.secho(f"Assuming '{package}' is a package name", fg='yellow')
     return True
 
 
@@ -124,6 +126,7 @@ def create_config_contents(
     # a package name was given as the `package`, look for it on PyPI
     if is_package_name(package):
         pkg = PypiPackage(package, session)
+        click.secho(f"Querying PyPI for package '{package}'", fg='yellow')
     # a URL was given as the `package`
     else:
         raise NotImplementedError
@@ -132,21 +135,27 @@ def create_config_contents(
     # get them from the stored package object data or the default values
     if message is None:
         message = changelog_msg()
+        click.secho(f'Assuming changelog --message={message}', fg='yellow')
 
     if description is None:
         description = get_description(package)
+        click.secho(f'Assuming --description={description}', fg='yellow')
 
     if summary is None:
         summary = pkg.summary()
+        click.secho(f'Assuming --summary={summary}', fg='yellow')
 
     if version is None:
         version = pkg.version()
+        click.secho(f'Assuming --version={version}', fg='yellow')
 
     if license is None:
         license = pkg.license()
+        click.secho(f'Assuming --license={license}', fg='yellow')
 
     if release is None:
         release = "1"
+        click.secho(f'Assuming --release={release}', fg='yellow')
 
     contents["changelog_msg"] = message
     contents["changelog_head"] = changelog_head(email, name, date)
@@ -173,7 +182,9 @@ def save_config(contents, output=None):
         package = contents["python_name"]
         output = f"./{package}.conf"
     with open(output, "wb") as f:
+        click.secho(f"Saving configuration file to '{output}'", fg='yellow')
         tomli_w.dump(contents, f, multiline_strings=True)
+    click.secho("Configuration file was saved successfully", fg="green")
     return output
 
 

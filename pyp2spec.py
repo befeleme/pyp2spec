@@ -73,6 +73,7 @@ def main(
     license,
     spec_output,
 ):
+    click.secho("Generating configuration file", fg="cyan")
     config_file = create_config(
         package,
         conf_output,
@@ -86,7 +87,9 @@ def main(
         date,
         license,
     )
+    click.secho("Generating spec file", fg="cyan")
     create_spec_file(config_file, spec_output)
+    click.secho("Done", fg="green")
 
 
 if __name__ == "__main__":
