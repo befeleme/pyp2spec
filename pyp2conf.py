@@ -177,6 +177,7 @@ def create_config_contents(
 def save_config(contents, output=None):
     """Write config file to a given destination.
     If none is provided, save it to current directory with package name as file name.
+    Return the saved file name.
     """
     if not output:
         package = contents["python_name"]

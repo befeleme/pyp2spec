@@ -115,9 +115,9 @@ def fill_in_template(config):
     return result
 
 
-def save_spec_file(config, output=None):
-    """Save the spec file in the current directory.
-    Return the saved file name"""
+def save_spec_file(config, output):
+    """Save the spec file in the current directory if custom output is not set.
+    Return the saved file name."""
 
     result = fill_in_template(config)
     if output is None:
