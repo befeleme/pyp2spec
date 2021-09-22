@@ -31,7 +31,15 @@ To run the script and generate both the config and spec file, type:
 python pyp2spec.py <pypi_package_name>
 ```
 
-### Tests
+You can run either of the tools separately to generate partial results:
+```
+python pyp2conf.py <pypi_package_name>
+python conf2spec.py <config_file>
+```
+Together, they produce the same result as `pyp2spec.py`.
+
+
+## Tests
 
 Test framework used in the project is pytest.
 The tests use pytest-regresssions extension used to generate spec files to compare.
