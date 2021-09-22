@@ -6,8 +6,8 @@ import click
 @click.command()
 @click.argument("package")
 @click.option(
-    "--conf-output",
-    "-o",
+    "--config-output",
+    "-c",
     help="Provide custom output for configuration file",
 )
 @click.option(
@@ -31,8 +31,8 @@ import click
     help="Provide e-mail for changelog",
 )
 @click.option(
-    "--packagername",
-    "-n",
+    "--packager",
+    "-p",
     help="Provide packager name for changelog",
 )
 @click.option(
@@ -46,13 +46,9 @@ import click
     help="Provide custom package summary",
 )
 @click.option(
-    "--date",
-    help="Provide custom date for changelog",
-)
-@click.option(
     "--license",
     "-l",
-    help="Provide license",
+    help="Provide license name",
 )
 @click.option(
     "--spec-output",
@@ -61,30 +57,28 @@ import click
 )
 def main(
     package,
-    conf_output,
+    config_output,
     description,
     release,
     message,
     email,
-    packagername,
+    packager,
     version,
     summary,
-    date,
     license,
     spec_output,
 ):
     click.secho("Generating configuration file", fg="cyan")
     config_file = create_config(
         package,
-        conf_output,
+        config_output,
         description,
         release,
         message,
         email,
-        packagername,
+        packager,
         version,
         summary,
-        date,
         license,
     )
     click.secho("Generating spec file", fg="cyan")

@@ -70,6 +70,8 @@ class PypiPackage:
 
 def changelog_head(email, name, changelog_date):
     """Return f'{date} {name} <{email}>'"""
+
+    # Date is set for the tests
     if not changelog_date:
         changelog_date = (date.today()).strftime("%a %b %d %Y")
 
@@ -191,15 +193,14 @@ def save_config(contents, output=None):
 
 def create_config(
     package,
-    conf_output,
+    config_output,
     description,
     release,
     message,
     email,
-    packagername,
+    packager,
     version,
     summary,
-    date,
     license,
 ):
 
@@ -209,20 +210,19 @@ def create_config(
         release=release,
         message=message,
         email=email,
-        name=packagername,
+        name=packager,
         version=version,
         summary=summary,
-        date=date,
         license=license,
     )
-    return save_config(contents, conf_output)
+    return save_config(contents, config_output)
 
 
 @click.command()
 @click.argument("package")
 @click.option(
-    "--conf-output",
-    "-o",
+    "--config-output",
+    "-c",
     help="Provide custom output for configuration file",
 )
 @click.option(
@@ -246,8 +246,8 @@ def create_config(
     help="Provide e-mail for changelog",
 )
 @click.option(
-    "--packagername",
-    "-n",
+    "--packager",
+    "-p",
     help="Provide packager name for changelog",
 )
 @click.option(
@@ -261,39 +261,33 @@ def create_config(
     help="Provide custom package summary",
 )
 @click.option(
-    "--date",
-    help="Provide custom date for changelog",
-)
-@click.option(
     "--license",
     "-l",
-    help="Provide license",
+    help="Provide license name",
 )
 def main(
     package,
-    conf_output,
+    config_output,
     description,
     release,
     message,
     email,
-    packagername,
+    packager,
     version,
     summary,
-    date,
     license,
 ):
 
     create_config(
         package,
-        conf_output,
+        config_output,
         description,
         release,
         message,
         email,
-        packagername,
+        packager,
         version,
         summary,
-        date,
         license,
     )
 
