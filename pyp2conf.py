@@ -184,105 +184,63 @@ def save_config(contents, output=None):
     return output
 
 
-def create_config(
-    package,
-    config_output,
-    description,
-    release,
-    message,
-    email,
-    packager,
-    version,
-    summary,
-    license,
-):
+def create_config(options):
+    """Create and save config file."""
 
     contents = create_config_contents(
-        package,
-        description=description,
-        release=release,
-        message=message,
-        email=email,
-        name=packager,
-        version=version,
-        summary=summary,
-        license=license,
+        options["package"],
+        description=options["description"],
+        release=options["release"],
+        message=options["message"],
+        email=options["email"],
+        name=options["packager"],
+        version=options["version"],
+        summary=options["summary"],
+        license=options["license"],
     )
-    return save_config(contents, config_output)
+    return save_config(contents, options["config_output"])
 
 
 @click.command()
 @click.argument("package")
 @click.option(
-    "--config-output",
-    "-c",
+    "--config-output", "-c",
     help="Provide custom output for configuration file",
 )
 @click.option(
-    "--description",
-    "-d",
+    "--description", "-d",
     help="Provide description for the package",
 )
 @click.option(
-    "--release",
-    "-r",
-    help="Provide custom release (corresponds with Release in spec file)",
+    "--release", "-r",
+    help="Provide Fedora release, default: 1",
 )
 @click.option(
-    "--message",
-    "-m",
-    help="Provide changelog message for the package",
+    "--message", "-m",
+    help="Provide custom changelog message for the package",
 )
 @click.option(
-    "--email",
-    "-e",
-    help="Provide e-mail for changelog",
+    "--email", "-e",
+    help="Provide e-mail for changelog, default: output of `rpmdev-packager`",
 )
 @click.option(
-    "--packager",
-    "-p",
-    help="Provide packager name for changelog",
+    "--packager", "-p",
+    help="Provide packager name for changelog, default: output of `rpmdev-packager`",
 )
 @click.option(
-    "--version",
-    "-v",
-    help="Provide package version to query the backend for",
+    "--version", "-v",
+    help="Provide package version to query PyPI for, default: latest",
 )
 @click.option(
-    "--summary",
-    "-s",
+    "--summary", "-s",
     help="Provide custom package summary",
 )
 @click.option(
-    "--license",
-    "-l",
+    "--license", "-l",
     help="Provide license name",
 )
-def main(
-    package,
-    config_output,
-    description,
-    release,
-    message,
-    email,
-    packager,
-    version,
-    summary,
-    license,
-):
-
-    create_config(
-        package,
-        config_output,
-        description,
-        release,
-        message,
-        email,
-        packager,
-        version,
-        summary,
-        license,
-    )
+def main(**options):
+    create_config(options)
 
 
 if __name__ == "__main__":

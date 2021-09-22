@@ -6,83 +6,50 @@ import click
 @click.command()
 @click.argument("package")
 @click.option(
-    "--config-output",
-    "-c",
+    "--config-output", "-c",
     help="Provide custom output for configuration file",
 )
 @click.option(
-    "--description",
-    "-d",
+    "--description", "-d",
     help="Provide description for the package",
 )
 @click.option(
-    "--release",
-    "-r",
-    help="Provide custom release (corresponds with Release in spec file)",
+    "--release", "-r",
+    help="Provide Fedora release, default: 1",
 )
 @click.option(
-    "--message",
-    "-m",
-    help="Provide changelog message for the package",
+    "--message", "-m",
+    help="Provide custom changelog message for the package",
 )
 @click.option(
-    "--email",
-    "-e",
-    help="Provide e-mail for changelog",
+    "--email", "-e",
+    help="Provide e-mail for changelog, default: output of `rpmdev-packager`",
 )
 @click.option(
-    "--packager",
-    "-p",
-    help="Provide packager name for changelog",
+    "--packager", "-p",
+    help="Provide packager name for changelog, default: output of `rpmdev-packager`",
 )
 @click.option(
-    "--version",
-    "-v",
-    help="Provide package version to query PyPI for",
+    "--version", "-v",
+    help="Provide package version to query PyPI for, default: latest",
 )
 @click.option(
-    "--summary",
-    "-s",
+    "--summary", "-s",
     help="Provide custom package summary",
 )
 @click.option(
-    "--license",
-    "-l",
+    "--license", "-l",
     help="Provide license name",
 )
 @click.option(
-    "--spec-output",
-    "-s",
+    "--spec-output", "-s",
     help="Provide custom output where spec file will be saved",
 )
-def main(
-    package,
-    config_output,
-    description,
-    release,
-    message,
-    email,
-    packager,
-    version,
-    summary,
-    license,
-    spec_output,
-):
+def main(**options):
     click.secho("Generating configuration file", fg="cyan")
-    config_file = create_config(
-        package,
-        config_output,
-        description,
-        release,
-        message,
-        email,
-        packager,
-        version,
-        summary,
-        license,
-    )
+    config_file = create_config(options)
     click.secho("Generating spec file", fg="cyan")
-    create_spec_file(config_file, spec_output)
+    create_spec_file(config_file, options["spec_output"])
     click.secho("Done", fg="green")
 
 
