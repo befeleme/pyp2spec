@@ -1,11 +1,11 @@
-from pathlib import Path
-
 import click
 from jinja2 import Template
 
 from config import ConfigFile
 
-TEMPLATE_PATH = Path().resolve(__file__) / "template.spec"
+from pkg_resources import resource_stream
+
+TEMPLATE_FILENAME = "template.spec"
 
 
 def generate_extra_build_requires(config):
@@ -87,8 +87,10 @@ def generate_unwanted_tests(config):
 def fill_in_template(config):
     """Return template rendered with data from config file."""
 
-    with open(TEMPLATE_PATH) as template_file:
-        spec_template = Template(template_file.read())
+    with resource_stream(__name__, TEMPLATE_FILENAME) as template_file:
+        spec_template = Template(
+            (template_file.read()).decode('utf-8')
+        )
 
     result = spec_template.render(
         archive_name=config.get_string("archive_name"),
