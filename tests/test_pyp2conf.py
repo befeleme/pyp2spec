@@ -8,7 +8,9 @@ with betamax.Betamax.configure() as config:
     config.cassette_library_dir = 'tests/fixtures/cassettes'
 
 
-def test_config_is_valid(betamax_session):
+def test_config_with_customization_is_valid(betamax_session):
+    """Get the upstream metadata and modify some fields to get the custom config file.
+    """
     package = "aionotion"
     config = pyp2conf.create_config_contents(
         package=package,
@@ -23,7 +25,7 @@ def test_config_is_valid(betamax_session):
         session=betamax_session,
     )
 
-    with open(f"tests/test_configs/pyp2spec_{package}.conf", "rb") as config_file:
+    with open(f"tests/test_configs/conf2spec_{package}.conf", "rb") as config_file:
         loaded_contents = tomli.load(config_file)
 
     assert config == loaded_contents
