@@ -5,7 +5,7 @@ from jinja2 import Template
 
 from config import ConfigFile
 
-TEMPLATE_PATH = Path().resolve(__file__) / "template.spec"
+TEMPLATE_PATH = Path(__file__).resolve().parent / 'template.spec'
 
 
 def generate_extra_build_requires(config):
