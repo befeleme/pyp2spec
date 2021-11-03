@@ -74,7 +74,6 @@ Configuration data is stored in a TOML file.
 | description | long package description | multiline string |
 | changelog_head | spec file changelog header (date, name, e-mail) | string |
 | changelog_msg | spec file changelog message | string |
-| modules | importable Python modules in the package | list |
 
 
 ### Optional fields
@@ -107,9 +106,6 @@ license = "MIT"
 release = "1"
 pypi_name = "aionotion"
 python_name = "python-aionotion"
-modules = [
-    "aionotion",
-]
 url = "https://github.com/bachya/aionotion"
 source = "%{pypi_source aionotion}"
 archive_name = "aionotion"
@@ -162,7 +158,7 @@ Summary:        %{summary}
 
 
 %check
-%py3_check_import aionotion
+%pyproject_check_import
 
 
 %files -n python3-aionotion -f %{pyproject_files}

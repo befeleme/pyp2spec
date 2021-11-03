@@ -51,6 +51,7 @@ Summary:        %{summary}
 
 
 %check
+%pyproject_check_import
 %pytest -k "not test_pretty and \
 not test_table_tokens and \
 not test_file and \

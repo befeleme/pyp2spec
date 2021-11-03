@@ -43,7 +43,7 @@ Summary:        %{summary}
 
 
 %check
-%py3_check_import aionotion
+%pyproject_check_import
 
 
 %files -n python3-aionotion -f %{pyproject_files}

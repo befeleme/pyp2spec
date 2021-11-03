@@ -38,7 +38,7 @@ def generate_extra_build_requires(config):
 def generate_check(config):
     """Generate valid check section.
     If defined in config file, use applicable test macro.
-    If no test method was defined, return `%py3_check_import` with module name."""
+    If no test method was defined, return an empty string."""
 
     test_method = config.get_string("test_method")
     if test_method == "pytest":
@@ -46,11 +46,7 @@ def generate_check(config):
     elif test_method == "tox":
         return generate_tox(config)
     else:
-        # If no tests were defined, run at least smoke import check
-        # This is mandatory as defined in Fedora Packaging Guidelines
-        # https://docs.fedoraproject.org/en-US/packaging-guidelines/Python/#_tests
-        modules = " ".join(config.get_list("modules"))
-        return f"%py3_check_import {modules}"
+        return ""
 
 
 def generate_pytest(config):
@@ -101,7 +97,6 @@ def fill_in_template(config):
         license_files=" ".join(config.get_list("license_files")),
         license=config.get_string("license"),
         manual_build_requires=config.get_list("manual_build_requires"),
-        modules=" ".join(config.get_list("modules")),
         name=config.get_string("pypi_name"),
         python_name=config.get_string("python_name"),
         release=config.get_string("release"),

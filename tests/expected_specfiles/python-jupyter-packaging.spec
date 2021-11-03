@@ -44,6 +44,7 @@ Summary:        %{summary}
 
 
 %check
+%pyproject_check_import
 %pytest -k "not test_build_package and \
 not test_create_cmdclass and \
 not test_deprecated_metadata and \

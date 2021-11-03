@@ -46,8 +46,10 @@ Summary:        %{summary}
 
 
 %check
+%pyproject_check_import
+{% if test_method -%}
 {{test_method}}
-
+{% endif %}
 
 %files -n python3-{{name}} -f %{pyproject_files}
 {% if doc_files -%}

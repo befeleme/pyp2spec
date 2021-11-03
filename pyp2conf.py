@@ -29,12 +29,6 @@ class PypiPackage:
         else:
             return f"python-{self.pypi_name}"
 
-    def modules(self):
-        """A naive way to get probable module name: replace any occurrence
-        of '-' in package PyPI name with '_' and return the result."""
-
-        return [self.pypi_name.replace("-", "_")]
-
     def source_url(self, version):
         return "%{pypi_source " + self.archive_name(version) + "}"
 
@@ -168,7 +162,6 @@ def create_config_contents(
     contents["release"] = release
     contents["pypi_name"] = pkg.pypi_name
     contents["python_name"] = pkg.python_name()
-    contents["modules"] = pkg.modules()
     contents["url"] = pkg.project_url()
     contents["source"] = pkg.source_url(version)
     contents["archive_name"] = pkg.archive_name(version)
