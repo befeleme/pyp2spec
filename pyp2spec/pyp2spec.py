@@ -1,5 +1,5 @@
-from pyp2conf import create_config
-from conf2spec import create_spec_file
+from pyp2spec.pyp2conf import create_config
+from pyp2spec.conf2spec import create_spec_file
 import click
 
 

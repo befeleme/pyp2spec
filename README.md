@@ -28,15 +28,15 @@ python -m pip install -r requirements.txt
 
 To run the script and generate both the config and spec file, type:
 ```
-python pyp2spec.py <pypi_package_name>
+python -m pyp2spec.pyp2spec <pypi_package_name>
 ```
 
 You can run either of the tools separately to generate partial results:
 ```
-python pyp2conf.py <pypi_package_name>
-python conf2spec.py <config_file>
+python -m pyp2spec.pyp2conf <pypi_package_name>
+python -m pyp2spec.conf2spec <config_file>
 ```
-Together, they produce the same result as `pyp2spec.py`.
+Together, they produce the same result as `pyp2spec`.
 
 
 ## Tests

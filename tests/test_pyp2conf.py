@@ -3,7 +3,7 @@ import click
 import pytest
 import tomli
 
-import pyp2conf
+from pyp2spec import pyp2conf
 
 
 with betamax.Betamax.configure() as config:

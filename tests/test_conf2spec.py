@@ -7,7 +7,7 @@ configurations.
 from pathlib import Path
 import pytest
 
-import conf2spec
+from pyp2spec import conf2spec
 
 
 def get_config_files(prefix):
