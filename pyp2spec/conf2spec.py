@@ -1,4 +1,4 @@
-from pathlib import Path
+from importlib.resources import read_text
 
 import click
 import tomli
@@ -6,7 +6,7 @@ import tomli
 from jinja2 import Template
 
 
-TEMPLATE_PATH = Path(__file__).resolve().parent / 'template.spec'
+TEMPLATE_FILENAME = 'template.spec'
 
 
 class ConfigFile:
@@ -119,8 +119,7 @@ def generate_unwanted_tests(config):
 def fill_in_template(config):
     """Return template rendered with data from config file."""
 
-    with open(TEMPLATE_PATH) as template_file:
-        spec_template = Template(template_file.read())
+    spec_template = Template(read_text("pyp2spec", TEMPLATE_FILENAME))
 
     result = spec_template.render(
         archive_name=config.get_string("archive_name"),
