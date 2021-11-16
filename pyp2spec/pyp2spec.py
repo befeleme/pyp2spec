@@ -45,6 +45,10 @@ import click
     "--spec-output", "-s",
     help="Provide custom output where spec file will be saved",
 )
+@click.option(
+    "--fedora-compliant", is_flag=True,
+    help="Check whether license is compliant with Fedora",
+)
 def main(**options):
     click.secho("Generating configuration file", fg="cyan")
     config_file = create_config(options)

@@ -1,5 +1,7 @@
 from datetime import date
+from importlib.resources import open_text
 from subprocess import check_output
+import json
 
 import click
 import requests
@@ -35,15 +37,48 @@ class PypiPackage:
     def version(self):
         return self.package_data["info"]["version"]
 
-    def license(self):
-        pkg_license = self.package_data["info"]["license"]
+    def license(self, compliant=False):
+        click.secho(f"Attempting to get license from Classifiers", fg='cyan')
+        self.classifiers = self.read_license_classifiers()
+        # Process classifiers further if there are some
+        if self.classifiers:
+            pkg_license = self.get_license_from_classifiers(compliant)
+        else:
+            click.secho(f"License in Classifiers not found, looking for the 'License' keyword", fg='cyan')
+            pkg_license = self.package_data["info"]["license"]
+
         if pkg_license:
             return pkg_license
         else:
-            raise click.UsageError(
-                "Could not get license from PyPI. " +
-                "Specify --license explicitly."
-            )
+            click.secho(f"License not found. Specify --license explicitly. Quitting", fg='red')
+            exit(1)
+
+    def get_license_from_classifiers(self, compliant):
+        license_map = self.read_license_map()
+        licenses = []
+        for classifier in self.classifiers:
+            short_license, fedora_status = license_map[classifier]
+            if compliant:
+                # "???" are APSL, Artistic, Eiffel - some versions are Fedora OK,
+                # some not. On PyPI there are <100 packages with them, rather than
+                # adding another layer of decision matrix, just skip them all.
+                if fedora_status in ["BAD", "UNKNOWN", "???"]:
+                    click.secho(f"License '{short_license}' is or may not be allowed in Fedora, quitting", fg='red')
+                    exit(1)
+                else:
+                    licenses.append(short_license)
+            else:
+                licenses.append(short_license)
+        return " and ".join(licenses)
+
+    def read_license_map(self):
+        with open_text("pyp2spec", "classifiers_to_fedora.json") as f:
+            license_map = json.load(f)
+        return license_map
+
+    def read_license_classifiers(self):
+        classifiers = self.package_data["info"]["classifiers"]
+        return [c for c in classifiers if c.startswith("License")]
 
     def summary(self):
         return self.package_data["info"]["summary"]
@@ -60,6 +95,9 @@ class PypiPackage:
         for entry in self.package_data["releases"][version]:
             if entry["packagetype"] == "sdist":
                 return "-".join(entry["filename"].split("-")[:-1])
+        else:
+            click.secho(f"sdist not found, quitting", fg='red')
+            exit(1)
 
 
 def changelog_head(email, name, changelog_date):
@@ -113,6 +151,7 @@ def create_config_contents(
     date=None,
     session=None,
     license=None,
+    compliant=False,
 ):
     """Use `package` and provided kwargs to create the whole config contents.
     Return contents dictionary.
@@ -122,7 +161,7 @@ def create_config_contents(
     # a package name was given as the `package`, look for it on PyPI
     if is_package_name(package):
         pkg = PypiPackage(package, session)
-        click.secho(f"Querying PyPI for package '{package}'", fg='yellow')
+        click.secho(f"Querying PyPI for package '{package}'", fg='cyan')
     # a URL was given as the `package`
     else:
         raise NotImplementedError
@@ -146,7 +185,7 @@ def create_config_contents(
         click.secho(f'Assuming --version={version}', fg='yellow')
 
     if license is None:
-        license = pkg.license()
+        license = pkg.license(compliant)
         click.secho(f'Assuming --license={license}', fg='yellow')
 
     if release is None:
@@ -197,6 +236,7 @@ def create_config(options):
         version=options["version"],
         summary=options["summary"],
         license=options["license"],
+        compliant=options["fedora_compliant"]
     )
     return save_config(contents, options["config_output"])
 
@@ -238,6 +278,10 @@ def create_config(options):
 @click.option(
     "--license", "-l",
     help="Provide license name",
+)
+@click.option(
+    "--fedora-compliant", is_flag=True,
+    help="Check whether license is compliant with Fedora",
 )
 def main(**options):
     create_config(options)

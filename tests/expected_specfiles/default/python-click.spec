@@ -5,7 +5,7 @@ Summary:        Composable command line interface toolkit
 
 # Check if the automatically generated License and its spelling is correct for Fedora
 # https://docs.fedoraproject.org/en-US/packaging-guidelines/LicensingGuidelines/
-License:        BSD-3-Clause
+License:        BSD
 URL:            https://palletsprojects.com/p/click/
 Source0:        %{pypi_source click}
 
