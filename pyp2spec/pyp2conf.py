@@ -110,8 +110,13 @@ def changelog_head(email, name, changelog_date):
     if email or name:
         return f"{changelog_date} {name} <{email}>"
 
-    result = check_output(["rpmdev-packager"])
-    result = result.decode().strip()
+    try:
+        result = check_output(["rpmdev-packager"])
+        result = result.decode().strip()
+    except FileNotFoundError:
+        # Set a dummy value not to fail on missing changelog data
+        result = "mockbuilder"
+
     return f"{changelog_date} {result}"
 
 
