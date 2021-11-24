@@ -57,12 +57,12 @@ python -m pyp2spec.conf2spec <config_file>
 ### Tests
 
 Test framework used in the project is pytest.
-The tests use pytest-regresssions extension used to generate spec files to compare.
+The tests use pytest-regressions extension used to generate spec files to compare.
 The tests use betamax to record API calls and replay them from the prerecorded cassettes.
 To run the tests, run following commands:
 
 ```
-python -m pip install pytest pytest-regresssions betamax
+python -m pip install pytest pytest-regressions betamax
 python -m pytest -vv
 ```
 
@@ -101,7 +101,7 @@ Configuration data is stored in a TOML file.
 | manual_build_requires     | additional build requires, eg. `python3-sphinx`     | list     |
 | extra_build_requires     | extra options to %pyproject_buildrequires (`-t`, `-x`); default: runtime (`-r`)   | list     |
 | extra_tox_env     | if `-x` is defined as extra, provide name of the tox env      | list     |
-| test_method     | `pytest`, `tox`; default: `py3_check_import`     | string     |
+| test_method     | `pytest`, `tox`     | string     |
 | unwanted_tests     | test names to skip with pytest     | list     |
 | binary_files     | list binary files from the package     | list     |
 | license_files     | list license files from the package     | list     |
