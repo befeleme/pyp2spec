@@ -22,8 +22,13 @@ class PypiPackage:
     def get_package_metadata(self, session):
         pkg_index = f"https://pypi.org/pypi/{self.package}/json"
         s = session or requests.Session()
-        response = s.get(pkg_index)
-        return response.json()
+        try:
+            response = s.get(pkg_index).json()
+        except json.decoder.JSONDecodeError as e:
+            click.secho(f"'{self.package}' was not found on PyPI, did you spell it correctly?", fg='red')
+            exit(1)
+        else:
+            return response
 
     def python_name(self):
         if self.pypi_name.startswith("python"):
