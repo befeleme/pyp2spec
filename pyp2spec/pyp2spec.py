@@ -49,6 +49,10 @@ import click
     "--fedora-compliant", is_flag=True,
     help="Check whether license is compliant with Fedora",
 )
+@click.option(
+    "--top-level", "-t", is_flag=True,
+    help="Test only top-level modules in %check",
+)
 def main(**options):
     click.secho("Generating configuration file", fg="cyan")
     config_file = create_config(options)

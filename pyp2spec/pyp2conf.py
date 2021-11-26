@@ -162,6 +162,7 @@ def create_config_contents(
     session=None,
     license=None,
     compliant=False,
+    top_level=False,
 ):
     """Use `package` and provided kwargs to create the whole config contents.
     Return contents dictionary.
@@ -201,6 +202,10 @@ def create_config_contents(
     if release is None:
         release = "1"
         click.secho(f'Assuming --release={release}', fg='yellow')
+
+    if top_level:
+        click.secho(f'Only top-level modules will be checked', fg='yellow')
+        contents["test_top_level"] = True
 
     contents["changelog_msg"] = message
     contents["changelog_head"] = changelog_head(email, name, date)
@@ -246,7 +251,8 @@ def create_config(options):
         version=options["version"],
         summary=options["summary"],
         license=options["license"],
-        compliant=options["fedora_compliant"]
+        compliant=options["fedora_compliant"],
+        top_level=options["top_level"]
     )
     return save_config(contents, options["config_output"])
 
@@ -292,6 +298,10 @@ def create_config(options):
 @click.option(
     "--fedora-compliant", is_flag=True,
     help="Check whether license is compliant with Fedora",
+)
+@click.option(
+    "--top-level", "-t", is_flag=True,
+    help="Test only top-level modules in %check",
 )
 def main(**options):
     create_config(options)

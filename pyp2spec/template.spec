@@ -48,7 +48,7 @@ Summary:        %{summary}
 
 
 %check
-%pyproject_check_import
+%pyproject_check_import{% if test_top_level %} -t{% endif %}
 {% if test_method -%}
 {{test_method}}
 {% endif %}

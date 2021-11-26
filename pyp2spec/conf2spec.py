@@ -37,6 +37,12 @@ class ConfigFile:
 
         return self._get_value(key, list)
 
+    def get_bool(self, key):
+        """Return a value for given key. Validate the value is a boolean.
+        Raise TypeError otherwise."""
+
+        return self._get_value(key, bool)
+
     def _get_value(self, key, val_type):
         val = self.contents.get(key, val_type())
         if not isinstance(val, val_type):
@@ -138,6 +144,7 @@ def fill_in_template(config):
         source=config.get_string("source"),
         summary=config.get_string("summary"),
         test_method=generate_check(config),
+        test_top_level=config.get_bool("test_top_level"),
         url=config.get_string("url"),
         version=config.get_string("version"),
     )

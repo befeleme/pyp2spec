@@ -102,6 +102,7 @@ Configuration data is stored in a TOML file.
 | extra_build_requires     | extra options to %pyproject_buildrequires (`-t`, `-x`); default: runtime (`-r`)   | list     |
 | extra_tox_env     | if `-x` is defined as extra, provide name of the tox env      | list     |
 | test_method     | `pytest`, `tox`     | string     |
+| test_top_level     | filter and test only top-level modules in %check   | bool     |
 | unwanted_tests     | test names to skip with pytest     | list     |
 | binary_files     | list binary files from the package     | list     |
 | license_files     | list license files from the package     | list     |

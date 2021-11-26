@@ -49,7 +49,7 @@ Summary:        %{summary}
 
 
 %check
-%pyproject_check_import
+%pyproject_check_import -t
 %pytest
 
 

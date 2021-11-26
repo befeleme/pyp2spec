@@ -55,6 +55,7 @@ def test_config_with_customization_is_valid(betamax_session):
         version="2.0.3",
         summary="Python library for Notion Home Monitoring",
         date="Fri Jun 04 2021",
+        top_level=True,
         session=betamax_session,
     )
 
