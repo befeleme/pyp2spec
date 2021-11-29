@@ -1,5 +1,10 @@
 # Changelog
 
+## [Unreleased]
+### Fixed
+- Reload cassettes so that tests don't send real HTTP requests
+
+
 ## [0.2.0] - 2021-11-29
 ### Added
 - Explicit comment in template.spec that "'*' +auto" is not allowed in Fedora

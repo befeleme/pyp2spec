@@ -66,12 +66,12 @@ def test_config_with_customization_is_valid(betamax_session):
 
 
 def test_license_classifier_read_correctly(betamax_session):
-    pkg = PypiPackage("tomli")
+    pkg = PypiPackage("tomli", session=betamax_session)
     assert pkg.read_license_classifiers() == ['License :: OSI Approved :: MIT License']
 
 
 def test_no_license_classifiers_and_no_license_keyword(betamax_session):
-    pkg = PypiPackage("tomli")
+    pkg = PypiPackage("tomli", session=betamax_session)
     pkg.package_data["info"]["classifiers"] = []
     assert pkg.read_license_classifiers() == []
     with pytest.raises(SystemExit):
@@ -79,26 +79,26 @@ def test_no_license_classifiers_and_no_license_keyword(betamax_session):
 
 
 def test_compliant_license_is_returned(betamax_session):
-    pkg = PypiPackage("tomli")
+    pkg = PypiPackage("tomli", session=betamax_session)
     pkg.classifiers = pkg.read_license_classifiers()
     assert pkg.get_license_from_classifiers(compliant=True) == "MIT"
 
 
 def test_bad_license_if_compliant_is_not_returned(betamax_session):
-    pkg = PypiPackage("tomli")
+    pkg = PypiPackage("tomli", session=betamax_session)
     pkg.classifiers = ["License :: Eiffel Forum License (EFL)"]
     with pytest.raises(SystemExit):
         pkg.get_license_from_classifiers(compliant=True)
 
 
 def test_bad_license_if_not_compliant_is_returned(betamax_session):
-    pkg = PypiPackage("tomli")
+    pkg = PypiPackage("tomli", session=betamax_session)
     pkg.classifiers = ["License :: Eiffel Forum License (EFL)"]
     pkg.get_license_from_classifiers(compliant=False) == "EFL"
 
 
 def test_mix_non_compliant_licenses_wont_work_if_strict(betamax_session):
-    pkg = PypiPackage("tomli")
+    pkg = PypiPackage("tomli", session=betamax_session)
     pkg.classifiers = [
         "License :: Eiffel Forum License (EFL)",
         "License :: OSI Approved :: MIT License",
@@ -108,7 +108,7 @@ def test_mix_non_compliant_licenses_wont_work_if_strict(betamax_session):
 
 
 def test_mix_non_compliant_licenses_work_if_not_strict(betamax_session):
-    pkg = PypiPackage("tomli")
+    pkg = PypiPackage("tomli", session=betamax_session)
     pkg.classifiers = [
         "License :: Eiffel Forum License (EFL)",
         "License :: OSI Approved :: MIT License",
