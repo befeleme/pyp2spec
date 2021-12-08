@@ -114,3 +114,13 @@ def test_mix_non_compliant_licenses_work_if_not_strict(betamax_session):
         "License :: OSI Approved :: MIT License",
     ]
     pkg.get_license_from_classifiers(compliant=False) == "EFL and MIT"
+
+
+@pytest.mark.parametrize("compliant", (True, False))
+def test_OSI_Approved_is_ignored(betamax_session, compliant):
+    pkg = PypiPackage("tomli", session=betamax_session)
+    pkg.classifiers = [
+        "License :: OSI Approved :: MIT License",
+        "License :: OSI Approved",
+    ]
+    pkg.get_license_from_classifiers(compliant) == "MIT"

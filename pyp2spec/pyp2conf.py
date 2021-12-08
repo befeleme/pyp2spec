@@ -63,6 +63,10 @@ class PypiPackage:
         licenses = []
         for classifier in self.classifiers:
             short_license, fedora_status = license_map[classifier]
+            # "OSI Approved" is a top-level category which doesn't bring
+            # any valuable information, let's just ignore it when encountered
+            if short_license == "OSI Approved":
+                continue
             if compliant:
                 # "???" are APSL, Artistic, Eiffel - some versions are Fedora OK,
                 # some not. On PyPI there are <100 packages with them, rather than

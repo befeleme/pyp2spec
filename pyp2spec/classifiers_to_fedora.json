@@ -15,7 +15,7 @@
   "License :: GUST Font License 2006-09-30": ["GUST Font License 2006-09-30","UNKNOWN"],
   "License :: Netscape Public License (NPL)": ["Netscape", "GOOD"],
   "License :: Nokia Open Source License (NOKOS)": ["Nokia", "GOOD"],
-  "License :: OSI Approved": ["OSI Approved", "UNKNOWN"],
+  "License :: OSI Approved": ["OSI Approved", "IGNORED"],
   "License :: OSI Approved :: Academic Free License (AFL)": ["AFL", "GOOD"],
   "License :: OSI Approved :: Apache Software License": ["ASL", "GOOD"],
   "License :: OSI Approved :: Apple Public Source License": ["APSL", "???"],
