@@ -4,6 +4,7 @@
 ### Added
 - `zip` is recognized as a valid sdist format and used to create source macro
 - Description lines are now wrapped at 79 characters, so they don't annoy rpmlint
+- `MANIFEST.in` to include tests in sdist
 
 ### Fixed
 - Cassettes were reloaded so that tests don't send real HTTP requests
