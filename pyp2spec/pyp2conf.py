@@ -37,7 +37,9 @@ class PypiPackage:
             return f"python-{self.pypi_name}"
 
     def source_url(self, version):
-        return "%{pypi_source " + self.archive_name(version) + "}"
+        name = self.archive_name(version)
+        sdist_ext = " zip" if self.is_zip_archive(version) else ""
+        return "%{pypi_source " + name + sdist_ext + "}"
 
     def version(self):
         return self.package_data["info"]["version"]
@@ -99,6 +101,22 @@ class PypiPackage:
         # In this case fall back to the safe PyPI URL
         except KeyError:
             return self.package_data["info"]["package_url"]
+
+    def is_zip_archive(self, version):
+        """Return True if archive is a zip file, False otherwise.
+
+        The archive format encouraged in PEP 517 is tar.gz, zip is discouraged,
+        some projects however still use it.
+        If so, it has to be explicitly declared as an argument of %{pypi_source}.
+        """
+        for entry in self.package_data["releases"][version]:
+            if entry["packagetype"] == "sdist":
+                if entry["filename"].endswith(".zip"):
+                    return True
+                return False
+        else:
+            click.secho(f"sdist not found, quitting", fg='red')
+            exit(1)
 
     def archive_name(self, version):
         for entry in self.package_data["releases"][version]:
