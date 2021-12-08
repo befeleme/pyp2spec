@@ -1,8 +1,14 @@
 # Changelog
 
 ## [Unreleased]
+### Added
+- `zip` is recognized as a valid sdist format and used to create source macro
+- Description lines are now wrapped at 79 characters, so they don't annoy rpmlint
+
 ### Fixed
-- Reload cassettes so that tests don't send real HTTP requests
+- Cassettes were reloaded so that tests don't send real HTTP requests
+- 'OSI Approved' License classifier is ignored now, it's a top-level category
+that doesn't bring any meaningful information
 
 
 ## [0.2.0] - 2021-11-29
