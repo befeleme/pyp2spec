@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.3.0] - 2021-12-08
 ### Added
 - `zip` is recognized as a valid sdist format and used to create source macro
 - Description lines are now wrapped at 79 characters, so they don't annoy rpmlint
