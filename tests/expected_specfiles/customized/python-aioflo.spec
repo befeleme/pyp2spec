@@ -13,8 +13,7 @@ BuildArch:      noarch
 BuildRequires:  python3-devel
 
 %global _description %{expand:
-An asyncio-friendly Python library for Flo Smart Water Detectors.
-}
+An asyncio-friendly Python library for Flo Smart Water Detectors.}
 
 BuildRequires:  python3dist(poetry-core)
 BuildRequires:  python3dist(pytest)

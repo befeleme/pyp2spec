@@ -13,9 +13,8 @@ BuildArch:      noarch
 BuildRequires:  python3-devel
 
 %global _description %{expand:
-Tomli is a Python library for parsing TOML.
-Tomli is fully compatible with TOML v1.0.0.
-}
+Tomli is a Python library for parsing TOML. Tomli is fully compatible with TOML
+v1.0.0.}
 
 BuildRequires:  python3-pytest
 BuildRequires:  python3-dateutil

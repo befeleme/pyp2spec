@@ -13,11 +13,10 @@ BuildArch:      noarch
 BuildRequires:  python3-devel
 
 %global _description %{expand:
-click is a Python package for creating beautiful command line\
-interfaces in a composable way with as little amount of code as necessary.\
-It's the "Command Line Interface Creation Kit". It's highly configurable but\
-comes with good defaults out of the box.
-}
+click is a Python package for creating beautiful command line interfaces in a
+composable way with as little amount of code as necessary. It's the "Command
+Line Interface Creation Kit". It's highly configurable but comes with good
+defaults out of the box.}
 
 
 %description %_description

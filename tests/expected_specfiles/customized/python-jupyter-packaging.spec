@@ -14,8 +14,7 @@ BuildRequires:  python3-devel
 
 %global _description %{expand:
 This package contains utilities for making Python packages with and without
-accompanying JavaScript packages.
-}
+accompanying JavaScript packages.}
 
 
 %description %_description

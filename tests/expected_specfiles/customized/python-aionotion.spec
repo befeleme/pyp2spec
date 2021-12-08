@@ -13,8 +13,7 @@ BuildArch:      noarch
 BuildRequires:  python3-devel
 
 %global _description %{expand:
-A asyncio-friendly library for Notion Home Monitoring devices.
-}
+A asyncio-friendly library for Notion Home Monitoring devices.}
 
 
 %description %_description

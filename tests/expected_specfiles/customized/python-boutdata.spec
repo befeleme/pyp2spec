@@ -13,8 +13,7 @@ BuildArch:      noarch
 BuildRequires:  python3-devel
 
 %global _description %{expand:
-Python interface for reading bout++ data files.
-}
+Python interface for reading bout++ data files.}
 
 BuildRequires:  python3dist(setuptools)
 BuildRequires:  python3dist(setuptools-scm[toml]) >= 3.4

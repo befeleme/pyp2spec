@@ -13,12 +13,10 @@ BuildArch:      noarch
 BuildRequires:  python3-devel
 
 %global _description %{expand:
-Markdown parser done right. Its features:
-Follows the CommonMark spec for baseline parsing.
-Has configurable syntax: you can add new rules and even replace existing ones.
-Pluggable: Adds syntax extensions to extend the parser.
-High speed & safe by default
-}
+Markdown parser done right. Its features: Follows the CommonMark spec for
+baseline parsing. Has configurable syntax: you can add new rules and even
+replace existing ones. Pluggable: Adds syntax extensions to extend the parser.
+High speed & safe by default}
 
 BuildRequires:  python3-setuptools
 BuildRequires:  python3-pytest

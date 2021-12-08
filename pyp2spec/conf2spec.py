@@ -1,4 +1,5 @@
 from importlib.resources import read_text
+from textwrap import fill
 
 import click
 import tomli
@@ -122,6 +123,19 @@ def generate_unwanted_tests(config):
         return formatted_unwanteds
 
 
+def wrap_description(config):
+    """Wrap description line to 79 characters at most.
+
+    If the description line length exceeds 79 lines, tools like rpmlint start
+    emit warnings. Use newlines to prevent exceeding the max. length.
+    Return the modified description string.
+    """
+    return fill(
+        config.get_string("description"),
+        width=79,
+        break_long_words=False
+    )
+
 def fill_in_template(config):
     """Return template rendered with data from config file."""
 
@@ -132,7 +146,7 @@ def fill_in_template(config):
         binary_files=config.get_list("binary_files"),
         changelog_head=config.get_string("changelog_head"),
         changelog_msg=config.get_string("changelog_msg"),
-        description=config.get_string("description"),
+        description=wrap_description(config),
         doc_files=" ".join(config.get_list("doc_files")),
         extra_build_requires=generate_extra_build_requires(config),
         license_files=" ".join(config.get_list("license_files")),
