@@ -129,4 +129,4 @@ def test_OSI_Approved_is_ignored(betamax_session, compliant):
 def test_zip_sdist_is_added_to_source_macro(betamax_session):
     pkg = PypiPackage("azure-common", session=betamax_session)
     version = pkg.version()
-    assert pkg.source_url(version) == "%{pypi_source azure-common zip}"
+    assert pkg.source_url(version) == "%{pypi_source azure-common %{version} zip}"

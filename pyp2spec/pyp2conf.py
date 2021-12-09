@@ -38,8 +38,10 @@ class PypiPackage:
 
     def source_url(self, version):
         name = self.archive_name(version)
-        sdist_ext = " zip" if self.is_zip_archive(version) else ""
-        return "%{pypi_source " + name + sdist_ext + "}"
+        # If it's a zip, %{pypi_source} must take all three args:
+        # name, version and zip; hence adding `version + zip`
+        zip_macro = " %{version} zip" if self.is_zip_archive(version) else ""
+        return "%{pypi_source " + name + zip_macro + "}"
 
     def version(self):
         return self.package_data["info"]["version"]
