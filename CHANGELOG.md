@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.3.1] - 2021-12-09
 ### Fixed
 - When sdist is in `zip` format, it %{pypi_source} is now correctly called with all arguments: name, version and format
 
