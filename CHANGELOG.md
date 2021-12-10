@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+### Fixed
+- If no `project_urls` are present in the package data, fall back to `package_url`
+which always lists the PyPI package URL
+
+
 ## [0.3.1] - 2021-12-09
 ### Fixed
 - When sdist is in `zip` format, it %{pypi_source} is now correctly called with all arguments: name, version and format

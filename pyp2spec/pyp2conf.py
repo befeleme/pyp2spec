@@ -99,9 +99,9 @@ class PypiPackage:
     def project_url(self):
         try:
             return self.package_data["info"]["project_urls"]["Homepage"]
-        # It may happen that no Homepage is listed with the project
-        # In this case fall back to the safe PyPI URL
-        except KeyError:
+        # It may happen that no project_urls nor Homepage are listed with the
+        # project - in this case fall back to the safe PyPI URL
+        except (KeyError, TypeError):
             return self.package_data["info"]["package_url"]
 
     def is_zip_archive(self, version):

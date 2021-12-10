@@ -130,3 +130,8 @@ def test_zip_sdist_is_added_to_source_macro(betamax_session):
     pkg = PypiPackage("azure-common", session=betamax_session)
     version = pkg.version()
     assert pkg.source_url(version) == "%{pypi_source azure-common %{version} zip}"
+
+
+def test_no_homepage_in_metadata(betamax_session):
+    pkg = PypiPackage("pycountry", session=betamax_session)
+    assert pkg.project_url() == "https://pypi.org/project/pycountry/"
