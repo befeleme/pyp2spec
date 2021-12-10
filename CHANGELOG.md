@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.3.2] - 2021-12-10
 ### Fixed
 - If no `project_urls` are present in the package data, fall back to `package_url`
 which always lists the PyPI package URL
