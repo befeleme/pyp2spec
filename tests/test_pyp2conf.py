@@ -141,3 +141,7 @@ def test_summary_is_generated_if_not_in_upstream(betamax_session):
     pkg = PypiPackage("google-cloud-appengine-logging", session=betamax_session)
     assert pkg.summary() == "..."
 
+
+def test_summary_is_generated_if_upstream_data_is_multiline(betamax_session):
+    pkg = PypiPackage("wifi", session=betamax_session)
+    assert pkg.summary() == "..."
