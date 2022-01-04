@@ -135,3 +135,9 @@ def test_zip_sdist_is_added_to_source_macro(betamax_session):
 def test_no_homepage_in_metadata(betamax_session):
     pkg = PypiPackage("pycountry", session=betamax_session)
     assert pkg.project_url() == "https://pypi.org/project/pycountry/"
+
+
+def test_summary_is_generated_if_not_in_upstream(betamax_session):
+    pkg = PypiPackage("google-cloud-appengine-logging", session=betamax_session)
+    assert pkg.summary() == "..."
+

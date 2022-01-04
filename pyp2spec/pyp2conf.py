@@ -94,7 +94,10 @@ class PypiPackage:
         return [c for c in classifiers if c.startswith("License")]
 
     def summary(self):
-        return self.package_data["info"]["summary"]
+        summary = self.package_data["info"]["summary"]
+        if not summary:
+            summary = "..."
+        return summary
 
     def project_url(self):
         try:
