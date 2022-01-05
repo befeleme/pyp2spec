@@ -47,20 +47,39 @@ class PypiPackage:
         return self.package_data["info"]["version"]
 
     def license(self, compliant=False):
+        """Return the license string from package metadata.
+
+        First, check trove classifiers which are the current Python standard:
+        https://www.python.org/dev/peps/pep-0301/#distutils-trove-classification
+        If argument `compliant` is set to True, perform the approximate compliance
+        check of the parsed classifiers with Fedora Good Licenses.
+        This isn't a 100% reliable solution and in case of ambiguous results,
+        the license is discarded as invalid.
+        Only if a package doesn't define the license in the classifiers, the "license"
+        keyword is checked. There isn't any check whether that value is compliant
+        with Fedora, it is passed to the config file for the user to validate.
+        Some packages fill in "license" with the whole license text.
+        This is indicated by the multiline value and such is discarded as invalid.
+
+        If the license can't be determined from both classifiers and "license"
+        keyword, this fact is logged and the script ended.
+        """
         click.secho(f"Attempting to get license from Classifiers", fg='cyan')
         self.classifiers = self.read_license_classifiers()
         # Process classifiers further if there are some
         if self.classifiers:
-            pkg_license = self.get_license_from_classifiers(compliant)
+            return self.get_license_from_classifiers(compliant)
         else:
             click.secho(f"License in Classifiers not found, looking for the 'License' keyword", fg='cyan')
             pkg_license = self.package_data["info"]["license"]
+            # Check if license isn't empty and is only one line
+            if pkg_license and len(pkg_license.split("\n")) == 1:
+                return pkg_license
+            else:
+                click.secho("Invalid license field value length, cannot reliably determine the license", fg='red')
 
-        if pkg_license:
-            return pkg_license
-        else:
-            click.secho(f"License not found. Specify --license explicitly. Quitting", fg='red')
-            exit(1)
+        click.secho(f"License not found. Specify --license explicitly. Quitting", fg='red')
+        exit(1)
 
     def get_license_from_classifiers(self, compliant):
         license_map = self.read_license_map()
