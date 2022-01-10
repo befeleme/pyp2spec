@@ -12,6 +12,8 @@ Source0:        %{url}/archive/%{version}/click-%{version}.tar.gz
 BuildArch:      noarch
 BuildRequires:  python3-devel
 
+
+# Fill in the actual package description to submit package to Fedora
 %global _description %{expand:
 click is a Python package for creating beautiful command line interfaces in a
 composable way with as little amount of code as necessary. It's the "Command

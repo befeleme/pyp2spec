@@ -12,6 +12,8 @@ Source0:        %{pypi_source jupyter_packaging}
 BuildArch:      noarch
 BuildRequires:  python3-devel
 
+
+# Fill in the actual package description to submit package to Fedora
 %global _description %{expand:
 This package contains utilities for making Python packages with and without
 accompanying JavaScript packages.}

@@ -12,6 +12,8 @@ Source0:        %{pypi_source boutdata}
 BuildArch:      noarch
 BuildRequires:  python3-devel
 
+
+# Fill in the actual package description to submit package to Fedora
 %global _description %{expand:
 Python interface for reading bout++ data files.}
 

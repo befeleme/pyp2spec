@@ -12,6 +12,8 @@ Source0:        %{pypi_source aionotion}
 BuildArch:      noarch
 BuildRequires:  python3-devel
 
+
+# Fill in the actual package description to submit package to Fedora
 %global _description %{expand:
 A asyncio-friendly library for Notion Home Monitoring devices.}
 

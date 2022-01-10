@@ -12,6 +12,8 @@ Source0:        https://github.com/hukkin/tomli/archive/refs/tags/%{version}.tar
 BuildArch:      noarch
 BuildRequires:  python3-devel
 
+
+# Fill in the actual package description to submit package to Fedora
 %global _description %{expand:
 Tomli is a Python library for parsing TOML. Tomli is fully compatible with TOML
 v1.0.0.}

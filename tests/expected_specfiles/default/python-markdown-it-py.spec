@@ -12,6 +12,8 @@ Source0:        %{pypi_source markdown-it-py}
 BuildArch:      noarch
 BuildRequires:  python3-devel
 
+
+# Fill in the actual package description to submit package to Fedora
 %global _description %{expand:
 This is package 'markdown-it-py' generated automatically by pyp2spec.}
 

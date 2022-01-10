@@ -12,6 +12,8 @@ Source0:        %{url}/archive/v%{version}/markdown-it-py-%{version}.tar.gz
 BuildArch:      noarch
 BuildRequires:  python3-devel
 
+
+# Fill in the actual package description to submit package to Fedora
 %global _description %{expand:
 Markdown parser done right. Its features: Follows the CommonMark spec for
 baseline parsing. Has configurable syntax: you can add new rules and even

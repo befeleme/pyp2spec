@@ -12,6 +12,8 @@ Source0:        %{url}/archive/%{version}/aioflo-%{version}.tar.gz
 BuildArch:      noarch
 BuildRequires:  python3-devel
 
+
+# Fill in the actual package description to submit package to Fedora
 %global _description %{expand:
 An asyncio-friendly Python library for Flo Smart Water Detectors.}
 

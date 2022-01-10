@@ -12,6 +12,8 @@ Source0:        {{source}}
 BuildArch:      noarch
 BuildRequires:  python3-devel
 
+
+# Fill in the actual package description to submit package to Fedora
 %global _description %{expand:
 {{description}}}
 
