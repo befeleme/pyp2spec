@@ -94,7 +94,7 @@ def test_bad_license_if_compliant_is_not_returned(betamax_session):
 def test_bad_license_if_not_compliant_is_returned(betamax_session):
     pkg = PypiPackage("tomli", session=betamax_session)
     pkg.classifiers = ["License :: Eiffel Forum License (EFL)"]
-    pkg.get_license_from_classifiers(compliant=False) == "EFL"
+    assert pkg.get_license_from_classifiers(compliant=False) == "EFL"
 
 
 def test_mix_non_compliant_licenses_wont_work_if_strict(betamax_session):
@@ -113,7 +113,7 @@ def test_mix_non_compliant_licenses_work_if_not_strict(betamax_session):
         "License :: Eiffel Forum License (EFL)",
         "License :: OSI Approved :: MIT License",
     ]
-    pkg.get_license_from_classifiers(compliant=False) == "EFL and MIT"
+    assert pkg.get_license_from_classifiers(compliant=False) == "EFL and MIT"
 
 
 @pytest.mark.parametrize("compliant", (True, False))
@@ -123,7 +123,7 @@ def test_OSI_Approved_is_ignored(betamax_session, compliant):
         "License :: OSI Approved :: MIT License",
         "License :: OSI Approved",
     ]
-    pkg.get_license_from_classifiers(compliant) == "MIT"
+    assert pkg.get_license_from_classifiers(compliant) == "MIT"
 
 
 def test_zip_sdist_is_added_to_source_macro(betamax_session):
