@@ -1,5 +1,14 @@
 # Changelog
 
+## [Unreleased]
+### Fixed
+- Prevent creating spec file without summary (fill in placeholder `...`)
+- Prevent creating spec file with multiline summary value (fill in placeholder `...`)
+- Don't create a spec file when the upstream `license` field contains the whole license text instead of the keyword - error and end the program.
+- Add a comment in the generated spec file that the `description` field should be filled in by the packager
+- Created spec files now contain a newline at the end of file
+
+
 ## [0.3.2] - 2021-12-10
 ### Fixed
 - If no `project_urls` are present in the package data, fall back to `package_url`
