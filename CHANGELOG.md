@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.3.3] - 2022-01-11
 ### Fixed
 - Prevent creating spec file without summary (fill in placeholder `...`)
 - Prevent creating spec file with multiline summary value (fill in placeholder `...`)
