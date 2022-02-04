@@ -54,6 +54,10 @@ from pyp2spec.conf2spec import create_spec_file
     "--top-level", "-t", is_flag=True,
     help="Test only top-level modules in %check",
 )
+@click.option(
+    "--archful", "-a", is_flag=True,
+    help="Set if the resulting RPM should be arched",
+)
 def main(**options):
     click.secho("Generating configuration file", fg="cyan")
     config_file = create_config(options)

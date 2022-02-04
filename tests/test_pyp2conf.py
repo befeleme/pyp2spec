@@ -70,6 +70,25 @@ def test_config_with_customization_is_valid(betamax_session):
     assert config == loaded_contents
 
 
+def test_archful_package(betamax_session, changelog):
+    """Generate config for tornado which is archful"""
+    package = "tornado"
+    config = create_config_contents(
+        package=package,
+        date=changelog[0],
+        name=changelog[1],
+        email=changelog[2],
+        top_level=True,
+        archful=True,
+        session=betamax_session,
+    )
+
+    with open(f"tests/test_configs/customized_{package}.conf", "rb") as config_file:
+        loaded_contents = tomli.load(config_file)
+
+    assert config["archful"] == loaded_contents["archful"]
+
+
 def test_license_classifier_read_correctly(betamax_session):
     pkg = PypiPackage("tomli", session=betamax_session)
     assert pkg.read_license_classifiers() == ["License :: OSI Approved :: MIT License"]

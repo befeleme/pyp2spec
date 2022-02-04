@@ -4,6 +4,8 @@
 ### Added
 - Requirement to generate the runtime requirements is no longer passed as an `-r` flag,
 this was made the default option as of pyproject-rpm-macros 0-53
+- It's possible to declare archful package via CLI (`--archful, -a`) -
+the generated spec file will not contain `BuildArch: noarch` line
 
 
 ## [0.3.3] - 2022-01-11

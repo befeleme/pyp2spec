@@ -117,6 +117,18 @@ def test_binary_files_are_loaded(config_dir, conf, expected):
 
 
 @pytest.mark.parametrize(
+    ("conf", "expected"), [
+        ("customized_click.conf", False),
+        ("customized_tornado.conf", True),
+    ]
+)
+def test_archful_flag_is_loaded(config_dir, conf, expected):
+    config_path = config_dir + conf
+    config = conf2spec.ConfigFile(config_path)
+    assert config.get_bool("archful") is expected
+
+
+@pytest.mark.parametrize(
     "conf", [
         "default_python-click.conf",
         "customized_markdown-it-py.conf",
