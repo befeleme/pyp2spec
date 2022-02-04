@@ -212,6 +212,7 @@ def create_config_contents(
     license=None,
     compliant=False,
     top_level=False,
+    archful=False,
 ):
     """Use `package` and provided kwargs to create the whole config contents.
     Return contents dictionary.
@@ -255,6 +256,11 @@ def create_config_contents(
     if top_level:
         click.secho("Only top-level modules will be checked", fg="yellow")
         contents["test_top_level"] = True
+
+    if archful:
+        click.secho("Package is set to --archful", fg="magenta")
+        click.secho("You may need to specify manual_build_requires in the config file", fg="magenta")
+        contents["archful"] = archful
 
     contents["changelog_msg"] = message
     contents["changelog_head"] = changelog_head(email, name, date)
@@ -301,7 +307,8 @@ def create_config(options):
         summary=options["summary"],
         license=options["license"],
         compliant=options["fedora_compliant"],
-        top_level=options["top_level"]
+        top_level=options["top_level"],
+        archful=options["archful"],
     )
     return save_config(contents, options["config_output"])
 
@@ -351,6 +358,10 @@ def create_config(options):
 @click.option(
     "--top-level", "-t", is_flag=True,
     help="Test only top-level modules in %check",
+)
+@click.option(
+    "--archful", "-a", is_flag=True,
+    help="Set if the resulting RPM should be arched",
 )
 def main(**options):
     create_config(options)

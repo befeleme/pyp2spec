@@ -142,6 +142,7 @@ def fill_in_template(config):
     spec_template = Template(read_text("pyp2spec", TEMPLATE_FILENAME))
 
     result = spec_template.render(
+        archful=config.get_bool("archful"),
         archive_name=config.get_string("archive_name"),
         binary_files=config.get_list("binary_files"),
         changelog_head=config.get_string("changelog_head"),

@@ -8,8 +8,9 @@ Summary:        {{summary}}
 License:        {{license}}
 URL:            {{url}}
 Source0:        {{source}}
-
+{% if not archful %}
 BuildArch:      noarch
+{%- endif %}
 BuildRequires:  python3-devel
 
 
