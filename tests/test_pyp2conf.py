@@ -7,7 +7,7 @@ from pyp2spec.pyp2conf import PypiPackage, create_config_contents
 
 
 with betamax.Betamax.configure() as config:
-    config.cassette_library_dir = 'tests/fixtures/cassettes'
+    config.cassette_library_dir = "tests/fixtures/cassettes"
 
 
 @pytest.fixture
@@ -67,7 +67,7 @@ def test_config_with_customization_is_valid(betamax_session):
 
 def test_license_classifier_read_correctly(betamax_session):
     pkg = PypiPackage("tomli", session=betamax_session)
-    assert pkg.read_license_classifiers() == ['License :: OSI Approved :: MIT License']
+    assert pkg.read_license_classifiers() == ["License :: OSI Approved :: MIT License"]
 
 
 def test_no_license_classifiers_and_no_license_keyword(betamax_session):

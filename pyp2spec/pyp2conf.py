@@ -25,7 +25,7 @@ class PypiPackage:
         try:
             response = s.get(pkg_index).json()
         except json.decoder.JSONDecodeError as e:
-            click.secho(f"'{self.package}' was not found on PyPI, did you spell it correctly?", fg='red')
+            click.secho(f"'{self.package}' was not found on PyPI, did you spell it correctly?", fg="red")
             exit(1)
         else:
             return response
@@ -64,21 +64,21 @@ class PypiPackage:
         If the license can't be determined from both classifiers and "license"
         keyword, this fact is logged and the script ended.
         """
-        click.secho(f"Attempting to get license from Classifiers", fg='cyan')
+        click.secho(f"Attempting to get license from Classifiers", fg="cyan")
         self.classifiers = self.read_license_classifiers()
         # Process classifiers further if there are some
         if self.classifiers:
             return self.get_license_from_classifiers(compliant)
         else:
-            click.secho(f"License in Classifiers not found, looking for the 'License' keyword", fg='cyan')
+            click.secho(f"License in Classifiers not found, looking for the 'License' keyword", fg="cyan")
             pkg_license = self.package_data["info"]["license"]
             # Check if license isn't empty and is only one line
             if pkg_license and len(pkg_license.split("\n")) == 1:
                 return pkg_license
             else:
-                click.secho("Invalid license field value length, cannot reliably determine the license", fg='red')
+                click.secho("Invalid license field value length, cannot reliably determine the license", fg="red")
 
-        click.secho(f"License not found. Specify --license explicitly. Quitting", fg='red')
+        click.secho(f"License not found. Specify --license explicitly. Quitting", fg="red")
         exit(1)
 
     def get_license_from_classifiers(self, compliant):
@@ -95,7 +95,7 @@ class PypiPackage:
                 # some not. On PyPI there are <100 packages with them, rather than
                 # adding another layer of decision matrix, just skip them all.
                 if fedora_status in ["BAD", "UNKNOWN", "???"]:
-                    click.secho(f"License '{short_license}' is or may not be allowed in Fedora, quitting", fg='red')
+                    click.secho(f"License '{short_license}' is or may not be allowed in Fedora, quitting", fg="red")
                     exit(1)
                 else:
                     licenses.append(short_license)
@@ -141,7 +141,7 @@ class PypiPackage:
                     return True
                 return False
         else:
-            click.secho(f"sdist not found, quitting", fg='red')
+            click.secho(f"sdist not found, quitting", fg="red")
             exit(1)
 
     def archive_name(self, version):
@@ -149,7 +149,7 @@ class PypiPackage:
             if entry["packagetype"] == "sdist":
                 return "-".join(entry["filename"].split("-")[:-1])
         else:
-            click.secho(f"sdist not found, quitting", fg='red')
+            click.secho(f"sdist not found, quitting", fg="red")
             exit(1)
 
 
@@ -191,9 +191,9 @@ def is_package_name(package):
 
     if "/" in package:
         # It's probably URL
-        click.secho(f"Assuming '{package}' is a URL", fg='yellow')
+        click.secho(f"Assuming '{package}' is a URL", fg="yellow")
         return False
-    click.secho(f"Assuming '{package}' is a package name", fg='yellow')
+    click.secho(f"Assuming '{package}' is a package name", fg="yellow")
     return True
 
 
@@ -220,7 +220,7 @@ def create_config_contents(
     # a package name was given as the `package`, look for it on PyPI
     if is_package_name(package):
         pkg = PypiPackage(package, session)
-        click.secho(f"Querying PyPI for package '{package}'", fg='cyan')
+        click.secho(f"Querying PyPI for package '{package}'", fg="cyan")
     # a URL was given as the `package`
     else:
         raise NotImplementedError
@@ -229,30 +229,30 @@ def create_config_contents(
     # get them from the stored package object data or the default values
     if message is None:
         message = changelog_msg()
-        click.secho(f'Assuming changelog --message={message}', fg='yellow')
+        click.secho(f"Assuming changelog --message={message}", fg="yellow")
 
     if description is None:
         description = get_description(package)
-        click.secho(f'Assuming --description={description}', fg='yellow')
+        click.secho(f"Assuming --description={description}", fg="yellow")
 
     if summary is None:
         summary = pkg.summary()
-        click.secho(f'Assuming --summary={summary}', fg='yellow')
+        click.secho(f"Assuming --summary={summary}", fg="yellow")
 
     if version is None:
         version = pkg.version()
-        click.secho(f'Assuming --version={version}', fg='yellow')
+        click.secho(f"Assuming --version={version}", fg="yellow")
 
     if license is None:
         license = pkg.license(compliant)
-        click.secho(f'Assuming --license={license}', fg='yellow')
+        click.secho(f"Assuming --license={license}", fg="yellow")
 
     if release is None:
         release = "1"
-        click.secho(f'Assuming --release={release}', fg='yellow')
+        click.secho(f"Assuming --release={release}", fg="yellow")
 
     if top_level:
-        click.secho(f'Only top-level modules will be checked', fg='yellow')
+        click.secho("Only top-level modules will be checked", fg="yellow")
         contents["test_top_level"] = True
 
     contents["changelog_msg"] = message
@@ -280,7 +280,7 @@ def save_config(contents, output=None):
         package = contents["python_name"]
         output = f"./{package}.conf"
     with open(output, "wb") as f:
-        click.secho(f"Saving configuration file to '{output}'", fg='yellow')
+        click.secho(f"Saving configuration file to '{output}'", fg="yellow")
         tomli_w.dump(contents, f, multiline_strings=True)
     click.secho("Configuration file was saved successfully", fg="green")
     return output

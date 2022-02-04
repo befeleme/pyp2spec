@@ -7,7 +7,7 @@ import tomli
 from jinja2 import Template
 
 
-TEMPLATE_FILENAME = 'template.spec'
+TEMPLATE_FILENAME = "template.spec"
 
 
 class ConfigFile:
@@ -119,7 +119,7 @@ def generate_unwanted_tests(config):
     else:
         prep_unwanteds = [f"not {test}" for test in unwanted_tests]
         unwanteds_as_str = " and \\\n".join(prep_unwanteds)
-        formatted_unwanteds = f'-k "{unwanteds_as_str}"'
+        formatted_unwanteds = f"-k '{unwanteds_as_str}'"
         return formatted_unwanteds
 
 
@@ -174,7 +174,7 @@ def save_spec_file(config, output):
     if output is None:
         output = config.get_string("python_name") + ".spec"
     with open(output, "w") as spec_file:
-        click.secho(f"Saving spec file to '{output}'", fg='yellow')
+        click.secho(f"Saving spec file to '{output}'", fg="yellow")
         spec_file.write(result)
     click.secho("Spec file was saved successfully", fg="green")
     return output
