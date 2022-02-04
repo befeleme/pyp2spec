@@ -53,7 +53,7 @@ class ConfigFile:
 
 def generate_extra_build_requires(config):
     """If defined in config file, return extra build requires.
-    If none were defined, return `-r` - runtime extra BRs`."""
+    If none were defined, return an empty string."""
 
     # TODO: custom tox env (-e)
     options = {
@@ -62,9 +62,9 @@ def generate_extra_build_requires(config):
     }
     extra_brs = config.get_list("extra_build_requires")
 
-    # No extra BuildRequires were defined - return `-r` = runtime
+    # No extra BuildRequires were defined - return an empty string
     if not extra_brs:
-        return "-r"
+        return ""
 
     generated_brs = []
     add = generated_brs.append

@@ -1,5 +1,11 @@
 # Changelog
 
+# Unreleased
+### Added
+- Requirement to generate the runtime requirements is no longer passed as an `-r` flag,
+this was made the default option as of pyproject-rpm-macros 0-53
+
+
 ## [0.3.3] - 2022-01-11
 ### Fixed
 - Prevent creating spec file without summary (fill in placeholder `...`)
