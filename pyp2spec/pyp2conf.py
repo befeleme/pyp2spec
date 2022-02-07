@@ -2,6 +2,7 @@ from datetime import date
 from importlib.resources import open_text
 from subprocess import check_output
 import json
+import sys
 
 import click
 import requests
@@ -26,7 +27,7 @@ class PypiPackage:
             response = s.get(pkg_index).json()
         except json.decoder.JSONDecodeError as e:
             click.secho(f"'{self.package}' was not found on PyPI, did you spell it correctly?", fg="red")
-            exit(1)
+            sys.exit(1)
         else:
             return response
 
@@ -79,7 +80,7 @@ class PypiPackage:
                 click.secho("Invalid license field value length, cannot reliably determine the license", fg="red")
 
         click.secho(f"License not found. Specify --license explicitly. Quitting", fg="red")
-        exit(1)
+        sys.exit(1)
 
     def get_license_from_classifiers(self, compliant):
         license_map = self.read_license_map()
@@ -96,7 +97,7 @@ class PypiPackage:
                 # adding another layer of decision matrix, just skip them all.
                 if fedora_status in ["BAD", "UNKNOWN", "???"]:
                     click.secho(f"License '{short_license}' is or may not be allowed in Fedora, quitting", fg="red")
-                    exit(1)
+                    sys.exit(1)
                 else:
                     licenses.append(short_license)
             else:
@@ -142,7 +143,7 @@ class PypiPackage:
                 return False
         else:
             click.secho(f"sdist not found, quitting", fg="red")
-            exit(1)
+            sys.exit(1)
 
     def archive_name(self, version):
         for entry in self.package_data["releases"][version]:
@@ -150,7 +151,7 @@ class PypiPackage:
                 return "-".join(entry["filename"].split("-")[:-1])
         else:
             click.secho(f"sdist not found, quitting", fg="red")
-            exit(1)
+            sys.exit(1)
 
 
 def changelog_head(email, name, changelog_date):
