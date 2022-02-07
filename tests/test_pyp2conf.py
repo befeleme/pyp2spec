@@ -1,5 +1,4 @@
 import betamax
-import click
 import pytest
 import tomli
 

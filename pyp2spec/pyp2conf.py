@@ -25,7 +25,7 @@ class PypiPackage:
         s = session or requests.Session()
         try:
             response = s.get(pkg_index).json()
-        except json.decoder.JSONDecodeError as e:
+        except json.decoder.JSONDecodeError:
             click.secho(f"'{self.package}' was not found on PyPI, did you spell it correctly?", fg="red")
             sys.exit(1)
         else:
@@ -65,13 +65,13 @@ class PypiPackage:
         If the license can't be determined from both classifiers and "license"
         keyword, this fact is logged and the script ended.
         """
-        click.secho(f"Attempting to get license from Classifiers", fg="cyan")
+        click.secho("Attempting to get license from Classifiers", fg="cyan")
         self.classifiers = self.read_license_classifiers()
         # Process classifiers further if there are some
         if self.classifiers:
             return self.get_license_from_classifiers(compliant)
         else:
-            click.secho(f"License in Classifiers not found, looking for the 'License' keyword", fg="cyan")
+            click.secho("License in Classifiers not found, looking for the 'License' keyword", fg="cyan")
             pkg_license = self.package_data["info"]["license"]
             # Check if license isn't empty and is only one line
             if pkg_license and len(pkg_license.split("\n")) == 1:
@@ -79,7 +79,7 @@ class PypiPackage:
             else:
                 click.secho("Invalid license field value length, cannot reliably determine the license", fg="red")
 
-        click.secho(f"License not found. Specify --license explicitly. Quitting", fg="red")
+        click.secho("License not found. Specify --license explicitly. Quitting", fg="red")
         sys.exit(1)
 
     def get_license_from_classifiers(self, compliant):
@@ -141,17 +141,17 @@ class PypiPackage:
                 if entry["filename"].endswith(".zip"):
                     return True
                 return False
-        else:
-            click.secho(f"sdist not found, quitting", fg="red")
-            sys.exit(1)
+        # Not found, quit
+        click.secho("sdist not found, quitting", fg="red")
+        sys.exit(1)
 
     def archive_name(self, version):
         for entry in self.package_data["releases"][version]:
             if entry["packagetype"] == "sdist":
                 return "-".join(entry["filename"].split("-")[:-1])
-        else:
-            click.secho(f"sdist not found, quitting", fg="red")
-            sys.exit(1)
+        # Not found, quit
+        click.secho("sdist not found, quitting", fg="red")
+        sys.exit(1)
 
 
 def changelog_head(email, name, changelog_date):

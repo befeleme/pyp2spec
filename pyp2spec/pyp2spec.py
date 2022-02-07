@@ -1,6 +1,7 @@
+import click
+
 from pyp2spec.pyp2conf import create_config
 from pyp2spec.conf2spec import create_spec_file
-import click
 
 
 @click.command()
