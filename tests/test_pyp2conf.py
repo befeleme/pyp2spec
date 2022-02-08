@@ -12,6 +12,10 @@ from pyp2spec.pyp2conf import PypiPackage, create_config_contents
 
 with betamax.Betamax.configure() as config:
     config.cassette_library_dir = "tests/fixtures/cassettes"
+    # only replay recorded cassettes -
+    # error if an actual HTTP request would be necessary
+    # this is to prevent further packaging issues
+    config.default_cassette_options['record_mode'] = 'none'
 
 
 @pytest.fixture
