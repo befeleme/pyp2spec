@@ -1,13 +1,13 @@
 Name:           python-click
 Version:        7.1.2
-Release:        6%{?dist}
-Summary:        Simple wrapper around optparse for powerful command line utilities
+Release:        1%{?dist}
+Summary:        Composable command line interface toolkit
 
 # Check if the automatically generated License and its spelling is correct for Fedora
 # https://docs.fedoraproject.org/en-US/packaging-guidelines/LicensingGuidelines/
 License:        BSD
-URL:            https://github.com/mitsuhiko/click
-Source0:        %{url}/archive/%{version}/click-%{version}.tar.gz
+URL:            https://palletsprojects.com/p/click/
+Source0:        %{pypi_source click}
 
 BuildArch:      noarch
 BuildRequires:  python3-devel
@@ -15,10 +15,7 @@ BuildRequires:  python3-devel
 
 # Fill in the actual package description to submit package to Fedora
 %global _description %{expand:
-click is a Python package for creating beautiful command line interfaces in a
-composable way with as little amount of code as necessary. It's the "Command
-Line Interface Creation Kit". It's highly configurable but comes with good
-defaults out of the box.}
+This is package 'click' generated automatically by pyp2spec.}
 
 
 %description %_description
@@ -34,7 +31,7 @@ Summary:        %{summary}
 
 
 %generate_buildrequires
-%pyproject_buildrequires -t
+%pyproject_buildrequires
 
 
 %build
@@ -50,14 +47,11 @@ Summary:        %{summary}
 
 %check
 %pyproject_check_import
-%tox
 
 
 %files -n python3-click -f %{pyproject_files}
-%doc README.rst CHANGES.rst
-%license LICENSE.rst
 
 
 %changelog
-* Wed Jun 02 2021 Package Maintainer <package@maintainer.com> - 7.1.2-6
-- Rebuilt for Python 3.10
+* Wed Nov 03 2021 Packager <packager@maint.com> - 7.1.2-1
+- Package generated with pyp2spec

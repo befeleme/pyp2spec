@@ -1,3 +1,8 @@
+"""Test the functionality of pyp2conf part of the tool.
+The data is downloaded from the PyPI and stored in betamax casettes
+to prevent loading from the internet on each request.
+"""
+
 import betamax
 import pytest
 import tomli
@@ -17,10 +22,7 @@ def changelog():
 @pytest.mark.parametrize("package, version",
     [
         ("aionotion", "2.0.3"),
-        ("aioflo", "0.4.2"),
         ("click", "7.1.2"),
-        ("jupyter-packaging", "0.10.4"),
-        ("markdown-it-py", "1.1.0"),
     ]
 )
 def test_automatically_generated_config_is_valid(betamax_parametrized_session, changelog, package, version):
