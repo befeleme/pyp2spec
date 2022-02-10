@@ -43,7 +43,7 @@ from pyp2spec.conf2spec import create_spec_file
     help="Provide license name",
 )
 @click.option(
-    "--spec-output", "-s",
+    "--spec-output", "-o",
     help="Provide custom output where spec file will be saved",
 )
 @click.option(

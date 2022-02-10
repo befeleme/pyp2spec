@@ -190,7 +190,7 @@ def create_spec_file(config_file, spec_output=None):
 @click.argument("config")
 @click.option(
     "--spec-output",
-    "-s",
+    "-o",
     help="Provide custom output for spec file",
 )
 def main(config, spec_output):
