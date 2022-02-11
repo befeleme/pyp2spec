@@ -2,13 +2,18 @@
 
 # Unreleased
 ### Added
-- Requirement to generate the runtime requirements is no longer passed as an `-r` flag,
-this was made the default option as of pyproject-rpm-macros 0-53
 - It's possible to declare archful package via CLI (`--archful, -a`) -
 the generated spec file will not contain `BuildArch: noarch` line
 - Package version compatible with PEP 440 is now converted to RPM scheme,
 version not following the specification remains unchanged.
 For that, a modified part of [pyreq2rpm](https://github.com/gordonmessmer/pyreq2rpm/blob/master/pyreq2rpm/pyreq2rpm.py) is used
+
+### Changed
+- Requirement to generate the runtime requirements is no longer passed as an `-r` flag,
+this was made the default option as of pyproject-rpm-macros 0-53
+
+### Fixed
+- CLI `--spec-output` option has got a short version `-o`. `-s` is valid for `--summary`
 
 
 ## [0.3.3] - 2022-01-11

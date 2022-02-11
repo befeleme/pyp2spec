@@ -99,7 +99,7 @@ Configuration data is stored in a TOML file.
 | Field | Description | Type |
 | -------- | -------- | -------- |
 | manual_build_requires     | additional build requires, eg. `python3-sphinx`     | list     |
-| extra_build_requires     | extra options to %pyproject_buildrequires (`-t`, `-x`); default: runtime (`-r`)   | list     |
+| extra_build_requires     | extra options to %pyproject_buildrequires (`-t`, `-x`)   | list     |
 | extra_tox_env     | if `-x` is defined as extra, provide name of the tox env      | list     |
 | test_method     | `pytest`, `tox`     | string     |
 | test_top_level     | filter and test only top-level modules in %check   | bool     |
@@ -161,7 +161,7 @@ Summary:        %{summary}
 
 
 %generate_buildrequires
-%pyproject_buildrequires -r
+%pyproject_buildrequires
 
 
 %build
