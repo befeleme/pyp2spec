@@ -8,6 +8,8 @@ import click
 import requests
 import tomli_w
 
+from pyp2spec.rpmversion import RpmVersion
+
 
 class PypiPackage:
     """Get and save package data from PyPI."""
@@ -186,6 +188,19 @@ def get_description(package):
     return f"This is package '{package}' generated automatically by pyp2spec."
 
 
+def convert_version_to_rpm_scheme(version):
+    """If version follows PEP 440, return its value converted to RPM scheme.
+
+    PEP 440: https://www.python.org/dev/peps/pep-0440/
+    If the package uses a different versioning scheme (i.e. LegacyVersion),
+    the returned value will be the same as the input one.
+    Such value may or may not work with RPM.
+    Automatic conversion of the LegacyVersions is not feasible, as stated in:
+    https://lists.fedoraproject.org/archives/list/python-devel@lists.fedoraproject.org/message/5MGEHMTKOKR5U7ACIMUDRBKMSP6Y5NQD/
+    """
+    return str(RpmVersion(version))
+
+
 def is_package_name(package):
     """Check whether the string given as package contains `/`.
     Return True if not, False otherwise."""
@@ -243,7 +258,7 @@ def create_config_contents(
 
     if version is None:
         version = pkg.version()
-        click.secho(f"Assuming --version={version}", fg="yellow")
+        click.secho(f"Assuming PyPI --version={version}", fg="yellow")
 
     if license is None:
         license = pkg.license(compliant)
@@ -266,7 +281,7 @@ def create_config_contents(
     contents["changelog_head"] = changelog_head(email, name, date)
     contents["description"] = description
     contents["summary"] = summary
-    contents["version"] = version
+    contents["version"] = convert_version_to_rpm_scheme(version)
     contents["license"] = license
     contents["release"] = release
     contents["pypi_name"] = pkg.pypi_name

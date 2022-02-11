@@ -169,3 +169,20 @@ def test_summary_is_generated_if_not_in_upstream(betamax_session):
 def test_summary_is_generated_if_upstream_data_is_multiline(betamax_session):
     pkg = PypiPackage("wifi", session=betamax_session)
     assert pkg.summary() == "..."
+
+
+@pytest.mark.parametrize(
+    ("package", "pypi_version", "rpm_version"), [
+        ("markdown-it-py", "1.1.0", "1.1.0"),
+        ("javascript", "1!0.2.13", "1:0.2.13"),
+        ("python3-wget", "0.0.2-beta1", "0.0.2~b1"),
+        ("django-apistar", "0.5.40-0", "0.5.40^post0"),
+    ]
+)
+def test_pypi_version_is_converted_to_rpm(betamax_parametrized_session, package, pypi_version, rpm_version):
+    config = create_config_contents(
+        package,
+        version=pypi_version,
+        session=betamax_parametrized_session,
+    )
+    assert config["version"] == rpm_version
