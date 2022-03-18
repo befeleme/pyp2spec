@@ -7,7 +7,7 @@ Summary:        Python port of markdown-it
 # https://docs.fedoraproject.org/en-US/packaging-guidelines/LicensingGuidelines/
 License:        MIT
 URL:            https://github.com/executablebooks/markdown-it-py
-Source0:        %{url}/archive/v%{version}/markdown-it-py-%{version}.tar.gz
+Source:         %{url}/archive/v%{version}/markdown-it-py-%{version}.tar.gz
 
 BuildArch:      noarch
 BuildRequires:  python3-devel

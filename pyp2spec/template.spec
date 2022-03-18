@@ -7,7 +7,7 @@ Summary:        {{summary}}
 # https://docs.fedoraproject.org/en-US/packaging-guidelines/LicensingGuidelines/
 License:        {{license}}
 URL:            {{url}}
-Source0:        {{source}}
+Source:         {{source}}
 {% if not archful %}
 BuildArch:      noarch
 {%- endif %}
