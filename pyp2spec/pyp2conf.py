@@ -17,6 +17,7 @@ class PypiPackage:
     def __init__(self, package, session=None):
         self.package = package
         self.package_data = self.get_package_metadata(session)
+        self.sdist_filename = None
 
     @property
     def pypi_name(self):
@@ -131,6 +132,19 @@ class PypiPackage:
         except (KeyError, TypeError):
             return self.package_data["info"]["package_url"]
 
+    def find_and_save_sdist_filename(self, version):
+        """Save the given's package version sdist name for further processing.
+
+        Quit the script if not found (bdists can't be processed).
+        """
+        for entry in self.package_data["releases"][version]:
+            if entry["packagetype"] == "sdist":
+                self.sdist_filename = entry["filename"]
+                return
+        # Not found, quit
+        click.secho("sdist not found, quitting", fg="red")
+        sys.exit(1)
+
     def is_zip_archive(self, version):
         """Return True if archive is a zip file, False otherwise.
 
@@ -138,22 +152,31 @@ class PypiPackage:
         some projects however still use it.
         If so, it has to be explicitly declared as an argument of %{pypi_source}.
         """
-        for entry in self.package_data["releases"][version]:
-            if entry["packagetype"] == "sdist":
-                if entry["filename"].endswith(".zip"):
-                    return True
-                return False
-        # Not found, quit
-        click.secho("sdist not found, quitting", fg="red")
-        sys.exit(1)
+        if self.sdist_filename is None:
+            self.find_and_save_sdist_filename(version)
+        if self.sdist_filename.endswith(".zip"):
+            return True
+        return False
 
     def archive_name(self, version):
-        for entry in self.package_data["releases"][version]:
-            if entry["packagetype"] == "sdist":
-                return "-".join(entry["filename"].split("-")[:-1])
-        # Not found, quit
-        click.secho("sdist not found, quitting", fg="red")
-        sys.exit(1)
+        """Return the package name as spelled in the archive file.
+
+        According to:
+        https://packaging.python.org/en/latest/specifications/source-distribution-format/#source-distribution-file-name
+        the `de facto` standard for sdist naming is '{name}-{version}.tar.gz'.
+        The format is not standardised, so extract the {name} as defined by upstream.
+        Example: "My-package_Archive-1.0.4-12.tar.gz" -> "My-package_Archive"
+        """
+        if self.sdist_filename is None:
+            self.find_and_save_sdist_filename(version)
+
+        edited_sdist_filename = self.sdist_filename
+        # First, strip the suffix
+        for suffix in (".tar.gz", ".zip"):
+            edited_sdist_filename = edited_sdist_filename.removesuffix(suffix)
+        # Second, get rid of the version string and the delimiter "-"
+        archive_name = edited_sdist_filename.replace("-" + version, "")
+        return archive_name
 
 
 def changelog_head(email, name, changelog_date):
