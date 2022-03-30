@@ -40,7 +40,7 @@ class PypiPackage:
         else:
             return f"python-{self.pypi_name}"
 
-    def source_url(self, version):
+    def source(self, version):
         """Return valid pypi_source RPM macro.
 
         %pypi_source takes three optional arguments:
@@ -342,7 +342,7 @@ def create_config_contents(
     contents["pypi_name"] = pkg.pypi_name
     contents["python_name"] = pkg.python_name()
     contents["url"] = pkg.project_url()
-    contents["source"] = pkg.source_url(version)
+    contents["source"] = pkg.source(version)
     contents["archive_name"] = pkg.archive_name(version)
 
     return contents
