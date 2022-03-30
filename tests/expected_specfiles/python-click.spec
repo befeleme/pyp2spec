@@ -7,7 +7,7 @@ Summary:        Composable command line interface toolkit
 # https://docs.fedoraproject.org/en-US/packaging-guidelines/LicensingGuidelines/
 License:        BSD
 URL:            https://palletsprojects.com/p/click/
-Source0:        %{pypi_source click}
+Source:         %{pypi_source click}
 
 BuildArch:      noarch
 BuildRequires:  python3-devel

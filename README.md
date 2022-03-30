@@ -141,7 +141,7 @@ Summary:        A simple Python 3 library for Notion Home Monitoring
 # https://docs.fedoraproject.org/en-US/packaging-guidelines/LicensingGuidelines/
 License:        MIT
 URL:            https://github.com/bachya/aionotion
-Source0:        %{pypi_source aionotion}
+Source:         %{pypi_source aionotion}
 
 BuildArch:      noarch
 BuildRequires:  python3-devel
