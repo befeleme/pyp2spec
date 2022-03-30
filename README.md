@@ -79,12 +79,13 @@ Configuration data is stored in a TOML file.
 | pypi_name | package name as stored in PyPI  | string   |
 | python_name | pypi_name prepended with `python-` | string |
 | archive_name | source tarball name, stripped of version and file extension  | string |
-| version | package version to create spec file for  | string |
+| version | package version to create spec file for (RPM format) | string |
+| pypi_version | package version string as in PyPI, '%{version}' if the same as version | string
 | release | Fedora package release | string |
 | summary | short package summary | string |
 | license | license name | string |
 | url | project URL | string |
-| source | tarball URL | string |
+| source | %{pypi_source} macro with optional arguments (tarball URL can be used instead) | string |
 | description | long package description | multiline string |
 | changelog_head | spec file changelog header (date, name, e-mail) | string |
 | changelog_msg | spec file changelog message | string |
@@ -121,6 +122,7 @@ version = "2.0.3"
 license = "MIT"
 release = "1"
 pypi_name = "aionotion"
+pypi_version = %{version}
 python_name = "python-aionotion"
 url = "https://github.com/bachya/aionotion"
 source = "%{pypi_source aionotion}"

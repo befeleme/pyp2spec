@@ -186,3 +186,21 @@ def test_pypi_version_is_converted_to_rpm(betamax_parametrized_session, package,
         session=betamax_parametrized_session,
     )
     assert config["version"] == rpm_version
+
+
+@pytest.mark.parametrize(
+    ("package", "pypi_version", "pypi_version_macro"), [
+        ("tomli", None, "%{version}"),
+        ("markdown-it-py", "1.1.0", "%{version}"),
+        ("javascript", "1!0.2.13", "1!0.2.13"),
+        ("python3-wget", "0.0.2-beta1", "0.0.2-beta1"),
+        ("django-apistar", "0.5.40-0", "0.5.40-0"),
+    ]
+)
+def test_pypi_version_is_converted_to_rpm(betamax_parametrized_session, package, pypi_version, pypi_version_macro):
+    config = create_config_contents(
+        package,
+        version=pypi_version,
+        session=betamax_parametrized_session,
+    )
+    assert config["pypi_version"] == pypi_version_macro

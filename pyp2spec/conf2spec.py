@@ -155,6 +155,7 @@ def fill_in_template(config):
         manual_build_requires=config.get_list("manual_build_requires"),
         name=config.get_string("pypi_name"),
         python_name=config.get_string("python_name"),
+        pypi_version=config.get_string("pypi_version"),
         release=config.get_string("release"),
         source=config.get_string("source"),
         summary=config.get_string("summary"),

@@ -41,14 +41,45 @@ class PypiPackage:
             return f"python-{self.pypi_name}"
 
     def source_url(self, version):
-        name = self.archive_name(version)
-        # If it's a zip, %{pypi_source} must take all three args:
-        # name, version and zip; hence adding `version + zip`
-        zip_macro = " %{version} zip" if self.is_zip_archive(version) else ""
-        return "%{pypi_source " + name + zip_macro + "}"
+        """Return valid pypi_source RPM macro.
+
+        %pypi_source takes three optional arguments:
+        <name>, <version> and <file_extension>.
+        <name> is always passed, it's spelled as the name of the archive file:
+        "%{pypi_source foo}".
+        <version> is passed if PyPI's and RPM's version strings differ:
+        "%{pypi_source foo 1.2-3}". If they're the same and the file extension
+        is not zip, version is not passed.
+        If archive is a zip file, %{pypi_source} must take all three args:
+        "%{pypi_source foo %{version} zip}", "{pypi_source foo 1.2-3 zip}"
+        """
+        is_zip = self.is_zip_archive(version)
+        version_str = self.pypi_version_or_macro(version)
+
+        source_macro_args = self.archive_name(version)
+
+        if is_zip:
+            source_macro_args += f" {version_str} zip"
+        else:
+            if version_str == version:
+                source_macro_args += f" {version_str}"
+
+        return "%{pypi_source " + source_macro_args + "}"
 
     def version(self):
         return self.package_data["info"]["version"]
+
+    def pypi_version_or_macro(self, version):
+        """If PyPI and RPM version's strings are the same, there's no need to
+        duplicate them across the spec file.
+        Return '%{version}' as a reference to the RPM's version string.
+        If they are different, both variants of string need to be used.
+        In such case return version string as from PyPI.
+        """
+        rpm_version = convert_version_to_rpm_scheme(version)
+        if version == rpm_version:
+            return "%{version}"
+        return version
 
     def license(self, compliant=False):
         """Return the license string from package metadata.
@@ -305,6 +336,7 @@ def create_config_contents(
     contents["description"] = description
     contents["summary"] = summary
     contents["version"] = convert_version_to_rpm_scheme(version)
+    contents["pypi_version"] = pkg.pypi_version_or_macro(version)
     contents["license"] = license
     contents["release"] = release
     contents["pypi_name"] = pkg.pypi_name

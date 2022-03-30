@@ -32,7 +32,7 @@ Summary:        %{summary}
 
 
 %prep
-%autosetup -p1 -n {{archive_name}}-%{version}
+%autosetup -p1 -n {{archive_name}}-{{pypi_version}}
 
 
 %generate_buildrequires
