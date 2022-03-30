@@ -1,6 +1,6 @@
 # Changelog
 
-# Unreleased
+# [0.4.0] - 2022-05-23
 ### Added
 - It's possible to declare archful package via CLI (`--archful, -a`) -
 the generated spec file will not contain `BuildArch: noarch` line
@@ -11,6 +11,7 @@ For that, a modified part of [pyreq2rpm](https://github.com/gordonmessmer/pyreq2
 ### Changed
 - Requirement to generate the runtime requirements is no longer passed as an `-r` flag,
 this was made the default option as of pyproject-rpm-macros 0-53
+- Sources are no longer enumerated as per [this change](https://pagure.io/packaging-committee/pull-request/1157) in Fedora's Packaging Guidelines
 
 ### Fixed
 - CLI `--spec-output` option has got a short version `-o`. `-s` is valid for `--summary`
