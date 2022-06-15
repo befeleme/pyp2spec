@@ -6,6 +6,9 @@ It generates working Fedora RPM spec file for Python projects.
 The produced spec files must be compliant with the current [Python Packaging Guidelines](https://docs.fedoraproject.org/en-US/packaging-guidelines/Python/) (in effect since 2021).
 It utilizes the benefits of [pyproject-rpm-macros](https://src.fedoraproject.org/rpms/pyproject-rpm-macros).
 
+This project's maturity state is alpha.
+Its API may be a subject of change.
+
 ## What it does
 
 `pyp2spec` gathers all the necessary information from PyPI to produce a valid

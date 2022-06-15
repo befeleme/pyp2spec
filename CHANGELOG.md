@@ -1,5 +1,10 @@
 # Changelog
 
+# [0.5.0] - 2022-06-15
+### Changed
+- Clearly state in version that project is in the alpha maturity phase,
+its API may be subject of change
+
 # [0.4.0] - 2022-05-23
 ### Added
 - It's possible to declare archful package via CLI (`--archful, -a`) -
