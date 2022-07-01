@@ -233,7 +233,7 @@ def changelog_head(email, name, changelog_date):
 def changelog_msg():
     """Return a default changelog message."""
 
-    return "Package generated with pyp2spec"
+    return "Initial package"
 
 
 def get_description(package):

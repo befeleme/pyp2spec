@@ -54,4 +54,4 @@ Summary:        %{summary}
 
 %changelog
 * Wed Nov 03 2021 Packager <packager@maint.com> - 7.1.2-1
-- Package generated with pyp2spec
+- Initial package
