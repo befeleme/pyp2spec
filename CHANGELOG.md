@@ -1,5 +1,10 @@
 # Changelog
 
+# Unreleased
+### Changed
+- template.spec and the files created by pyp2spec are relicensed under MIT-0 (No attribution) license
+
+
 # [0.5.0] - 2022-06-15
 ### Changed
 - Clearly state in version that project is in the alpha maturity phase,
