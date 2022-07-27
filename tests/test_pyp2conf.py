@@ -15,6 +15,7 @@ with betamax.Betamax.configure() as config:
     # only replay recorded cassettes -
     # error if an actual HTTP request would be necessary
     # this is to prevent further packaging issues
+    # change to 'once' to enable recording new cassettes when writing new tests
     config.default_cassette_options['record_mode'] = 'none'
 
 
