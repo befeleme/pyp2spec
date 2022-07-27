@@ -2,6 +2,7 @@ from datetime import date
 from importlib.resources import open_text
 from subprocess import check_output
 import json
+import re
 import sys
 
 import click
@@ -21,7 +22,16 @@ class PypiPackage:
 
     @property
     def pypi_name(self):
-        return self.package_data["info"]["name"]
+        """Return normalized PyPI package name (as defined in PEP 503).
+        The resulting string better conforms with Fedora's Packaging Guidelines.
+        """
+
+        return self.normalize(self.package_data["info"]["name"])
+
+    def normalize(self, package_name):
+        """Normalize given package name as defined in PEP 503"""
+
+        return re.sub(r"[-_.]+", "-", package_name).lower()
 
     def get_package_metadata(self, session):
         pkg_index = f"https://pypi.org/pypi/{self.package}/json"

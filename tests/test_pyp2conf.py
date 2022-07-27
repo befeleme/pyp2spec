@@ -171,6 +171,18 @@ def test_summary_is_generated_if_upstream_data_is_multiline(betamax_session):
     assert pkg.summary() == "..."
 
 
+def test_pypi_name_with_underscore_is_normalized(betamax_session):
+    pkg = PypiPackage("sphinx_design", session=betamax_session)
+    assert pkg.pypi_name == "sphinx-design"
+    assert pkg.python_name() == "python-sphinx-design"
+
+
+def test_pypi_name_with_capital_letter_is_normalized(betamax_session):
+    pkg = PypiPackage("Pello", session=betamax_session)
+    assert pkg.pypi_name == "pello"
+    assert pkg.python_name() == "python-pello"
+
+
 @pytest.mark.parametrize(
     ("package", "pypi_version", "rpm_version"), [
         ("markdown-it-py", "1.1.0", "1.1.0"),
