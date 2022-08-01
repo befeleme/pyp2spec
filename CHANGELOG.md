@@ -1,5 +1,10 @@
 # Changelog
 
+# [0.6.1] - 2022-08-01
+### Fixed
+- Include LICENSE-MIT-0 in the sdist and fix license metadata
+
+
 # [0.6.0] - 2022-08-01
 ### Changed
 - template.spec and the files created by pyp2spec are relicensed under MIT-0 (No attribution) license
