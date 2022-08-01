@@ -1,9 +1,10 @@
 # Changelog
 
-# Unreleased
+# [0.6.0] - 2022-08-01
 ### Changed
 - template.spec and the files created by pyp2spec are relicensed under MIT-0 (No attribution) license
 - PyPI package names are normalized according to PEP 503 to better conform with [Library naming guidelines](https://docs.fedoraproject.org/en-US/packaging-guidelines/Python/#_naming)
+- "Initial package" is the new default changelog message, which better reflects the needs of packagers
 
 
 # [0.5.0] - 2022-06-15
