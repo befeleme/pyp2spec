@@ -1,62 +1,14 @@
 import click
 
-from pyp2spec.pyp2conf import create_config
+from pyp2spec.pyp2conf import create_config, pypconf_args
 from pyp2spec.conf2spec import create_spec_file
 
 
 @click.command()
-@click.argument("package")
-@click.option(
-    "--config-output", "-c",
-    help="Provide custom output for configuration file",
-)
-@click.option(
-    "--description", "-d",
-    help="Provide description for the package",
-)
-@click.option(
-    "--release", "-r",
-    help="Provide Fedora release, default: 1",
-)
-@click.option(
-    "--message", "-m",
-    help="Provide custom changelog message for the package",
-)
-@click.option(
-    "--email", "-e",
-    help="Provide e-mail for changelog, default: output of `rpmdev-packager`",
-)
-@click.option(
-    "--packager", "-p",
-    help="Provide packager name for changelog, default: output of `rpmdev-packager`",
-)
-@click.option(
-    "--version", "-v",
-    help="Provide package version to query PyPI for, default: latest",
-)
-@click.option(
-    "--summary", "-s",
-    help="Provide custom package summary",
-)
-@click.option(
-    "--license", "-l",
-    help="Provide license name",
-)
+@pypconf_args
 @click.option(
     "--spec-output", "-o",
     help="Provide custom output where spec file will be saved",
-)
-@click.option(
-    "--fedora-compliant", is_flag=True,
-    help="Check whether license is compliant with Fedora",
-)
-@click.option(
-    "--top-level", "-t", is_flag=True,
-    help="Test only top-level modules in %check",
-)
-@click.option(
-    "--archful", "-a", is_flag=True,
-    help="Set if the resulting RPM should be arched",
 )
 def main(**options):
     click.secho("Generating configuration file", fg="cyan")

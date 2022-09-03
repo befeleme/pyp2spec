@@ -1,4 +1,5 @@
 from datetime import date
+from functools import wraps
 from importlib.resources import open_text
 from subprocess import check_output
 import json
@@ -393,56 +394,63 @@ def create_config(options):
     return save_config(contents, options["config_output"])
 
 
+def pypconf_args(func):
+    @click.argument("package")
+    @click.option(
+        "--config-output", "-c",
+        help="Provide custom output for configuration file",
+    )
+    @click.option(
+        "--description", "-d",
+        help="Provide description for the package",
+    )
+    @click.option(
+        "--release", "-r",
+        help="Provide Fedora release, default: 1",
+    )
+    @click.option(
+        "--message", "-m",
+        help="Provide custom changelog message for the package",
+    )
+    @click.option(
+        "--email", "-e",
+        help="Provide e-mail for changelog, default: output of `rpmdev-packager`",
+    )
+    @click.option(
+        "--packager", "-p",
+        help="Provide packager name for changelog, default: output of `rpmdev-packager`",
+    )
+    @click.option(
+        "--version", "-v",
+        help="Provide package version to query PyPI for, default: latest",
+    )
+    @click.option(
+        "--summary", "-s",
+        help="Provide custom package summary",
+    )
+    @click.option(
+        "--license", "-l",
+        help="Provide license name",
+    )
+    @click.option(
+        "--fedora-compliant", is_flag=True,
+        help="Check whether license is compliant with Fedora",
+    )
+    @click.option(
+        "--top-level", "-t", is_flag=True,
+        help="Test only top-level modules in %check",
+    )
+    @click.option(
+        "--archful", "-a", is_flag=True,
+        help="Set if the resulting RPM should be arched",
+    )
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        return func(*args, **kwargs)
+    return wrapper
+
 @click.command()
-@click.argument("package")
-@click.option(
-    "--config-output", "-c",
-    help="Provide custom output for configuration file",
-)
-@click.option(
-    "--description", "-d",
-    help="Provide description for the package",
-)
-@click.option(
-    "--release", "-r",
-    help="Provide Fedora release, default: 1",
-)
-@click.option(
-    "--message", "-m",
-    help="Provide custom changelog message for the package",
-)
-@click.option(
-    "--email", "-e",
-    help="Provide e-mail for changelog, default: output of `rpmdev-packager`",
-)
-@click.option(
-    "--packager", "-p",
-    help="Provide packager name for changelog, default: output of `rpmdev-packager`",
-)
-@click.option(
-    "--version", "-v",
-    help="Provide package version to query PyPI for, default: latest",
-)
-@click.option(
-    "--summary", "-s",
-    help="Provide custom package summary",
-)
-@click.option(
-    "--license", "-l",
-    help="Provide license name",
-)
-@click.option(
-    "--fedora-compliant", is_flag=True,
-    help="Check whether license is compliant with Fedora",
-)
-@click.option(
-    "--top-level", "-t", is_flag=True,
-    help="Test only top-level modules in %check",
-)
-@click.option(
-    "--archful", "-a", is_flag=True,
-    help="Set if the resulting RPM should be arched",
-)
+@pypconf_args
 def main(**options):
     create_config(options)
 
