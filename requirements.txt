@@ -1,6 +1,6 @@
 click
 jinja2
 requests
-tomli
+tomli;python_version<"3.11"
 tomli-w
 packaging

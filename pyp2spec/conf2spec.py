@@ -2,7 +2,11 @@ from importlib.resources import read_text
 from textwrap import fill
 
 import click
-import tomli
+
+try:
+    import tomllib
+except ImportError:
+    import tomli as tomllib
 
 from jinja2 import Template
 
@@ -22,7 +26,7 @@ class ConfigFile:
         """Return loaded TOML configuration file contents."""
 
         with open(self.filename, "rb") as configuration_file:
-            loaded_contents = tomli.load(configuration_file)
+            loaded_contents = tomllib.load(configuration_file)
 
         return loaded_contents
 
