@@ -5,7 +5,11 @@ to prevent loading from the internet on each request.
 
 import betamax
 import pytest
-import tomli
+
+try:
+    import tomllib
+except ImportError:
+    import tomli as tomllib
 
 from pyp2spec.pyp2conf import PypiPackage, create_config_contents
 
@@ -42,7 +46,7 @@ def test_automatically_generated_config_is_valid(betamax_parametrized_session, c
     )
 
     with open(f"tests/test_configs/default_python-{package}.conf", "rb") as config_file:
-        loaded_contents = tomli.load(config_file)
+        loaded_contents = tomllib.load(config_file)
 
     assert config == loaded_contents
 
@@ -66,7 +70,7 @@ def test_config_with_customization_is_valid(betamax_session):
     )
 
     with open(f"tests/test_configs/customized_{package}.conf", "rb") as config_file:
-        loaded_contents = tomli.load(config_file)
+        loaded_contents = tomllib.load(config_file)
 
     assert config == loaded_contents
 
@@ -85,7 +89,7 @@ def test_archful_package(betamax_session, changelog):
     )
 
     with open(f"tests/test_configs/customized_{package}.conf", "rb") as config_file:
-        loaded_contents = tomli.load(config_file)
+        loaded_contents = tomllib.load(config_file)
 
     assert config["archful"] == loaded_contents["archful"]
 
