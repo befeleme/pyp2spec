@@ -1,5 +1,6 @@
 click
 jinja2
+license_expression
 requests
 tomli;python_version<"3.11"
 tomli-w
