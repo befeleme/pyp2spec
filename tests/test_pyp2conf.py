@@ -2,8 +2,6 @@
 The data is downloaded from the PyPI and stored in betamax casettes
 to prevent loading from the internet on each request.
 """
-
-import betamax
 import pytest
 
 try:
@@ -12,15 +10,7 @@ except ImportError:
     import tomli as tomllib
 
 from pyp2spec.pyp2conf import PypiPackage, create_config_contents
-
-
-with betamax.Betamax.configure() as config:
-    config.cassette_library_dir = "tests/fixtures/cassettes"
-    # only replay recorded cassettes -
-    # error if an actual HTTP request would be necessary
-    # this is to prevent further packaging issues
-    # change to 'once' to enable recording new cassettes when writing new tests
-    config.default_cassette_options['record_mode'] = 'none'
+from pyp2spec.pyp2conf import convert_version_to_rpm_scheme
 
 
 @pytest.fixture
@@ -53,6 +43,8 @@ def test_automatically_generated_config_is_valid(betamax_parametrized_session, c
 
 def test_config_with_customization_is_valid(betamax_session):
     """Get the upstream metadata and modify some fields to get the custom config file.
+    This also tests the compliance with Fedora Legal data by making
+    a request to the remote resource.
     """
     package = "aionotion"
     config = create_config_contents(
@@ -66,6 +58,7 @@ def test_config_with_customization_is_valid(betamax_session):
         summary="Python library for Notion Home Monitoring",
         date="Fri Jun 04 2021",
         top_level=True,
+        compliant=True,
         session=betamax_session,
     )
 
@@ -84,6 +77,7 @@ def test_archful_package(betamax_session, changelog):
         name=changelog[1],
         email=changelog[2],
         top_level=True,
+        license="Apache 2.0",
         archful=True,
         session=betamax_session,
     )
@@ -94,130 +88,179 @@ def test_archful_package(betamax_session, changelog):
     assert config["archful"] == loaded_contents["archful"]
 
 
-def test_license_classifier_read_correctly(betamax_session):
-    pkg = PypiPackage("tomli", session=betamax_session)
-    assert pkg.read_license_classifiers() == ["License :: OSI Approved :: MIT License"]
+def test_license_classifier_read_correctly():
+    fake_pkg_data = {"info":{"classifiers": [
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.8",
+        "Operating System :: POSIX :: Linux",
+        "License :: OSI Approved :: MIT License",
+        "License :: OSI Approved :: MIT No Attribution License (MIT-0)",
+        "Development Status :: 3 - Alpha",
+    ]}}
+
+    pkg = PypiPackage("_", package_metadata=fake_pkg_data)
+    assert pkg.filter_license_classifiers() == [
+        "License :: OSI Approved :: MIT License",
+        "License :: OSI Approved :: MIT No Attribution License (MIT-0)"
+    ]
 
 
-def test_no_license_classifiers_and_no_license_keyword(betamax_session):
-    pkg = PypiPackage("tomli", session=betamax_session)
-    pkg.package_data["info"]["classifiers"] = []
-    assert pkg.read_license_classifiers() == []
+def test_no_license_classifiers_and_no_license_keyword():
+    pkg = PypiPackage("_", package_metadata={"info":{"classifiers": []}})
+    assert pkg.filter_license_classifiers() == []
     with pytest.raises(SystemExit):
         pkg.license()
 
 
-def test_compliant_license_is_returned(betamax_session):
-    pkg = PypiPackage("tomli", session=betamax_session)
-    pkg.classifiers = pkg.read_license_classifiers()
-    assert pkg.get_license_from_classifiers(compliant=True) == "MIT"
-
-
-def test_bad_license_if_compliant_is_not_returned(betamax_session):
-    pkg = PypiPackage("tomli", session=betamax_session)
-    pkg.classifiers = ["License :: Eiffel Forum License (EFL)"]
-    with pytest.raises(SystemExit):
-        pkg.get_license_from_classifiers(compliant=True)
-
-
-def test_bad_license_if_not_compliant_is_returned(betamax_session):
-    pkg = PypiPackage("tomli", session=betamax_session)
-    pkg.classifiers = ["License :: Eiffel Forum License (EFL)"]
-    assert pkg.get_license_from_classifiers(compliant=False) == "EFL"
-
-
-def test_mix_non_compliant_licenses_wont_work_if_strict(betamax_session):
-    pkg = PypiPackage("tomli", session=betamax_session)
-    pkg.classifiers = [
-        "License :: Eiffel Forum License (EFL)",
+def test_compliant_license_is_returned(fake_fedora_licenses):
+    fake_pkg_data = {"info": {"classifiers" : [
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.8",
+        "Operating System :: POSIX :: Linux",
         "License :: OSI Approved :: MIT License",
-    ]
+        "License :: OSI Approved :: MIT No Attribution License (MIT-0)",
+        "Development Status :: 3 - Alpha",
+    ]}}
+
+    pkg = PypiPackage("_", package_metadata=fake_pkg_data)
+    assert pkg.license(check_compliance=True, licenses_dict=fake_fedora_licenses) == "MIT AND MIT-0"
+
+
+def test_bad_license_fails_compliance_check(fake_fedora_licenses):
+    fake_pkg_data = {"info": {"classifiers" : [
+        "License :: OSI Approved :: European Union Public Licence 1.0 (EUPL 1.0)"
+    ]}}
+    pkg = PypiPackage("_", package_metadata=fake_pkg_data)
+
     with pytest.raises(SystemExit):
-        pkg.get_license_from_classifiers(compliant=True)
+        pkg.license(check_compliance=True, licenses_dict=fake_fedora_licenses)
 
 
-def test_mix_non_compliant_licenses_work_if_not_strict(betamax_session):
-    pkg = PypiPackage("tomli", session=betamax_session)
-    pkg.classifiers = [
-        "License :: Eiffel Forum License (EFL)",
+def test_bad_license_without_compliance_check_is_returned():
+    fake_pkg_data = {"info": {"classifiers" : [
+        "License :: OSI Approved :: European Union Public Licence 1.0 (EUPL 1.0)"
+    ]}}
+    pkg = PypiPackage("_", package_metadata=fake_pkg_data)
+
+    assert pkg.license(check_compliance=False) == "EUPL-1.0"
+
+
+def test_mix_good_bad_licenses_fail_compliance_check(fake_fedora_licenses):
+    fake_pkg_data = {"info": {"classifiers" : [
+        "License :: OSI Approved :: European Union Public Licence 1.0 (EUPL 1.0)",
         "License :: OSI Approved :: MIT License",
-    ]
-    assert pkg.get_license_from_classifiers(compliant=False) == "EFL and MIT"
+    ]}}
+    pkg = PypiPackage("_", package_metadata=fake_pkg_data)
+    with pytest.raises(SystemExit):
+        pkg.license(check_compliance=True, licenses_dict=fake_fedora_licenses)
+
+
+def test_mix_good_bad_licenses_without_compliance_check_are_returned():
+    fake_pkg_data = {"info": {"classifiers" : [
+        "License :: OSI Approved :: European Union Public Licence 1.0 (EUPL 1.0)",
+        "License :: OSI Approved :: MIT License",
+    ]}}
+    pkg = PypiPackage("_", package_metadata=fake_pkg_data)
+    assert pkg.license(check_compliance=False) == "EUPL-1.0 AND MIT"
+
+
+def test_license_keyword_without_compliance_check():
+    fake_pkg_data = {"info": {"license": "BSD-2-Clause", "classifiers": []}}
+    pkg = PypiPackage("_", package_metadata=fake_pkg_data)
+    assert pkg.license(check_compliance=False) == "BSD-2-Clause"
+
+
+def test_license_keyword_with_compliance_check(fake_fedora_licenses):
+    fake_pkg_data = {"info": {"license": "RSCPL", "classifiers": []}}
+    pkg = PypiPackage("_", package_metadata=fake_pkg_data)
+    with pytest.raises(SystemExit):
+        pkg.license(check_compliance=True, licenses_dict=fake_fedora_licenses)
 
 
 @pytest.mark.parametrize("compliant", (True, False))
-def test_OSI_Approved_is_ignored(betamax_session, compliant):
-    pkg = PypiPackage("tomli", session=betamax_session)
-    pkg.classifiers = [
-        "License :: OSI Approved :: MIT License",
-        "License :: OSI Approved",
-    ]
-    assert pkg.get_license_from_classifiers(compliant) == "MIT"
+def test_multiline_license_keyword_fails(compliant, fake_fedora_licenses):
+    fake_pkg_data = {"info": {"license": "This is absolutely\nhorrible\nidea\nto\ndo..."}}
+    pkg = PypiPackage("_", package_metadata=fake_pkg_data)
+    with pytest.raises(SystemExit):
+        pkg.license(check_compliance=compliant, licenses_dict=fake_fedora_licenses)
 
 
-def test_zip_sdist_is_added_to_source_macro(betamax_session):
-    pkg = PypiPackage("azure-common", session=betamax_session)
+@pytest.mark.parametrize("compliant", (True, False))
+def test_empty_license_keyword_fails(compliant, fake_fedora_licenses):
+    fake_pkg_data = {"info": {"license": "", "classifiers": []}}
+    pkg = PypiPackage("_", package_metadata=fake_pkg_data)
+    with pytest.raises(SystemExit):
+        pkg.license(check_compliance=compliant, licenses_dict=fake_fedora_licenses)
+
+
+def test_nonexisting_classifiers():
+    fake_pkg_data = {"info": {"classifiers": ["License :: OSI Approved :: XXXXXX"]}}
+    pkg = PypiPackage("_", package_metadata=fake_pkg_data)
+    with pytest.raises(SystemExit):
+        pkg.license()
+
+
+def test_zip_sdist_is_added_to_source_macro():
+
+    fake_pkg_data = {
+        "releases": {
+            "1.2.3": [{
+                "filename": "Awesome_TestPkg-1.2.3.zip",
+                "packagetype": "sdist"}]
+                },
+        "info": {"version": "1.2.3"}
+    }
+    pkg = PypiPackage("_", package_metadata=fake_pkg_data)
     version = pkg.version()
-    assert pkg.source(version) == "%{pypi_source azure-common %{version} zip}"
+    assert pkg.source(version) == "%{pypi_source Awesome_TestPkg %{version} zip}"
 
 
-def test_no_homepage_in_metadata(betamax_session):
-    pkg = PypiPackage("pycountry", session=betamax_session)
-    assert pkg.project_url() == "https://pypi.org/project/pycountry/"
+def test_no_homepage_in_metadata():
+    fake_pkg_data = {"info": {"package_url": "https://foo"}}
+    pkg = PypiPackage("_", package_metadata=fake_pkg_data)
+    assert pkg.project_url() == "https://foo"
 
 
-def test_summary_is_generated_if_not_in_upstream(betamax_session):
-    pkg = PypiPackage("google-cloud-appengine-logging", session=betamax_session)
+def test_summary_is_generated_if_not_in_upstream():
+    fake_pkg_data = {"info": {"summary": ""}}
+    pkg = PypiPackage("_", package_metadata=fake_pkg_data)
     assert pkg.summary() == "..."
 
 
-def test_summary_is_generated_if_upstream_data_is_multiline(betamax_session):
-    pkg = PypiPackage("wifi", session=betamax_session)
+def test_summary_is_generated_if_upstream_data_is_multiline():
+    fake_pkg_data = {"info": {"summary": "I\nforgot\nthat summary\nmust\nbe short"}}
+    pkg = PypiPackage("_", package_metadata=fake_pkg_data)
     assert pkg.summary() == "..."
 
 
-def test_pypi_name_with_underscore_is_normalized(betamax_session):
-    pkg = PypiPackage("sphinx_design", session=betamax_session)
-    assert pkg.pypi_name == "sphinx-design"
-    assert pkg.python_name() == "python-sphinx-design"
-
-
-def test_pypi_name_with_capital_letter_is_normalized(betamax_session):
-    pkg = PypiPackage("Pello", session=betamax_session)
-    assert pkg.pypi_name == "pello"
-    assert pkg.python_name() == "python-pello"
+def test_capitalized_underscored_pypi_name_is_normalized():
+    fake_pkg_data = {"info": {"name": "Awesome_TestPkg"}}
+    pkg = PypiPackage("Awesome_TestPkg", package_metadata=fake_pkg_data)
+    assert pkg.pypi_name == "awesome-testpkg"
+    assert pkg.python_name() == "python-awesome-testpkg"
 
 
 @pytest.mark.parametrize(
-    ("package", "pypi_version", "rpm_version"), [
-        ("markdown-it-py", "1.1.0", "1.1.0"),
-        ("javascript", "1!0.2.13", "1:0.2.13"),
-        ("python3-wget", "0.0.2-beta1", "0.0.2~b1"),
-        ("django-apistar", "0.5.40-0", "0.5.40^post0"),
+    ("pypi_version", "rpm_version"), [
+        ("1.1.0", "1.1.0"),
+        ("1!0.2.13", "1:0.2.13"),
+        ("0.0.2-beta1", "0.0.2~b1"),
+        ("0.5.40-0", "0.5.40^post0"),
     ]
 )
-def test_pypi_version_is_converted_to_rpm(betamax_parametrized_session, package, pypi_version, rpm_version):
-    config = create_config_contents(
-        package,
-        version=pypi_version,
-        session=betamax_parametrized_session,
-    )
-    assert config["version"] == rpm_version
+def test_pypi_version_is_converted_to_rpm(pypi_version, rpm_version):
+    assert convert_version_to_rpm_scheme(pypi_version) == rpm_version
 
 
 @pytest.mark.parametrize(
-    ("package", "pypi_version", "pypi_version_macro"), [
-        ("tomli", None, "%{version}"),
-        ("markdown-it-py", "1.1.0", "%{version}"),
-        ("javascript", "1!0.2.13", "1!0.2.13"),
-        ("python3-wget", "0.0.2-beta1", "0.0.2-beta1"),
-        ("django-apistar", "0.5.40-0", "0.5.40-0"),
+    ("pypi_version", "pypi_version_macro"), [
+        ("1.1.0", "%{version}"),  # conversion to RPM doesn't change the string
+        ("1!0.2.13", "1!0.2.13"),  # Version string is normalized, see previous test
+        ("0.0.2-beta1", "0.0.2-beta1"),
+        ("0.5.40-0", "0.5.40-0"),
     ]
 )
-def test_pypi_version_is_converted_to_rpm(betamax_parametrized_session, package, pypi_version, pypi_version_macro):
-    config = create_config_contents(
-        package,
-        version=pypi_version,
-        session=betamax_parametrized_session,
-    )
-    assert config["pypi_version"] == pypi_version_macro
+def test_pypi_version_or_macro(pypi_version, pypi_version_macro):
+    fake_pkg_data = {"info": {"version": pypi_version}}
+    pkg = PypiPackage("_", package_metadata=fake_pkg_data)
+    assert pkg.pypi_version_or_macro(pypi_version) == pypi_version_macro

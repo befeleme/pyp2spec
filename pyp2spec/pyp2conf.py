@@ -1,6 +1,5 @@
 from datetime import date
 from functools import wraps
-from importlib.resources import open_text
 from subprocess import check_output
 import json
 import re
@@ -11,14 +10,23 @@ import requests
 import tomli_w
 
 from pyp2spec.rpmversion import RpmVersion
+from pyp2spec.license_processor import classifiers_to_spdx_identifiers
+from pyp2spec.license_processor import license_keyword_to_spdx_identifiers, good_for_fedora
+
+
+class NoLicenseDetectedError(ValueError):
+    """Raised when there's no valid license detected"""
 
 
 class PypiPackage:
-    """Get and save package data from PyPI."""
+    """Store and process the package data obtained from PyPI."""
 
-    def __init__(self, package, session=None):
-        self.package = package
-        self.package_data = self.get_package_metadata(session)
+    def __init__(self, package_name, *, package_metadata=None, session=None):
+        self.package_name = package_name
+        # package_metadata - custom dictionary with package metadata - used for testing
+        # in the typical app run it's not set,
+        # meaning we jump to the other sources package metadata data (eg. PyPI)
+        self.package_data = package_metadata or self.get_package_metadata(session=session)
         self.sdist_filename = None
 
     @property
@@ -34,13 +42,13 @@ class PypiPackage:
 
         return re.sub(r"[-_.]+", "-", package_name).lower()
 
-    def get_package_metadata(self, session):
-        pkg_index = f"https://pypi.org/pypi/{self.package}/json"
+    def get_package_metadata(self, *,session=None):
+        pkg_index = f"https://pypi.org/pypi/{self.package_name}/json"
         s = session or requests.Session()
         try:
             response = s.get(pkg_index).json()
         except json.decoder.JSONDecodeError:
-            click.secho(f"'{self.package}' was not found on PyPI, did you spell it correctly?", fg="red")
+            click.secho(f"'{self.package_name}' was not found on PyPI, did you spell it correctly?", fg="red")
             sys.exit(1)
         else:
             return response
@@ -92,71 +100,70 @@ class PypiPackage:
             return "%{version}"
         return version
 
-    def license(self, compliant=False):
+    def filter_license_classifiers(self):
+        """Return the list of license classifiers defined for the package.
+
+        Filter out the parent categories `OSI-/DFSG Approved` which don't have any meaning.
+        """
+
+        return  [
+            c for c in self.package_data["info"]["classifiers"]
+            if (
+                c.startswith("License")
+                and c not in ("License :: OSI Approved", "License :: DFSG approved")
+            )
+        ]
+
+    def transform_to_spdx(self):
+        """Return SPDX identifiers and expression based on the found
+        package license metadata (classifiers or license keyword).
+        
+        If multiple identifiers are found, create an expression that's the safest option (with AND as joining operator).
+        Raise ValueError if no valid SPDX identifiers are found.
+        """
+
+        if (license_classifiers := self.filter_license_classifiers()):
+            identifiers = classifiers_to_spdx_identifiers(license_classifiers)
+            if identifiers:
+                expression = " AND ".join(identifiers)
+                return (identifiers, expression)
+
+        license_keyword = self.package_data["info"]["license"]
+        identifiers = license_keyword_to_spdx_identifiers(license_keyword)
+
+        # No more options to detect licenses left, hence explicit fail
+        if not identifiers:
+            raise NoLicenseDetectedError()
+        return (identifiers, license_keyword)
+
+    def license(self, *, check_compliance=False, session=None, licenses_dict=None):
         """Return the license string from package metadata.
 
-        First, check trove classifiers which are the current Python standard:
-        https://www.python.org/dev/peps/pep-0301/#distutils-trove-classification
-        If argument `compliant` is set to True, perform the approximate compliance
-        check of the parsed classifiers with Fedora Good Licenses.
+        If `check_compliance` is set to True, check each of the found
+        SPDX identifiers against the Fedora allowed licenses.
         This isn't a 100% reliable solution and in case of ambiguous results,
         the license is discarded as invalid.
-        Only if a package doesn't define the license in the classifiers, the "license"
-        keyword is checked. There isn't any check whether that value is compliant
-        with Fedora, it is passed to the config file for the user to validate.
-        Some packages fill in "license" with the whole license text.
-        This is indicated by the multiline value and such is discarded as invalid.
-
-        If the license can't be determined from both classifiers and "license"
-        keyword, this fact is logged and the script ended.
+        If the license can't be determined, this fact is printed to stdout and the script ends.
         """
-        click.secho("Attempting to get license from Classifiers", fg="cyan")
-        self.classifiers = self.read_license_classifiers()
-        # Process classifiers further if there are some
-        if self.classifiers:
-            return self.get_license_from_classifiers(compliant)
-        else:
-            click.secho("License in Classifiers not found, looking for the 'License' keyword", fg="cyan")
-            pkg_license = self.package_data["info"]["license"]
-            # Check if license isn't empty and is only one line
-            if pkg_license and len(pkg_license.split("\n")) == 1:
-                return pkg_license
-            else:
-                click.secho("Invalid license field value length, cannot reliably determine the license", fg="red")
 
-        click.secho("License not found. Specify --license explicitly. Quitting", fg="red")
-        sys.exit(1)
+        try:
+            identifiers, expression = self.transform_to_spdx()
+        except NoLicenseDetectedError:
+            click.secho("No valid license detected, Quitting", fg="red")
+            sys.exit(1)
+        except Exception as err:
+            click.secho(err, fg="red")
+            sys.exit(1)
+        if check_compliance:
+            is_compliant, bad_identifiers = good_for_fedora(identifiers, session=session, licenses_dict=licenses_dict)
+            if not is_compliant:
+                if bad_identifiers:
+                    err_string = "The detected licenses: `{0}` aren't allowed in Fedora."
+                    click.secho(err_string.format(", ".join(bad_identifiers), fg="red"))
+                click.secho("Could not create a compliant license field, Quitting", fg="red")
+                sys.exit(1)
 
-    def get_license_from_classifiers(self, compliant):
-        license_map = self.read_license_map()
-        licenses = []
-        for classifier in self.classifiers:
-            short_license, fedora_status = license_map[classifier]
-            # "OSI Approved" is a top-level category which doesn't bring
-            # any valuable information, let's just ignore it when encountered
-            if short_license == "OSI Approved":
-                continue
-            if compliant:
-                # "???" are APSL, Artistic, Eiffel - some versions are Fedora OK,
-                # some not. On PyPI there are <100 packages with them, rather than
-                # adding another layer of decision matrix, just skip them all.
-                if fedora_status in ["BAD", "UNKNOWN", "???"]:
-                    click.secho(f"License '{short_license}' is or may not be allowed in Fedora, quitting", fg="red")
-                    sys.exit(1)
-                else:
-                    licenses.append(short_license)
-            else:
-                licenses.append(short_license)
-        return " and ".join(licenses)
-
-    def read_license_map(self):
-        with open_text("pyp2spec", "classifiers_to_fedora.json") as f:
-            license_map = json.load(f)
-        return license_map
-
-    def read_license_classifiers(self):
-        classifiers = self.package_data["info"]["classifiers"]
-        return [c for c in classifiers if c.startswith("License")]
+        return expression
 
     def summary(self):
         summary = self.package_data["info"]["summary"]
@@ -301,7 +308,7 @@ def create_config_contents(
 
     # a package name was given as the `package`, look for it on PyPI
     if is_package_name(package):
-        pkg = PypiPackage(package, session)
+        pkg = PypiPackage(package, session=session)
         click.secho(f"Querying PyPI for package '{package}'", fg="cyan")
     # a URL was given as the `package`
     else:
@@ -326,7 +333,7 @@ def create_config_contents(
         click.secho(f"Assuming PyPI --version={version}", fg="yellow")
 
     if license is None:
-        license = pkg.license(compliant)
+        license = pkg.license(check_compliance=compliant, session=session)
         click.secho(f"Assuming --license={license}", fg="yellow")
 
     if release is None:
