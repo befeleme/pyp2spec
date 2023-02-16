@@ -1,0 +1,240 @@
+{   
+    "39": {
+        "license": {
+            "expression": "GPL-3.0-or-later WITH Classpath-exception-2.0",
+            "status": [
+                "allowed"
+            ],
+            "url": "https://fedoraproject.org/wiki/Licensing/GPL_Classpath_Exception"
+        },
+        "fedora": {
+            "legacy-name": [
+                "GNU General Public License v3.0 or later, with Classpath exception"
+            ],
+            "legacy-abbreviation": [
+                "GPLv3+ with exceptions"
+            ]
+        },
+        "approved": "yes",
+        "fedora_abbrev": "GPLv3+ with exceptions",
+        "fedora_name": "GNU General Public License v3.0 or later, with Classpath exception",
+        "spdx_abbrev": "GPL-3.0-or-later WITH Classpath-exception-2.0"
+    },
+    "346": {
+        "approved": "yes",
+        "spdx_abbrev": "GPL-3.0-or-later WITH GCC-exception-3.1",
+        "license": {
+            "expression": "GPL-3.0-or-later WITH GCC-exception-3.1",
+            "status": [
+                "allowed"
+            ]
+        },
+        "fedora": {}
+    },
+
+    "0": {
+        "license": {
+            "expression": "CC0-1.0",
+            "status": [
+                "allowed-content"
+            ],
+            "url": "http://creativecommons.org/publicdomain/zero/1.0/legalcode",
+            "usage": "Existing uses of CC0-1.0 on code files in Fedora packages prior to\n2022-08-01, and subsequent upstream versions of those files in those\npackages, continue to be allowed. We encourage Fedora package\nmaintainers to ask upstreams to relicense such files.\n\nUpstream application of CC0-1.0 to trivial, noncreative, unoriginal,\nand nonexpressive material as part of an effort to achieve conformance\nto the REUSE specification (https://reuse.software/) (for example,\nCI/CD configuration files) is permitted regardless of whether such\nmaterial would normally be classified as \"content\"."
+        },
+        "fedora": {
+            "legacy-name": [
+                "Creative Commons Zero 1.0 Universal"
+            ],
+            "legacy-abbreviation": [
+                "CC0"
+            ]
+        },
+        "approved": "yes",
+        "fedora_abbrev": "CC0",
+        "fedora_name": "Creative Commons Zero 1.0 Universal",
+        "spdx_abbrev": "CC0-1.0"
+    },
+
+    "32": {
+        "license": {
+            "expression": "LicenseRef-LPPL",
+            "status": [
+                "allowed-fonts"
+            ]
+        },
+        "fedora": {
+            "legacy-name": [
+                "GUST Font License"
+            ],
+            "legacy-abbreviation": [
+                "LPPL"
+            ]
+        },
+        "approved": "yes",
+        "fedora_abbrev": "LPPL",
+        "fedora_name": "GUST Font License",
+        "spdx_abbrev": "LicenseRef-LPPL"
+    },
+
+    "237": {
+        "approved": "no",
+        "spdx_abbrev": "EUPL-1.0",
+        "license": {
+            "expression": "EUPL-1.0",
+            "status": [
+                "not-allowed"
+            ],
+            "url": "http://ec.europa.eu/idabc/eupl"
+        },
+        "fedora": {}
+    },
+
+    "339": {
+        "license": {
+            "expression": "AAL",
+            "status": [
+                "allowed"
+            ],
+            "url": "http://opensource.org/licenses/attribution.php"
+        },
+        "fedora": {
+            "legacy-name": [
+                "Attribution Assurance License"
+            ],
+            "legacy-abbreviation": [
+                "AAL"
+            ]
+        },
+        "approved": "yes",
+        "fedora_abbrev": "AAL",
+        "fedora_name": "Attribution Assurance License",
+        "spdx_abbrev": "AAL"
+    },
+
+    "328": {
+        "license": {
+            "expression": "MIT",
+            "status": [
+                "allowed"
+            ],
+            "url": "https://fedoraproject.org/wiki/Licensing:MIT?rd=Licensing/MIT#Modern_Style_with_sublicense"
+        },
+        "fedora": {
+            "legacy-name": [
+                "MIT:Modern Style with sublicense"
+            ],
+            "legacy-abbreviation": [
+                "MIT"
+            ]
+        },
+        "approved": "yes",
+        "fedora_abbrev": "MIT",
+        "fedora_name": "MIT:Modern Style with sublicense",
+        "spdx_abbrev": "MIT"
+    },
+
+    "121": {
+        "license": {
+            "expression": "CECILL-B",
+            "status": [
+                "allowed"
+            ],
+            "url": "http://www.cecill.info/licences.en.html"
+        },
+        "fedora": {
+            "legacy-name": [
+                "CeCILL-B License"
+            ],
+            "legacy-abbreviation": [
+                "CeCILL-B"
+            ]
+        },
+        "approved": "yes",
+        "fedora_abbrev": "CeCILL-B",
+        "fedora_name": "CeCILL-B License",
+        "spdx_abbrev": "CECILL-B"
+    },
+    
+    "142": {
+        "license": {
+            "expression": "CECILL-C",
+            "status": [
+                "allowed"
+            ],
+            "url": "http://www.cecill.info/licences.en.html"
+        },
+        "fedora": {
+            "legacy-name": [
+                "CeCILL-C License"
+            ],
+            "legacy-abbreviation": [
+                "CeCILL-C"
+            ]
+        },
+        "approved": "yes",
+        "fedora_abbrev": "CeCILL-C",
+        "fedora_name": "CeCILL-C License",
+        "spdx_abbrev": "CECILL-C"
+    },
+
+    "40": {
+        "approved": "no",
+        "spdx_abbrev": "Aladdin",
+        "license": {
+            "expression": "Aladdin",
+            "status": [
+                "not-allowed"
+            ],
+            "url": "http://www.artifex.com/downloads/doc/Public.htm"
+        },
+        "fedora": {}
+    },
+
+    "48": {
+        "approved": "no",
+        "spdx_abbrev": "LicenseRef-OpenFlow",
+        "license": {
+            "expression": "LicenseRef-OpenFlow",
+            "status": [
+                "not-allowed"
+            ],
+            "text": "We are making <project or content> available for public use and benefit with the\nexpectation that others will use, modify and enhance the Software and\ncontribute those enhancements back to the community. However, since we\nwould like to make the Software available for broadest use, with as few\nrestrictions as possible permission is hereby granted, free of charge, to\nany person obtaining a copy of this Software to deal in the Software\nunder the copyrights without restriction, including without limitation\nthe rights to use, copy, modify, merge, publish, distribute, sublicense,\nand/or sell copies of the Software, and to permit persons to whom the\nSoftware is furnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included\nin all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS\nOR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF\nMERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.\nIN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY\nCLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,\nTORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE\nSOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n\nThe name and trademarks of copyright holder(s) may NOT be used in\nadvertising or publicity pertaining to the Software or any derivatives\nwithout specific, written prior permission."
+        },
+        "fedora": {}
+    },
+    
+    "379": {
+        "approved": "no",
+        "spdx_abbrev": "APL-1.0",
+        "license": {
+            "expression": "APL-1.0",
+            "status": [
+                "not-allowed"
+            ],
+            "url": "http://opensource.org/licenses/apl1.0.php"
+        },
+        "fedora": {}
+    },
+
+"406": {
+    "license": {
+        "expression": "MIT-0",
+        "status": [
+            "allowed"
+        ],
+        "url": "https://fedoraproject.org/wiki/Licensing/MIT-0"
+    },
+    "fedora": {
+        "legacy-name": [
+            "MIT No Attribution (MIT-0)"
+        ],
+        "legacy-abbreviation": [
+            "MIT-0"
+        ]
+    },
+    "approved": "yes",
+    "fedora_abbrev": "MIT-0",
+    "fedora_name": "MIT No Attribution (MIT-0)",
+    "spdx_abbrev": "MIT-0"
+}
+}
