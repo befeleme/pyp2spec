@@ -1,7 +1,6 @@
 from datetime import date
 from functools import wraps
 from subprocess import check_output
-import json
 import re
 import sys
 
@@ -45,13 +44,12 @@ class PypiPackage:
     def get_package_metadata(self, *,session=None):
         pkg_index = f"https://pypi.org/pypi/{self.package_name}/json"
         s = session or requests.Session()
-        try:
-            response = s.get(pkg_index).json()
-        except json.decoder.JSONDecodeError:
+        response = s.get(pkg_index)
+        if not response.ok:
             click.secho(f"'{self.package_name}' was not found on PyPI, did you spell it correctly?", fg="red")
             sys.exit(1)
         else:
-            return response
+            return response.json()
 
     def python_name(self):
         if self.pypi_name.startswith("python"):

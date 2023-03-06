@@ -7,6 +7,9 @@
 to determine whether the license is allowed in Fedora. Data is provided by the [Fedora Legal team](https://gitlab.com/fedora/legal/fedora-license-data/)
 - tomllib library is used to read toml files from Python 3.11 on
 
+### Fixed
+- pyp2spec quits when a package is not found on PyPI
+
 
 # [0.6.1] - 2022-08-01
 ### Fixed

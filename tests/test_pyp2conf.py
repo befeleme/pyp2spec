@@ -18,6 +18,11 @@ def changelog():
     return ("Wed Nov 03 2021", "Packager", "packager@maint.com")
 
 
+def test_non_existent_package(betamax_session):
+    with pytest.raises(SystemExit):
+        PypiPackage("definitely-nonexisting-package-name", session=betamax_session)
+
+
 @pytest.mark.parametrize("package, version",
     [
         ("aionotion", "2.0.3"),
