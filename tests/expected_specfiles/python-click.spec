@@ -1,6 +1,6 @@
 Name:           python-click
 Version:        7.1.2
-Release:        1%{?dist}
+Release:        %autorelease
 Summary:        Composable command line interface toolkit
 
 # Check if the automatically generated License and its spelling is correct for Fedora
@@ -53,5 +53,4 @@ Summary:        %{summary}
 
 
 %changelog
-* Wed Nov 03 2021 Packager <packager@maint.com> - 7.1.2-1
-- Initial package
+%autochangelog

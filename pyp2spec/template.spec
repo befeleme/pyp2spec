@@ -1,6 +1,6 @@
 Name:           {{python_name}}
 Version:        {{version}}
-Release:        {{release}}%{?dist}
+Release:        %autorelease
 Summary:        {{summary}}
 
 # Check if the automatically generated License and its spelling is correct for Fedora
@@ -70,5 +70,4 @@ Summary:        %{summary}
 {% endif %}
 
 %changelog
-* {{changelog_head}} - {{version}}-{{release}}
-- {{changelog_msg}}
+%autochangelog

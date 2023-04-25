@@ -13,11 +13,6 @@ from pyp2spec.pyp2conf import PypiPackage, create_config_contents
 from pyp2spec.pyp2conf import convert_version_to_rpm_scheme
 
 
-@pytest.fixture
-def changelog():
-    return ("Wed Nov 03 2021", "Packager", "packager@maint.com")
-
-
 def test_non_existent_package(betamax_session):
     with pytest.raises(SystemExit):
         PypiPackage("definitely-nonexisting-package-name", session=betamax_session)
@@ -29,14 +24,11 @@ def test_non_existent_package(betamax_session):
         ("click", "7.1.2"),
     ]
 )
-def test_automatically_generated_config_is_valid(betamax_parametrized_session, changelog, package, version):
+def test_automatically_generated_config_is_valid(betamax_parametrized_session, package, version):
     """Run the config rendering in fully automated mode and compare the results"""
     config = create_config_contents(
         package=package,
         version=version,
-        date=changelog[0],
-        name=changelog[1],
-        email=changelog[2],
         session=betamax_parametrized_session,
     )
 
@@ -55,13 +47,8 @@ def test_config_with_customization_is_valid(betamax_session):
     config = create_config_contents(
         package=package,
         description="A asyncio-friendly library for Notion Home Monitoring devices.\n",
-        release="4",
-        message="Rebuilt for Python 3.10",
-        email="package@manager.com",
-        name="Package Manager",
         version="2.0.3",
         summary="Python library for Notion Home Monitoring",
-        date="Fri Jun 04 2021",
         top_level=True,
         compliant=True,
         session=betamax_session,
@@ -73,14 +60,11 @@ def test_config_with_customization_is_valid(betamax_session):
     assert config == loaded_contents
 
 
-def test_archful_package(betamax_session, changelog):
+def test_archful_package(betamax_session):
     """Generate config for tornado which is archful"""
     package = "tornado"
     config = create_config_contents(
         package=package,
-        date=changelog[0],
-        name=changelog[1],
-        email=changelog[2],
         top_level=True,
         license="Apache 2.0",
         archful=True,

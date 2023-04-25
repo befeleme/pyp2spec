@@ -2,6 +2,8 @@
 
 # Unreleased
 ### Changed
+- rpmautospec macros (`%autochangelog` and `%autorelease`) are now used to populate the respective
+fields in the generated specfile. The CLI options for defining custom values have been removed
 - Convert the Python classifiers to Fedora SPDX expressions (where possible, based on [PEP 639](https://peps.python.org/pep-0639/))
 - When `--fedora-compliant` option is set, a check of the converted license expressions is performed
 to determine whether the license is allowed in Fedora. Data is provided by the [Fedora Legal team](https://gitlab.com/fedora/legal/fedora-license-data/)
