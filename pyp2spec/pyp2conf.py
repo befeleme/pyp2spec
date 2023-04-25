@@ -1,6 +1,4 @@
-from datetime import date
 from functools import wraps
-from subprocess import check_output
 import re
 import sys
 
@@ -226,32 +224,6 @@ class PypiPackage:
         return archive_name
 
 
-def changelog_head(email, name, changelog_date):
-    """Return f'{date} {name} <{email}>'"""
-
-    # Date is set for the tests
-    if not changelog_date:
-        changelog_date = (date.today()).strftime("%a %b %d %Y")
-
-    if email or name:
-        return f"{changelog_date} {name} <{email}>"
-
-    try:
-        result = check_output(["rpmdev-packager"])
-        result = result.decode().strip()
-    except FileNotFoundError:
-        # Set a dummy value not to fail on missing changelog data
-        result = "mockbuilder"
-
-    return f"{changelog_date} {result}"
-
-
-def changelog_msg():
-    """Return a default changelog message."""
-
-    return "Initial package"
-
-
 def get_description(package):
     """Return a default package description."""
 
@@ -286,13 +258,8 @@ def is_package_name(package):
 def create_config_contents(
     package,
     description=None,
-    release=None,
-    message=None,
-    email=None,
-    name=None,
     version=None,
     summary=None,
-    date=None,
     session=None,
     license=None,
     compliant=False,
@@ -312,12 +279,6 @@ def create_config_contents(
     else:
         raise NotImplementedError
 
-    # If the arguments weren't provided via CLI,
-    # get them from the stored package object data or the default values
-    if message is None:
-        message = changelog_msg()
-        click.secho(f"Assuming changelog --message={message}", fg="yellow")
-
     if description is None:
         description = get_description(package)
         click.secho(f"Assuming --description={description}", fg="yellow")
@@ -334,10 +295,6 @@ def create_config_contents(
         license = pkg.license(check_compliance=compliant, session=session)
         click.secho(f"Assuming --license={license}", fg="yellow")
 
-    if release is None:
-        release = "1"
-        click.secho(f"Assuming --release={release}", fg="yellow")
-
     if top_level:
         click.secho("Only top-level modules will be checked", fg="yellow")
         contents["test_top_level"] = True
@@ -347,14 +304,11 @@ def create_config_contents(
         click.secho("You may need to specify manual_build_requires in the config file", fg="magenta")
         contents["archful"] = archful
 
-    contents["changelog_msg"] = message
-    contents["changelog_head"] = changelog_head(email, name, date)
     contents["description"] = description
     contents["summary"] = summary
     contents["version"] = convert_version_to_rpm_scheme(version)
     contents["pypi_version"] = pkg.pypi_version_or_macro(version)
     contents["license"] = license
-    contents["release"] = release
     contents["pypi_name"] = pkg.pypi_name
     contents["python_name"] = pkg.python_name()
     contents["url"] = pkg.project_url()
@@ -385,10 +339,6 @@ def create_config(options):
     contents = create_config_contents(
         options["package"],
         description=options["description"],
-        release=options["release"],
-        message=options["message"],
-        email=options["email"],
-        name=options["packager"],
         version=options["version"],
         summary=options["summary"],
         license=options["license"],
@@ -408,22 +358,6 @@ def pypconf_args(func):
     @click.option(
         "--description", "-d",
         help="Provide description for the package",
-    )
-    @click.option(
-        "--release", "-r",
-        help="Provide Fedora release, default: 1",
-    )
-    @click.option(
-        "--message", "-m",
-        help="Provide custom changelog message for the package",
-    )
-    @click.option(
-        "--email", "-e",
-        help="Provide e-mail for changelog, default: output of `rpmdev-packager`",
-    )
-    @click.option(
-        "--packager", "-p",
-        help="Provide packager name for changelog, default: output of `rpmdev-packager`",
     )
     @click.option(
         "--version", "-v",

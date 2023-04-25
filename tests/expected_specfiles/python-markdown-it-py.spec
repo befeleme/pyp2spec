@@ -1,6 +1,6 @@
 Name:           python-markdown-it-py
 Version:        1.1.0
-Release:        3%{?dist}
+Release:        %autorelease
 Summary:        Python port of markdown-it
 
 # Check if the automatically generated License and its spelling is correct for Fedora
@@ -65,5 +65,4 @@ not test_linkify'
 
 
 %changelog
-* Fri Jul 23 2021 Package Maintainer <package@maintainer.com> - 1.1.0-3
-- Rebuilt
+%autochangelog
