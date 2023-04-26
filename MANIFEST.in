@@ -1,4 +1,2 @@
-include tests/test_*
-recursive-include tests/expected_specfiles *
-recursive-include tests/fixtures *
-recursive-include tests/test_configs *
+recursive-include tests *
+recursive-exclude tests/__pycache__ *
