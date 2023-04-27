@@ -85,7 +85,7 @@ def license_keyword_to_spdx_identifiers(license_keyword):
         # The objects are stored in sets, sort and return as a list
         return sorted(parsed_license.objects)
     except ExpressionError as err:
-        raise ValueError("Invalid SPDX expression") from err
+        raise ValueError(f"Invalid SPDX expression: {license_keyword}") from err
 
 
 def _load_fedora_licenses(source_path=None, session=None):
