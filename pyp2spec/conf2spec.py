@@ -1,4 +1,4 @@
-from importlib.resources import read_text
+from importlib.resources import files
 from textwrap import fill
 
 import click
@@ -143,7 +143,8 @@ def wrap_description(config):
 def fill_in_template(config):
     """Return template rendered with data from config file."""
 
-    spec_template = Template(read_text("pyp2spec", TEMPLATE_FILENAME))
+    with (files("pyp2spec") / TEMPLATE_FILENAME).open("r", encoding="utf-8") as f:
+        spec_template = Template(f.read())
 
     result = spec_template.render(
         archful=config.get_bool("archful"),

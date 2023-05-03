@@ -1,4 +1,4 @@
-from importlib.resources import open_text
+from importlib.resources import files
 import json
 
 import requests
@@ -10,7 +10,7 @@ FEDORA_LICENSES = {}
 
 
 def _load_package_resource(filename):
-    with open_text("pyp2spec", filename) as f:
+    with (files("pyp2spec") / filename).open("r", encoding="utf-8") as f:
         return json.load(f)
 
 
