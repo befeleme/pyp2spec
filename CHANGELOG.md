@@ -1,6 +1,6 @@
 # Changelog
 
-# Unreleased
+# [0.7.0] - 2023-05-03
 ### Changed
 - rpmautospec macros (`%autochangelog` and `%autorelease`) are now used to populate the respective
 fields in the generated specfile. The CLI options for defining custom values have been removed
