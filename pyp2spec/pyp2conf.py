@@ -9,10 +9,19 @@ import tomli_w
 from pyp2spec.rpmversion import RpmVersion
 from pyp2spec.license_processor import classifiers_to_spdx_identifiers
 from pyp2spec.license_processor import license_keyword_to_spdx_identifiers, good_for_fedora
+from pyp2spec.utils import Pyp2specError
 
 
-class NoLicenseDetectedError(ValueError):
+class NoLicenseDetectedError(Pyp2specError):
     """Raised when there's no valid license detected"""
+
+
+class SdistNotFoundError(Pyp2specError):
+    """Raised when there's no sdist file in the PyPI metadata"""
+
+
+class PackageNotFoundError(Pyp2specError):
+    """Raised when there's no such package name on PyPI"""
 
 
 class PypiPackage:
@@ -44,10 +53,8 @@ class PypiPackage:
         s = session or requests.Session()
         response = s.get(pkg_index)
         if not response.ok:
-            click.secho(f"'{self.package_name}' was not found on PyPI, did you spell it correctly?", fg="red")
-            sys.exit(1)
-        else:
-            return response.json()
+            raise PackageNotFoundError(f"Package `{self.package_name}` was not found on PyPI")
+        return response.json()
 
     def python_name(self):
         if self.pypi_name.startswith("python"):
@@ -115,7 +122,7 @@ class PypiPackage:
         package license metadata (classifiers or license keyword).
         
         If multiple identifiers are found, create an expression that's the safest option (with AND as joining operator).
-        Raise ValueError if no valid SPDX identifiers are found.
+        Raise NoLicenseDetectedError if no valid SPDX identifiers are found.
         """
 
         if (license_classifiers := self.filter_license_classifiers()):
@@ -129,7 +136,7 @@ class PypiPackage:
 
         # No more options to detect licenses left, hence explicit fail
         if not identifiers:
-            raise NoLicenseDetectedError()
+            raise NoLicenseDetectedError("No valid license detected.")
         return (identifiers, license_keyword)
 
     def license(self, *, check_compliance=False, session=None, licenses_dict=None):
@@ -139,25 +146,17 @@ class PypiPackage:
         SPDX identifiers against the Fedora allowed licenses.
         This isn't a 100% reliable solution and in case of ambiguous results,
         the license is discarded as invalid.
-        If the license can't be determined, this fact is printed to stdout and the script ends.
+        If the compliant license can't be determined, raise NoLicenseDetectedError.
         """
 
-        try:
-            identifiers, expression = self.transform_to_spdx()
-        except NoLicenseDetectedError:
-            click.secho("No valid license detected, Quitting", fg="red")
-            sys.exit(1)
-        except Exception as err:
-            click.secho(err, fg="red")
-            sys.exit(1)
+        identifiers, expression = self.transform_to_spdx()
         if check_compliance:
             is_compliant, bad_identifiers = good_for_fedora(identifiers, session=session, licenses_dict=licenses_dict)
             if not is_compliant:
                 if bad_identifiers:
                     err_string = "The detected licenses: `{0}` aren't allowed in Fedora."
                     click.secho(err_string.format(", ".join(bad_identifiers), fg="red"))
-                click.secho("Could not create a compliant license field, Quitting", fg="red")
-                sys.exit(1)
+                raise NoLicenseDetectedError("Could not create a compliant license field.")
 
         return expression
 
@@ -186,9 +185,7 @@ class PypiPackage:
             if entry["packagetype"] == "sdist":
                 self.sdist_filename = entry["filename"]
                 return
-        # Not found, quit
-        click.secho("sdist not found, quitting", fg="red")
-        sys.exit(1)
+        raise SdistNotFoundError("sdist not found.")
 
     def is_zip_archive(self, version):
         """Return True if archive is a zip file, False otherwise.
@@ -244,15 +241,11 @@ def convert_version_to_rpm_scheme(version):
 
 
 def is_package_name(package):
-    """Check whether the string given as package contains `/`.
-    Return True if not, False otherwise."""
+    """Least-effort check whether `package` is a package name or URL.
+    Canonical package names can't contain '/'.
+    """
 
-    if "/" in package:
-        # It's probably URL
-        click.secho(f"Assuming '{package}' is a URL", fg="yellow")
-        return False
-    click.secho(f"Assuming '{package}' is a package name", fg="yellow")
-    return True
+    return not "/" in package
 
 
 def create_config_contents(
@@ -273,11 +266,12 @@ def create_config_contents(
 
     # a package name was given as the `package`, look for it on PyPI
     if is_package_name(package):
+        click.secho(f"Assuming '{package}' is a package name", fg="yellow")
         pkg = PypiPackage(package, session=session)
         click.secho(f"Querying PyPI for package '{package}'", fg="cyan")
     # a URL was given as the `package`
     else:
-        raise NotImplementedError
+        raise NotImplementedError("pyp2spec can't currently handle URLs.")
 
     if description is None:
         description = get_description(package)
@@ -391,8 +385,11 @@ def pypconf_args(func):
 @click.command()
 @pypconf_args
 def main(**options):
-    create_config(options)
-
+    try:
+        create_config(options)
+    except (Pyp2specError, NotImplementedError) as exc:
+        click.secho(f"Fatal exception occurred: {exc}", fg="red")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()

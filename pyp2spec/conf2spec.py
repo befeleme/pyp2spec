@@ -1,3 +1,5 @@
+import sys
+
 from importlib.resources import files
 from textwrap import fill
 
@@ -10,8 +12,13 @@ except ImportError:
 
 from jinja2 import Template
 
+from pyp2spec.utils import Pyp2specError
+
 
 TEMPLATE_FILENAME = "template.spec"
+
+class ConfigError(Pyp2specError):
+    """Raised when a config value has got a wrong type"""
 
 
 class ConfigFile:
@@ -32,26 +39,26 @@ class ConfigFile:
 
     def get_string(self, key):
         """Return a value for given key. Validate the value is a string.
-        Raise TypeError otherwise."""
+        Raise ConfigError otherwise."""
 
         return self._get_value(key, str)
 
     def get_list(self, key):
         """Return a value for given key. Validate the value is a list.
-        Raise TypeError otherwise."""
+        Raise ConfigError otherwise."""
 
         return self._get_value(key, list)
 
     def get_bool(self, key):
         """Return a value for given key. Validate the value is a boolean.
-        Raise TypeError otherwise."""
+        Raise ConfigError otherwise."""
 
         return self._get_value(key, bool)
 
     def _get_value(self, key, val_type):
         val = self.contents.get(key, val_type())
         if not isinstance(val, val_type):
-            raise TypeError(f"{val} must be a {val_type}")
+            raise ConfigError(f"{val} must be a {val_type}")
         return val
 
 
@@ -109,7 +116,7 @@ def generate_tox(config):
     raise NotImplementedError."""
 
     if unwanted_tests := generate_unwanted_tests(config):
-        raise NotImplementedError
+        raise NotImplementedError("It's currently impossible to filter out tests with %tox")
     return "%tox"
 
 
@@ -177,10 +184,9 @@ def save_spec_file(config, output):
     result = fill_in_template(config)
     if output is None:
         output = config.get_string("python_name") + ".spec"
-    with open(output, "w") as spec_file:
-        click.secho(f"Saving spec file to '{output}'", fg="yellow")
+    with open(output, "w", encoding="utf-8") as spec_file:
         spec_file.write(result)
-    click.secho("Spec file was saved successfully", fg="green")
+    click.secho(f"Spec file was saved successfully to '{output}'", fg="green")
     return output
 
 
@@ -198,8 +204,11 @@ def create_spec_file(config_file, spec_output=None):
     help="Provide custom output for spec file",
 )
 def main(config, spec_output):
-    create_spec_file(config, spec_output)
-
+    try:
+        create_spec_file(config, spec_output)
+    except (Pyp2specError, NotImplementedError) as exc:
+        click.secho(f"Fatal exception occurred: {exc}", fg="red")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()

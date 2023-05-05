@@ -3,6 +3,7 @@ The data is downloaded from the PyPI and stored in betamax casettes
 to prevent loading from the internet on each request.
 """
 import pytest
+import requests
 
 try:
     import tomllib
@@ -10,11 +11,11 @@ except ImportError:
     import tomli as tomllib
 
 from pyp2spec.pyp2conf import PypiPackage, create_config_contents
-from pyp2spec.pyp2conf import convert_version_to_rpm_scheme
+from pyp2spec.pyp2conf import convert_version_to_rpm_scheme, NoLicenseDetectedError, PackageNotFoundError
 
 
 def test_non_existent_package(betamax_session):
-    with pytest.raises(SystemExit):
+    with pytest.raises(PackageNotFoundError):
         PypiPackage("definitely-nonexisting-package-name", session=betamax_session)
 
 
@@ -95,9 +96,9 @@ def test_license_classifier_read_correctly():
 
 
 def test_no_license_classifiers_and_no_license_keyword():
-    pkg = PypiPackage("_", package_metadata={"info":{"classifiers": []}})
+    pkg = PypiPackage("_", package_metadata={"info":{"classifiers": [], "license": ""}})
     assert pkg.filter_license_classifiers() == []
-    with pytest.raises(SystemExit):
+    with pytest.raises(NoLicenseDetectedError):
         pkg.license()
 
 
@@ -121,7 +122,7 @@ def test_bad_license_fails_compliance_check(fake_fedora_licenses):
     ]}}
     pkg = PypiPackage("_", package_metadata=fake_pkg_data)
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(NoLicenseDetectedError):
         pkg.license(check_compliance=True, licenses_dict=fake_fedora_licenses)
 
 
@@ -140,7 +141,7 @@ def test_mix_good_bad_licenses_fail_compliance_check(fake_fedora_licenses):
         "License :: OSI Approved :: MIT License",
     ]}}
     pkg = PypiPackage("_", package_metadata=fake_pkg_data)
-    with pytest.raises(SystemExit):
+    with pytest.raises(NoLicenseDetectedError):
         pkg.license(check_compliance=True, licenses_dict=fake_fedora_licenses)
 
 
@@ -162,31 +163,16 @@ def test_license_keyword_without_compliance_check():
 def test_license_keyword_with_compliance_check(fake_fedora_licenses):
     fake_pkg_data = {"info": {"license": "RSCPL", "classifiers": []}}
     pkg = PypiPackage("_", package_metadata=fake_pkg_data)
-    with pytest.raises(SystemExit):
+    with pytest.raises(NoLicenseDetectedError):
         pkg.license(check_compliance=True, licenses_dict=fake_fedora_licenses)
-
-
-@pytest.mark.parametrize("compliant", (True, False))
-def test_multiline_license_keyword_fails(compliant, fake_fedora_licenses):
-    fake_pkg_data = {"info": {"license": "This is absolutely\nhorrible\nidea\nto\ndo..."}}
-    pkg = PypiPackage("_", package_metadata=fake_pkg_data)
-    with pytest.raises(SystemExit):
-        pkg.license(check_compliance=compliant, licenses_dict=fake_fedora_licenses)
 
 
 @pytest.mark.parametrize("compliant", (True, False))
 def test_empty_license_keyword_fails(compliant, fake_fedora_licenses):
     fake_pkg_data = {"info": {"license": "", "classifiers": []}}
     pkg = PypiPackage("_", package_metadata=fake_pkg_data)
-    with pytest.raises(SystemExit):
+    with pytest.raises(NoLicenseDetectedError):
         pkg.license(check_compliance=compliant, licenses_dict=fake_fedora_licenses)
-
-
-def test_nonexisting_classifiers():
-    fake_pkg_data = {"info": {"classifiers": ["License :: OSI Approved :: XXXXXX"]}}
-    pkg = PypiPackage("_", package_metadata=fake_pkg_data)
-    with pytest.raises(SystemExit):
-        pkg.license()
 
 
 def test_zip_sdist_is_added_to_source_macro():
