@@ -1,7 +1,10 @@
+import sys
+
 import click
 
 from pyp2spec.pyp2conf import create_config, pypconf_args
 from pyp2spec.conf2spec import create_spec_file
+from pyp2spec.utils import Pyp2specError
 
 
 @click.command()
@@ -12,9 +15,13 @@ from pyp2spec.conf2spec import create_spec_file
 )
 def main(**options):
     click.secho("Generating configuration file", fg="cyan")
-    config_file = create_config(options)
-    click.secho("Generating spec file", fg="cyan")
-    create_spec_file(config_file, options["spec_output"])
+    try:
+        config_file = create_config(options)
+        click.secho("Generating spec file", fg="cyan")
+        create_spec_file(config_file, options["spec_output"])
+    except (Pyp2specError, NotImplementedError) as exc:
+        click.secho(f"Fatal exception occurred: {exc}", fg="red")
+        sys.exit(1)
     click.secho("Done", fg="green")
 
 

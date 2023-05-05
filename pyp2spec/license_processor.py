@@ -4,9 +4,19 @@ import json
 import requests
 from license_expression import get_spdx_licensing, ExpressionError
 
+from pyp2spec.utils import Pyp2specError
+
 
 TROVE2FEDORA_MAP = {}
 FEDORA_LICENSES = {}
+
+
+class NoSuchClassifierError(Pyp2specError):
+    """Raised when the detected license classifier doesn't exist in pyp2spec's data"""
+
+
+class InvalidSPDXExpressionError(Pyp2specError):
+    """Raised when the assumed SPDX expression is not valid"""
 
 
 def _load_package_resource(filename):
@@ -45,7 +55,7 @@ def classifiers_to_spdx_identifiers(classifiers):
             err_string = f"{classifier}: Such classifier doesn't exist. " \
             "If you believe that's pyp2spec's error, open an issue at the project's GitHub repo: " \
             "https://github.com/befeleme/pyp2spec"
-            raise KeyError(err_string) from err
+            raise NoSuchClassifierError(err_string) from err
 
         # Classifiers that don't map unambiguously to a single Fedora SPDX expression are nulls
         # in the json
@@ -85,7 +95,7 @@ def license_keyword_to_spdx_identifiers(license_keyword):
         # The objects are stored in sets, sort and return as a list
         return sorted(parsed_license.objects)
     except ExpressionError as err:
-        raise ValueError(f"Invalid SPDX expression: {license_keyword}") from err
+        raise InvalidSPDXExpressionError(f"Invalid SPDX expression: {license_keyword}") from err
 
 
 def _load_fedora_licenses(source_path=None, session=None):
