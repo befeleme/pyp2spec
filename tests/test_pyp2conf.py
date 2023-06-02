@@ -61,17 +61,16 @@ def test_config_with_customization_is_valid(betamax_session):
 
 
 def test_archful_package(betamax_session):
-    """Generate config for tornado which is archful"""
-    package = "tornado"
+    """Generate config for numpy which is archful"""
+    package = "numpy"
     config = create_config_contents(
         package=package,
-        top_level=True,
-        license="Apache 2.0",
-        archful=True,
+        license="fake-string",
+        version="1.25.2",
         session=betamax_session,
     )
 
-    with open(f"tests/test_configs/customized_{package}.conf", "rb") as config_file:
+    with open(f"tests/test_configs/default_python-{package}.conf", "rb") as config_file:
         loaded_contents = tomllib.load(config_file)
 
     assert config["archful"] == loaded_contents["archful"]
@@ -271,3 +270,80 @@ def test_extras_detected_correctly():
     }
     pkg = PypiPackage("_", version="0", package_metadata=fake_pkg_data)
     assert pkg.extras() == ["dev", "docs", "lint", "test"]
+
+
+@pytest.mark.parametrize(
+    ("wheel_name", "archful"), [
+        ("sampleproject-3.0.0-py3-none-any.whl", False),
+        ("numpy-1.26.0-cp39-cp39-win_amd64.whl", True),
+        ("numpy-1.26.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", True),
+        ("numpy-1.26.0-cp39-cp39-musllinux_1_1_x86_64.whl", True),
+    ]
+)
+def test_archfulness_is_detected(wheel_name, archful):
+    fake_pkg_data = {
+        "urls": [
+            {
+                "packagetype": "bdist_wheel",
+                "filename": wheel_name,
+            }
+        ]
+    }
+    pkg = PypiPackage("_", version="0", package_metadata=fake_pkg_data)
+    assert pkg.is_archful() is archful
+
+
+def test_archfulness_is_detected_from_multiple_urls_1():
+    fake_pkg_data = {
+        "urls": [
+            {
+                "packagetype": "sdist",
+                "filename": "sampleproject-3.0.0.tar.gz",
+            },
+            {
+                "packagetype": "bdist_wheel",
+                "filename": "sampleproject-3.0.0-py3-none-any.whl",
+            },
+        ]
+    }
+    pkg = PypiPackage("_", version="0", package_metadata=fake_pkg_data)
+    assert not pkg.is_archful()
+
+
+def test_archfulness_is_detected_from_multiple_urls_2():
+    fake_pkg_data = {
+        "urls": [
+            {
+                "packagetype": "bdist_wheel",
+                "filename": "sampleproject-3.0.0-py3-none-any.whl",
+            },
+            {
+                "packagetype": "bdist_wheel",
+                "filename": "sampleproject-3.0.0-cp312-abi3-manylinux1_x86_64.whl",
+            },
+
+        ]
+    }
+    pkg = PypiPackage("_", version="0", package_metadata=fake_pkg_data)
+    assert pkg.is_archful()
+
+
+def test_archfulness_is_detected_from_multiple_urls_3():
+    fake_pkg_data = {
+        "urls": [
+            {
+                "packagetype": "bdist_wheel",
+                "filename": "sampleproject-3.0.0-cp312-abi3-manylinux1_x86_64.whl",
+            },
+            {
+                "packagetype": "bdist_wheel",
+                "filename": "sampleproject-3.0.0-cp39-cp39-win_amd64.whl",
+            },
+            {
+                "packagetype": "bdist_wheel",
+                "filename": "sampleproject-3.0.0-py3-none-any.whl",
+            },
+        ]
+    }
+    pkg = PypiPackage("_", version="0", package_metadata=fake_pkg_data)
+    assert pkg.is_archful()

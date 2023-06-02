@@ -12,7 +12,9 @@ Source:         {{source}}
 BuildArch:      noarch
 {%- endif %}
 BuildRequires:  python3-devel
-
+{% for br in additional_build_requires -%}
+BuildRequires:  {{br}}
+{% endfor %}
 
 # Fill in the actual package description to submit package to Fedora
 %global _description %{expand:
