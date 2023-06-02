@@ -59,15 +59,15 @@ python -m pyp2spec.conf2spec <config_file>
 
 ### Tests
 
-Test framework used in the project is pytest.
-The tests use pytest-regressions extension used to generate spec files to compare.
-The tests use betamax to record API calls and replay them from the prerecorded cassettes.
-To run the tests, run following commands:
+To run the tests, run [tox](https://tox.wiki/en/stable/index.html):
 
 ```
-python -m pip install pytest pytest-regressions betamax
-python -m pytest -vv
+tox
 ```
+
+You can install `tox` from your OS repository or PyPI.
+Test dependencies are defined in the project's `[test]` extra.
+
 
 ## Configuration file specification
 
