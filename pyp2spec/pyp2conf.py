@@ -204,6 +204,32 @@ class PypiPackage:
         except (KeyError, TypeError):
             return self.package_data["info"]["package_url"]
 
+    def is_archful(self):
+        """Determine if package is archful by checking the wheel filenames.
+
+        Wheel name consists of defined fields, one of them being an abi tag.
+        Example abi tags:
+        - click-0.2-py2.py3-none-any.whl -> "none"
+        - cryptography-2.2-cp34-abi3-manylinux1_x86_64.whl -> "abi3"
+        If the value is "none", wheel was not built for a specific architecture,
+        probably containing pure Python modules.
+        Other values indicate build for an architechture, which can mean
+        the presence of compiled extensions.
+        Packages can publish multiple wheels, the pure-Python alongside the compiled ones.
+        For our purposes, if we find at least one wheel with an abi tag different that "none",
+        we consider the package archful.
+        The compiled extensions bring optimizations and in Fedora,
+        it is generally encouraged to bring in the optional features of the packages.
+        """
+
+        for entry in self.package_data["urls"]:
+            if entry["packagetype"] == "bdist_wheel":
+                abi_tag = entry["filename"].split("-")[-2]
+                if abi_tag != "none":
+                    return True
+        # all of the found wheel names had 'none' as abi_tag
+        return False
+
     def find_and_save_sdist_filename(self):
         """Save the given's package version sdist name for further processing.
 
@@ -348,6 +374,8 @@ def create_config_contents(
         click.secho("Package is set to --archful", fg="magenta")
         click.secho("You may need to specify manual_build_requires in the config file", fg="magenta")
         contents["archful"] = archful
+    else:
+        contents["archful"] = pkg.is_archful()
 
     contents["description"] = description
     contents["summary"] = summary

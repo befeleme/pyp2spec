@@ -121,6 +121,7 @@ def test_archful_flag_is_loaded(config_dir, conf, expected):
         "default_python-click.conf",
         "customized_markdown-it-py.conf",
         "customized_python-sphinx.conf",
+        "default_python-numpy.conf"
     ]
 )
 def test_default_generated_specfile(file_regression, config_dir, conf):

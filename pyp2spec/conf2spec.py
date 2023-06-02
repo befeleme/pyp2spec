@@ -16,6 +16,9 @@ from pyp2spec.utils import Pyp2specError
 
 
 TEMPLATE_FILENAME = "template.spec"
+ADDITIONAL_BUILD_REQUIRES_ARCHFUL = ["gcc"]
+ADDITIONAL_BUILD_REQUIRES_NOARCH = []
+
 
 class ConfigError(Pyp2specError):
     """Raised when a config value has got a wrong type"""
@@ -107,6 +110,16 @@ def generate_unwanted_tests(config):
         return formatted_unwanteds
 
 
+def list_additional_build_requires(config):
+    """Returns a list of additionally defined BuildRequires,
+
+    The list differs for packages that are or aren't archful.
+    """
+    if config.get_bool("archful"):
+        return ADDITIONAL_BUILD_REQUIRES_ARCHFUL
+    return ADDITIONAL_BUILD_REQUIRES_NOARCH
+
+
 def wrap_description(config):
     """Wrap description line to 79 characters at most.
 
@@ -127,6 +140,7 @@ def fill_in_template(config):
         spec_template = Template(f.read())
 
     result = spec_template.render(
+        additional_build_requires=list_additional_build_requires(config),
         archful=config.get_bool("archful"),
         archive_name=config.get_string("archive_name"),
         binary_files=config.get_list("binary_files"),
