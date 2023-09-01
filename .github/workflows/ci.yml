@@ -14,4 +14,4 @@ jobs:
         tox_env: ${{ matrix.tox_env }}
     strategy:
       matrix:
-        tox_env: [py39, py310, py311, py312-dev]
+        tox_env: [py39, py310, py311, py312]
