@@ -89,6 +89,7 @@ Configuration data is stored in a TOML file.
 | url | project URL | string |
 | source | %{pypi_source} macro with optional arguments (tarball URL can be used instead) | string |
 | description | long package description | multiline string |
+| extras | extra subpackages names | list of strings |
 
 
 ### Optional fields
@@ -124,6 +125,7 @@ python_name = "python-aionotion"
 url = "https://github.com/bachya/aionotion"
 source = "%{pypi_source aionotion}"
 archive_name = "aionotion"
+extras = []
 ```
 
 ### Spec file generated using the example config

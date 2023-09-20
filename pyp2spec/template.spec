@@ -29,7 +29,11 @@ BuildRequires:  {{br}}
 Summary:        %{summary}
 
 %description -n python3-{{name}} %_description
-
+{% if extras %}
+# For official Fedora packages, review which extras should be actually packaged
+# See: https://docs.fedoraproject.org/en-US/packaging-guidelines/Python/#Extras
+%pyproject_extras_subpkg -n python3-{{name}} {{extras}}
+{% endif %}
 
 %prep
 %autosetup -p1 -n {{archive_name}}-{{pypi_version}}

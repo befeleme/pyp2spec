@@ -77,6 +77,20 @@ def test_archful_package(betamax_session):
     assert config["archful"] == loaded_contents["archful"]
 
 
+def test_package_with_extras(betamax_session):
+    package = "sphinx"
+    config = create_config_contents(
+        package=package,
+        license="fake-license",
+        session=betamax_session,
+    )
+
+    with open(f"tests/test_configs/customized_python-{package}.conf", "rb") as config_file:
+        loaded_contents = tomllib.load(config_file)
+
+    assert config["extras"] == loaded_contents["extras"]
+
+
 def test_license_classifier_read_correctly():
     fake_pkg_data = {"info":{"classifiers": [
         "Programming Language :: Python :: 3",
@@ -238,3 +252,22 @@ def test_pypi_version_or_macro(pypi_version, pypi_version_macro):
     }
     pkg = PypiPackage("_", version=pypi_version, package_metadata=fake_pkg_data)
     assert pkg.pypi_version_or_macro() == pypi_version_macro
+
+
+def test_extras_detected_correctly():
+    fake_pkg_data = {
+        "info": {
+            "requires_dist": [
+                "foo ; platform_system == 'Windows'",
+                "bar ; python_version < '3.8'",
+                "baz",
+                "foobar ; extra == 'docs'",
+                "foobaz>=5.3.1",
+                "spam>=3.5.0 ; extra == 'lint'",
+                "ham[eggs]>=0.10; extra == 'test'",
+                "eggs>=2.12; implementation_name != 'pypy' and extra == 'dev'",
+            ]
+        }
+    }
+    pkg = PypiPackage("_", version="0", package_metadata=fake_pkg_data)
+    assert pkg.extras() == ["dev", "docs", "lint", "test"]
