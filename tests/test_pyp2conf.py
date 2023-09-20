@@ -3,7 +3,6 @@ The data is downloaded from the PyPI and stored in betamax casettes
 to prevent loading from the internet on each request.
 """
 import pytest
-import requests
 
 try:
     import tomllib
