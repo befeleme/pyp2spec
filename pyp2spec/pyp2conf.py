@@ -6,6 +6,8 @@ import click
 import requests
 import tomli_w
 
+from packaging.requirements import Requirement
+
 from pyp2spec.rpmversion import RpmVersion
 from pyp2spec.license_processor import classifiers_to_spdx_identifiers
 from pyp2spec.license_processor import license_keyword_to_spdx_identifiers, good_for_fedora
@@ -246,6 +248,30 @@ class PypiPackage:
         archive_name = edited_sdist_filename.replace("-" + self.version, "")
         return archive_name
 
+    def extras(self):
+        """Return the sorted list of the found extras names.
+
+        Packages define extras explicitly via `Provides-Extra` and
+        indirectly via `Requires-Dist` metadata.
+        PyPI metadata doesn't provide the first one, but it is possible to
+        derive extras names from the `requires_dist` key.
+        Example value of `requires_dist`:
+        ["sphinxcontrib-websupport ; extra == 'docs'", "flake8>=3.5.0 ; extra == 'lint'"]
+        If package defines an extra with no requirements, we can't detect that.
+        """
+        extra_from_req = re.compile(r'''\bextra\s+==\s+["']([^"']+)["']''')
+        extras = set()
+        requires_dist = self.package_data["info"]["requires_dist"]
+        if requires_dist is not None:
+            for required_dist in requires_dist:
+                # packaging.Requirement can parse the markers, but it
+                # doesn't provide their string representations,
+                # hence we need to use regex to pick them out
+                req = Requirement(required_dist)
+                if found := re.search(extra_from_req, str(req.marker)):
+                    extras.add(found.group(1))
+        return sorted(extras)
+
 
 def get_description(package):
     """Return a default package description."""
@@ -333,6 +359,7 @@ def create_config_contents(
     contents["url"] = pkg.project_url()
     contents["source"] = pkg.source()
     contents["archive_name"] = pkg.archive_name()
+    contents["extras"] = pkg.extras()
 
     return contents
 

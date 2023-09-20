@@ -160,6 +160,7 @@ def fill_in_template(config):
         description=wrap_description(config),
         doc_files=" ".join(config.get_list("doc_files")),
         extra_build_requires=generate_extra_build_requires(config),
+        extras=",".join(config.get_list("extras")),
         license_files=" ".join(config.get_list("license_files")),
         license=config.get_string("license"),
         manual_build_requires=config.get_list("manual_build_requires"),
