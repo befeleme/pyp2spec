@@ -1,6 +1,7 @@
 Name:           python-numpy
 Version:        1.25.2
 Release:        %autorelease
+# Fill in the actual package summary to submit package to Fedora
 Summary:        Fundamental package for array computing in Python
 
 # Check if the automatically generated License and its spelling is correct for Fedora

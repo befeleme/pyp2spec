@@ -68,9 +68,7 @@ def test_config_with_customization_is_valid(betamax_session):
     package = "aionotion"
     config = create_config_contents(
         package=package,
-        description="A asyncio-friendly library for Notion Home Monitoring devices.\n",
         version="2.0.3",
-        summary="Python library for Notion Home Monitoring",
         top_level=True,
         compliant=True,
         session=betamax_session,

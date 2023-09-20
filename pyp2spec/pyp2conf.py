@@ -347,9 +347,7 @@ def is_package_name(package):
 
 def create_config_contents(
     package,
-    description=None,
     version=None,
-    summary=None,
     session=None,
     license=None,
     compliant=False,
@@ -370,14 +368,6 @@ def create_config_contents(
     else:
         raise NotImplementedError("pyp2spec can't currently handle URLs.")
 
-    if description is None:
-        description = get_description(package)
-        click.secho(f"Assuming --description={description}", fg="yellow")
-
-    if summary is None:
-        summary = pkg.summary()
-        click.secho(f"Assuming --summary={summary}", fg="yellow")
-
     if version is None:
         click.secho(f"Assuming PyPI --version={pkg.version}", fg="yellow")
 
@@ -397,8 +387,8 @@ def create_config_contents(
         contents["python_alt_version"] = python_alt_version
 
     contents["archful"] = archful
-    contents["description"] = description
-    contents["summary"] = summary
+    contents["description"] = get_description(package)
+    contents["summary"] = pkg.summary()
     contents["version"] = convert_version_to_rpm_scheme(pkg.version)
     contents["pypi_version"] = pkg.pypi_version_or_macro()
     contents["license"] = license
@@ -432,9 +422,7 @@ def create_config(options):
 
     contents = create_config_contents(
         options["package"],
-        description=options["description"],
         version=options["version"],
-        summary=options["summary"],
         license=options["license"],
         compliant=options["fedora_compliant"],
         top_level=options["top_level"],
@@ -450,16 +438,8 @@ def pypconf_args(func):
         help="Provide custom output for configuration file",
     )
     @click.option(
-        "--description", "-d",
-        help="Provide description for the package",
-    )
-    @click.option(
         "--version", "-v",
         help="Provide package version to query PyPI for, default: latest",
-    )
-    @click.option(
-        "--summary", "-s",
-        help="Provide custom package summary",
     )
     @click.option(
         "--license", "-l",

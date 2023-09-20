@@ -1,6 +1,7 @@
 Name:           python-sphinx
 Version:        7.2.6
 Release:        %autorelease
+# Fill in the actual package summary to submit package to Fedora
 Summary:        Python documentation generator
 
 # Check if the automatically generated License and its spelling is correct for Fedora

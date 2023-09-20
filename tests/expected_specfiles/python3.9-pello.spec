@@ -3,6 +3,7 @@
 Name:           python3.9-pello
 Version:        1.0.4
 Release:        %autorelease
+# Fill in the actual package summary to submit package to Fedora
 Summary:        An example Python Hello World package
 
 # Check if the automatically generated License and its spelling is correct for Fedora
