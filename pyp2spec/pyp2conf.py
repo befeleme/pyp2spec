@@ -335,7 +335,6 @@ def create_config_contents(
     license=None,
     compliant=False,
     top_level=False,
-    archful=False,
 ):
     """Use `package` and provided kwargs to create the whole config contents.
     Return contents dictionary.
@@ -370,13 +369,10 @@ def create_config_contents(
         click.secho("Only top-level modules will be checked", fg="yellow")
         contents["test_top_level"] = True
 
-    if archful:
-        click.secho("Package is set to --archful", fg="magenta")
-        click.secho("You may need to specify manual_build_requires in the config file", fg="magenta")
-        contents["archful"] = archful
-    else:
-        contents["archful"] = pkg.is_archful()
+    if archful := pkg.is_archful():
+        click.secho("Package is archful - you may need to specify additional build requirements", fg="magenta")
 
+    contents["archful"] = archful
     contents["description"] = description
     contents["summary"] = summary
     contents["version"] = convert_version_to_rpm_scheme(pkg.version)
@@ -418,7 +414,6 @@ def create_config(options):
         license=options["license"],
         compliant=options["fedora_compliant"],
         top_level=options["top_level"],
-        archful=options["archful"],
     )
     return save_config(contents, options["config_output"])
 
@@ -452,10 +447,6 @@ def pypconf_args(func):
     @click.option(
         "--top-level", "-t", is_flag=True,
         help="Test only top-level modules in %check",
-    )
-    @click.option(
-        "--archful", "-a", is_flag=True,
-        help="Set if the resulting RPM should be arched",
     )
     @wraps(func)
     def wrapper(*args, **kwargs):
