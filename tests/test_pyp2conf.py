@@ -69,7 +69,7 @@ def test_config_with_customization_is_valid(betamax_session):
     config = create_config_contents(
         package=package,
         version="2.0.3",
-        top_level=True,
+        automode=True,
         compliant=True,
         session=betamax_session,
     )
@@ -87,6 +87,7 @@ def test_archful_package(betamax_session):
         package=package,
         license="fake-string",
         version="1.25.2",
+        automode=True,
         session=betamax_session,
     )
 

@@ -351,8 +351,8 @@ def create_config_contents(
     session=None,
     license=None,
     compliant=False,
-    top_level=False,
     python_alt_version=None,
+    automode=False,
 ):
     """Use `package` and provided kwargs to create the whole config contents.
     Return contents dictionary.
@@ -375,9 +375,8 @@ def create_config_contents(
         license = pkg.license(check_compliance=compliant)
         click.secho(f"Assuming --license={license}", fg="yellow")
 
-    if top_level:
-        click.secho("Only top-level modules will be checked", fg="yellow")
-        contents["test_top_level"] = True
+    if automode:
+        contents["automode"] = True
 
     if archful := pkg.is_archful():
         click.secho("Package is archful - you may need to specify additional build requirements", fg="magenta")
@@ -425,8 +424,8 @@ def create_config(options):
         version=options["version"],
         license=options["license"],
         compliant=options["fedora_compliant"],
-        top_level=options["top_level"],
-        python_alt_version=options["python_alt_version"]
+        python_alt_version=options["python_alt_version"],
+        automode=options["automode"]
     )
     return save_config(contents, options["config_output"])
 
@@ -450,8 +449,8 @@ def pypconf_args(func):
         help="Check whether license is compliant with Fedora",
     )
     @click.option(
-        "--top-level", "-t", is_flag=True,
-        help="Test only top-level modules in %check",
+        "--automode", "-a", is_flag=True,
+        help="Enable buildability of the generated spec in automated environments",
     )
     @click.option(
         "--python-alt-version", "-p",

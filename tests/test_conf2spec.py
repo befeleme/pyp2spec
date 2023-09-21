@@ -28,10 +28,10 @@ def test_long_description_is_split(config_dir):
         ("customized_markdown-it-py.conf", False),
     ]
 )
-def test_top_level_flag_is_loaded(config_dir, conf, expected):
+def test_automode_flag_is_loaded(config_dir, conf, expected):
     config_path = config_dir + conf
     config = conf2spec.ConfigFile(config_path)
-    assert config.get_bool("test_top_level") == expected
+    assert config.get_bool("automode") == expected
 
 
 
