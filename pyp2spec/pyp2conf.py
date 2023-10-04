@@ -25,16 +25,31 @@ class PackageNotFoundError(Pyp2specError):
 
 
 class PypiPackage:
-    """Store and process the package data obtained from PyPI."""
+    """Store and process the package data obtained from PyPI.
+
+    It's possible to create the object these ways:
+    - providing a package name.
+    A request is made to PyPI general project API to find the latest available version.
+    Another request is made to the PyPI package version API to obtain all
+    package data related to that particular distribution.
+    - providing a package name and a version.
+    A request is made to the PyPI package version API to obtain all
+    package data related to that particuler distribution.
+    - providing a package name, version and custom package metadata
+    (dictionary with the same structure as PyPI package version API).
+    No requests to PyPI are made, the package metadata serve as the source
+    to create a PypiPackage object.
+    This is only relevant for testing.
+    """
 
     def __init__(self, package_name, *, version=None, package_metadata=None, session=None):
         self.package_name = package_name
+        self.version = version or self._get_version_from_package_metadata(session=session)
         # package_metadata - custom dictionary with package metadata - used for testing
         # in the typical app run it's not set,
         # meaning we jump to the other sources package metadata data (eg. PyPI)
-        self.package_data = package_metadata or self.get_package_metadata(session=session)
+        self.package_data = package_metadata or self._get_package_version_metadata(session=session)
         self.sdist_filename = None
-        self._version = version
 
     @property
     def pypi_name(self):
@@ -49,13 +64,26 @@ class PypiPackage:
 
         return re.sub(r"[-_.]+", "-", package_name).lower()
 
-    def get_package_metadata(self, *,session=None):
-        pkg_index = f"https://pypi.org/pypi/{self.package_name}/json"
+    def _get_from_url(self, url, error_str, session=None):
         s = session or requests.Session()
-        response = s.get(pkg_index)
+        response = s.get(url)
         if not response.ok:
-            raise PackageNotFoundError(f"Package `{self.package_name}` was not found on PyPI")
+            raise PackageNotFoundError(error_str)
         return response.json()
+
+    def _get_package_project_metadata(self, *, session=None):
+        pkg_index = f"https://pypi.org/pypi/{self.package_name}/json"
+        error_str = f"Package `{self.package_name}` was not found on PyPI"
+        return self._get_from_url(pkg_index, error_str, session=session)
+
+    def _get_version_from_package_metadata(self, *, session=None):
+        package_metadata = self._get_package_project_metadata(session=session)
+        return package_metadata["info"]["version"]
+
+    def _get_package_version_metadata(self, *, session=None):
+        pkg_index = f"https://pypi.org/pypi/{self.package_name}/{self.version}/json"
+        error_str = f"Package `{self.package_name}` or version `{self.version}` was not found on PyPI"
+        return self._get_from_url(pkg_index, error_str, session=session)
 
     def python_name(self):
         if self.pypi_name.startswith("python"):
@@ -88,14 +116,6 @@ class PypiPackage:
                 source_macro_args += f" {version_str}"
 
         return "%{pypi_source " + source_macro_args + "}"
-
-    @property
-    def version(self):
-        """Set either to the custom package version provided by the user
-        or to the latest one from package metadata.
-        """
-
-        return self._version or self.package_data["info"]["version"]
 
     def pypi_version_or_macro(self):
         """If PyPI and RPM version's strings are the same, there's no need to
@@ -187,7 +207,7 @@ class PypiPackage:
 
         Quit the script if not found (bdists can't be processed).
         """
-        for entry in self.package_data["releases"][self.version]:
+        for entry in self.package_data["urls"]:
             if entry["packagetype"] == "sdist":
                 self.sdist_filename = entry["filename"]
                 return
