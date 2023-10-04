@@ -27,13 +27,14 @@ class PackageNotFoundError(Pyp2specError):
 class PypiPackage:
     """Store and process the package data obtained from PyPI."""
 
-    def __init__(self, package_name, *, package_metadata=None, session=None):
+    def __init__(self, package_name, *, version=None, package_metadata=None, session=None):
         self.package_name = package_name
         # package_metadata - custom dictionary with package metadata - used for testing
         # in the typical app run it's not set,
         # meaning we jump to the other sources package metadata data (eg. PyPI)
         self.package_data = package_metadata or self.get_package_metadata(session=session)
         self.sdist_filename = None
+        self._version = version
 
     @property
     def pypi_name(self):
@@ -62,7 +63,7 @@ class PypiPackage:
         else:
             return f"python-{self.pypi_name}"
 
-    def source(self, version):
+    def source(self):
         """Return valid pypi_source RPM macro.
 
         %pypi_source takes three optional arguments:
@@ -75,33 +76,38 @@ class PypiPackage:
         If archive is a zip file, %{pypi_source} must take all three args:
         "%{pypi_source foo %{version} zip}", "{pypi_source foo 1.2-3 zip}"
         """
-        is_zip = self.is_zip_archive(version)
-        version_str = self.pypi_version_or_macro(version)
+        is_zip = self.is_zip_archive()
+        version_str = self.pypi_version_or_macro()
 
-        source_macro_args = self.archive_name(version)
+        source_macro_args = self.archive_name()
 
         if is_zip:
             source_macro_args += f" {version_str} zip"
         else:
-            if version_str == version:
+            if version_str == self.version:
                 source_macro_args += f" {version_str}"
 
         return "%{pypi_source " + source_macro_args + "}"
 
+    @property
     def version(self):
-        return self.package_data["info"]["version"]
+        """Set either to the custom package version provided by the user
+        or to the latest one from package metadata.
+        """
 
-    def pypi_version_or_macro(self, version):
+        return self._version or self.package_data["info"]["version"]
+
+    def pypi_version_or_macro(self):
         """If PyPI and RPM version's strings are the same, there's no need to
         duplicate them across the spec file.
         Return '%{version}' as a reference to the RPM's version string.
         If they are different, both variants of string need to be used.
         In such case return version string as from PyPI.
         """
-        rpm_version = convert_version_to_rpm_scheme(version)
-        if version == rpm_version:
+        rpm_version = convert_version_to_rpm_scheme(self.version)
+        if self.version == rpm_version:
             return "%{version}"
-        return version
+        return self.version
 
     def filter_license_classifiers(self):
         """Return the list of license classifiers defined for the package.
@@ -176,18 +182,18 @@ class PypiPackage:
         except (KeyError, TypeError):
             return self.package_data["info"]["package_url"]
 
-    def find_and_save_sdist_filename(self, version):
+    def find_and_save_sdist_filename(self):
         """Save the given's package version sdist name for further processing.
 
         Quit the script if not found (bdists can't be processed).
         """
-        for entry in self.package_data["releases"][version]:
+        for entry in self.package_data["releases"][self.version]:
             if entry["packagetype"] == "sdist":
                 self.sdist_filename = entry["filename"]
                 return
         raise SdistNotFoundError("sdist not found.")
 
-    def is_zip_archive(self, version):
+    def is_zip_archive(self):
         """Return True if archive is a zip file, False otherwise.
 
         The archive format encouraged in PEP 517 is tar.gz, zip is discouraged,
@@ -195,12 +201,12 @@ class PypiPackage:
         If so, it has to be explicitly declared as an argument of %{pypi_source}.
         """
         if self.sdist_filename is None:
-            self.find_and_save_sdist_filename(version)
+            self.find_and_save_sdist_filename()
         if self.sdist_filename.endswith(".zip"):
             return True
         return False
 
-    def archive_name(self, version):
+    def archive_name(self):
         """Return the package name as spelled in the archive file.
 
         According to:
@@ -210,14 +216,14 @@ class PypiPackage:
         Example: "My-package_Archive-1.0.4-12.tar.gz" -> "My-package_Archive"
         """
         if self.sdist_filename is None:
-            self.find_and_save_sdist_filename(version)
+            self.find_and_save_sdist_filename()
 
         edited_sdist_filename = self.sdist_filename
         # First, strip the suffix
         for suffix in (".tar.gz", ".zip"):
             edited_sdist_filename = edited_sdist_filename.removesuffix(suffix)
         # Second, get rid of the version string and the delimiter "-"
-        archive_name = edited_sdist_filename.replace("-" + version, "")
+        archive_name = edited_sdist_filename.replace("-" + self.version, "")
         return archive_name
 
 
@@ -267,7 +273,7 @@ def create_config_contents(
     # a package name was given as the `package`, look for it on PyPI
     if is_package_name(package):
         click.secho(f"Assuming '{package}' is a package name", fg="yellow")
-        pkg = PypiPackage(package, session=session)
+        pkg = PypiPackage(package, version=version, session=session)
         click.secho(f"Querying PyPI for package '{package}'", fg="cyan")
     # a URL was given as the `package`
     else:
@@ -282,8 +288,7 @@ def create_config_contents(
         click.secho(f"Assuming --summary={summary}", fg="yellow")
 
     if version is None:
-        version = pkg.version()
-        click.secho(f"Assuming PyPI --version={version}", fg="yellow")
+        click.secho(f"Assuming PyPI --version={pkg.version}", fg="yellow")
 
     if license is None:
         license = pkg.license(check_compliance=compliant, session=session)
@@ -300,14 +305,14 @@ def create_config_contents(
 
     contents["description"] = description
     contents["summary"] = summary
-    contents["version"] = convert_version_to_rpm_scheme(version)
-    contents["pypi_version"] = pkg.pypi_version_or_macro(version)
+    contents["version"] = convert_version_to_rpm_scheme(pkg.version)
+    contents["pypi_version"] = pkg.pypi_version_or_macro()
     contents["license"] = license
     contents["pypi_name"] = pkg.pypi_name
     contents["python_name"] = pkg.python_name()
     contents["url"] = pkg.project_url()
-    contents["source"] = pkg.source(version)
-    contents["archive_name"] = pkg.archive_name(version)
+    contents["source"] = pkg.source()
+    contents["archive_name"] = pkg.archive_name()
 
     return contents
 
