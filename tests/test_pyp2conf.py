@@ -185,8 +185,7 @@ def test_zip_sdist_is_added_to_source_macro():
         "info": {"version": "1.2.3"}
     }
     pkg = PypiPackage("_", package_metadata=fake_pkg_data)
-    version = pkg.version()
-    assert pkg.source(version) == "%{pypi_source Awesome_TestPkg %{version} zip}"
+    assert pkg.source() == "%{pypi_source Awesome_TestPkg %{version} zip}"
 
 
 def test_no_homepage_in_metadata():
@@ -237,4 +236,4 @@ def test_pypi_version_is_converted_to_rpm(pypi_version, rpm_version):
 def test_pypi_version_or_macro(pypi_version, pypi_version_macro):
     fake_pkg_data = {"info": {"version": pypi_version}}
     pkg = PypiPackage("_", package_metadata=fake_pkg_data)
-    assert pkg.pypi_version_or_macro(pypi_version) == pypi_version_macro
+    assert pkg.pypi_version_or_macro() == pypi_version_macro
