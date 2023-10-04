@@ -44,11 +44,12 @@ class PypiPackage:
 
     def __init__(self, package_name, *, version=None, package_metadata=None, session=None):
         self.package_name = package_name
-        self.version = version or self._get_version_from_package_metadata(session=session)
+        self._session = session or requests.Session()
+        self.version = version or self._get_version_from_package_metadata()
         # package_metadata - custom dictionary with package metadata - used for testing
         # in the typical app run it's not set,
         # meaning we jump to the other sources package metadata data (eg. PyPI)
-        self.package_data = package_metadata or self._get_package_version_metadata(session=session)
+        self.package_data = package_metadata or self._get_package_version_metadata()
         self.sdist_filename = None
 
     @property
@@ -64,26 +65,25 @@ class PypiPackage:
 
         return re.sub(r"[-_.]+", "-", package_name).lower()
 
-    def _get_from_url(self, url, error_str, session=None):
-        s = session or requests.Session()
-        response = s.get(url)
+    def _get_from_url(self, url, error_str):
+        response = self._session.get(url)
         if not response.ok:
             raise PackageNotFoundError(error_str)
         return response.json()
 
-    def _get_package_project_metadata(self, *, session=None):
+    def _get_package_project_metadata(self):
         pkg_index = f"https://pypi.org/pypi/{self.package_name}/json"
         error_str = f"Package `{self.package_name}` was not found on PyPI"
-        return self._get_from_url(pkg_index, error_str, session=session)
+        return self._get_from_url(pkg_index, error_str)
 
-    def _get_version_from_package_metadata(self, *, session=None):
-        package_metadata = self._get_package_project_metadata(session=session)
+    def _get_version_from_package_metadata(self):
+        package_metadata = self._get_package_project_metadata()
         return package_metadata["info"]["version"]
 
-    def _get_package_version_metadata(self, *, session=None):
+    def _get_package_version_metadata(self):
         pkg_index = f"https://pypi.org/pypi/{self.package_name}/{self.version}/json"
         error_str = f"Package `{self.package_name}` or version `{self.version}` was not found on PyPI"
-        return self._get_from_url(pkg_index, error_str, session=session)
+        return self._get_from_url(pkg_index, error_str)
 
     def python_name(self):
         if self.pypi_name.startswith("python"):
@@ -165,7 +165,7 @@ class PypiPackage:
             raise NoLicenseDetectedError("No valid license detected.")
         return (identifiers, license_keyword)
 
-    def license(self, *, check_compliance=False, session=None, licenses_dict=None):
+    def license(self, *, check_compliance=False, licenses_dict=None):
         """Return the license string from package metadata.
 
         If `check_compliance` is set to True, check each of the found
@@ -177,7 +177,7 @@ class PypiPackage:
 
         identifiers, expression = self.transform_to_spdx()
         if check_compliance:
-            is_compliant, bad_identifiers = good_for_fedora(identifiers, session=session, licenses_dict=licenses_dict)
+            is_compliant, bad_identifiers = good_for_fedora(identifiers, session=self._session, licenses_dict=licenses_dict)
             if not is_compliant:
                 if bad_identifiers:
                     err_string = "The detected licenses: `{0}` aren't allowed in Fedora."
@@ -311,7 +311,7 @@ def create_config_contents(
         click.secho(f"Assuming PyPI --version={pkg.version}", fg="yellow")
 
     if license is None:
-        license = pkg.license(check_compliance=compliant, session=session)
+        license = pkg.license(check_compliance=compliant)
         click.secho(f"Assuming --license={license}", fg="yellow")
 
     if top_level:
