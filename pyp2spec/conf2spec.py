@@ -62,33 +62,6 @@ class ConfigFile:
         return val
 
 
-def generate_extra_build_requires(config):
-    """If defined in config file, return extra build requires.
-    If none were defined, return an empty string."""
-
-    # TODO: custom tox env (-e)
-    options = {
-        "tox": "-t",
-        "extra": "-x",
-    }
-    extra_brs = config.get_list("extra_build_requires")
-
-    # No extra BuildRequires were defined - return an empty string
-    if not extra_brs:
-        return ""
-
-    generated_brs = []
-    add = generated_brs.append
-    for extra_br in extra_brs:
-        if extra_br == "extra":
-            add(options.get(extra_br))
-            add(",".join(config.get_list("extra_test_env")))
-        else:
-            add(options.get(extra_br))
-
-    return " ".join(generated_brs)
-
-
 def generate_check(config):
     """Generate valid check section.
     If defined in config file, use applicable test macro.
@@ -159,7 +132,6 @@ def fill_in_template(config):
         binary_files=config.get_list("binary_files"),
         description=wrap_description(config),
         doc_files=" ".join(config.get_list("doc_files")),
-        extra_build_requires=generate_extra_build_requires(config),
         extras=",".join(config.get_list("extras")),
         license_files=" ".join(config.get_list("license_files")),
         license=config.get_string("license"),
