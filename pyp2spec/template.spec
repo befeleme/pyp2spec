@@ -40,7 +40,10 @@ Summary:        %{summary}
 
 
 %generate_buildrequires
-%pyproject_buildrequires
+{% if extras -%}
+# Keep only those extras which you actually want to package or use during tests
+{% endif -%}
+%pyproject_buildrequires{% if extras %} -x {{extras}}{% endif %}
 
 
 %build
