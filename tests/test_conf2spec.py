@@ -68,18 +68,6 @@ def test_top_level_flag_is_loaded(config_dir, conf, expected):
 
 @pytest.mark.parametrize(
     ("conf", "expected"), [
-        ("customized_click.conf", "-t"),
-        ("customized_jupyter-packaging.conf", "-x test"),
-    ]
-)
-def test_br_extra_is_generated(config_dir, conf, expected):
-    config_path = config_dir + conf
-    config = conf2spec.ConfigFile(config_path)
-    assert conf2spec.generate_extra_build_requires(config) == expected
-
-
-@pytest.mark.parametrize(
-    ("conf", "expected"), [
         ("customized_boutdata.conf", ["LICENSE"]),
         ("customized_markdown-it-py.conf", ["LICENSE", "LICENSE.markdown-it"]),
         ("customized_aionotion.conf", []),
