@@ -20,11 +20,6 @@ baseline parsing. Has configurable syntax: you can add new rules and even
 replace existing ones. Pluggable: Adds syntax extensions to extend the parser.
 High speed & safe by default}
 
-BuildRequires:  python3-setuptools
-BuildRequires:  python3-pytest
-BuildRequires:  python3-pytest-benchmark
-BuildRequires:  python3-psutil
-
 %description %_description
 
 %package -n     python3-markdown-it-py
