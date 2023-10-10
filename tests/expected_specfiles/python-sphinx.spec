@@ -17,7 +17,6 @@ BuildRequires:  python3-devel
 %global _description %{expand:
 This is package 'sphinx' generated automatically by pyp2spec.}
 
-
 %description %_description
 
 %package -n     python3-sphinx

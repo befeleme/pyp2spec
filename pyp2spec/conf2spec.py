@@ -135,7 +135,6 @@ def fill_in_template(config):
         extras=",".join(config.get_list("extras")),
         license_files=" ".join(config.get_list("license_files")),
         license=config.get_string("license"),
-        manual_build_requires=config.get_list("manual_build_requires"),
         name=config.get_string("pypi_name"),
         python_name=config.get_string("python_name"),
         pypi_version=config.get_string("pypi_version"),

@@ -18,11 +18,6 @@ BuildRequires:  python3-devel
 %global _description %{expand:
 {{description}}}
 
-{% if manual_build_requires -%}
-{% for br in manual_build_requires -%}
-BuildRequires:  {{br}}
-{% endfor -%}
-{% endif %}
 %description %_description
 
 %package -n     python3-{{name}}
