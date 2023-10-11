@@ -1,14 +1,23 @@
 # Changelog
 
-# Unreleased
+# [0.8.0] - 2023-10-11
 ### Added
 - Automatically detect whether a package is archful or not based on a wheel name.
 If so, `BuildArch: noarch` is not used in the resulting spec file.
 If so, `BuildRequires: gcc` is automatically added to the resulting spec file.
+- Automatically detect the package extras, provided that an extra contains at least one additional requirement
+The detected extras are declared as RPM subpackages and required in the build time.
+
+### Changed
+- Use project version JSON API available at PyPI to obtain package metadata.
+This ensures all the fields are relevant for the requested package version
 
 ### Removed
 - CLI `--archful` switch - it's detected automatically now
 - `manual_build_requires` config option
+- `extra_build_requires` config option
+- `extra_tox_env` config option
+- support for Python 3.8
 
 
 # [0.7.0] - 2023-05-03
