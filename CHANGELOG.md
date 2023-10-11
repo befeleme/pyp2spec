@@ -1,5 +1,16 @@
 # Changelog
 
+# Unreleased
+### Added
+- Automatically detect whether a package is archful or not based on a wheel name.
+If so, `BuildArch: noarch` is not used in the resulting spec file.
+If so, `BuildRequires: gcc` is automatically added to the resulting spec file.
+
+### Removed
+- CLI `--archful` switch - it's detected automatically now
+- `manual_build_requires` config option
+
+
 # [0.7.0] - 2023-05-03
 ### Changed
 - rpmautospec macros (`%autochangelog` and `%autorelease`) are now used to populate the respective
