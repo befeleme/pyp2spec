@@ -45,9 +45,8 @@ Summary:        %{summary}
 
 %install
 %pyproject_install
-# For official Fedora packages, including files with '*' +auto is not allowed
-# Replace it with a list of relevant Python modules/globs and list extra files in %%files
-%pyproject_save_files '*' +auto
+# Add top-level Python module names here as arguments, you can use globs
+%pyproject_save_files ...
 
 
 %check
