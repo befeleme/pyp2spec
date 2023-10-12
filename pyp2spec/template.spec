@@ -67,11 +67,7 @@ Summary:        %{summary}
 
 
 %files -n python{{python3_pkgversion}}-{{name}} -f %{pyproject_files}
-{% if binary_files -%}
-{% for bf in binary_files -%}
-%{_bindir}/{{bf}}
-{% endfor -%}
-{% endif %}
+
 
 %changelog
 %autochangelog

@@ -103,7 +103,6 @@ def fill_in_template(config):
         additional_build_requires=list_additional_build_requires(config),
         archful=config.get_bool("archful"),
         archive_name=config.get_string("archive_name"),
-        binary_files=config.get_list("binary_files"),
         description=wrap_description(config),
         extras=",".join(config.get_list("extras")),
         license=config.get_string("license"),

@@ -53,7 +53,6 @@ Summary:        %{summary}
 
 
 %files -n python3-markdown-it-py -f %{pyproject_files}
-%{_bindir}/markdown-it
 
 
 %changelog

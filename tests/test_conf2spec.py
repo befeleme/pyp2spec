@@ -34,17 +34,6 @@ def test_top_level_flag_is_loaded(config_dir, conf, expected):
     assert config.get_bool("test_top_level") == expected
 
 
-@pytest.mark.parametrize(
-    ("conf", "expected"), [
-        ("customized_click.conf", []),
-        ("customized_markdown-it-py.conf", ["markdown-it"]),
-    ]
-)
-def test_binary_files_are_loaded(config_dir, conf, expected):
-    config_path = config_dir + conf
-    config = conf2spec.ConfigFile(config_path)
-    assert config.get_list("binary_files") == expected
-
 
 @pytest.mark.parametrize(
     ("conf", "expected"), [
