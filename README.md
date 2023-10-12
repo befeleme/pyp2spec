@@ -104,7 +104,6 @@ Configuration data is stored in a TOML file.
 | -------- | -------- | -------- |
 | test_top_level     | filter and test only top-level modules in %check   | bool     |
 | binary_files     | list binary files from the package     | list     |
-| license_files     | list license files from the package     | list     |
 | doc_files     | list doc files from the package     | list |
 
 

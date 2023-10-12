@@ -54,7 +54,6 @@ Summary:        %{summary}
 
 %files -n python3-markdown-it-py -f %{pyproject_files}
 %doc README.md
-%license LICENSE LICENSE.markdown-it
 %{_bindir}/markdown-it
 
 

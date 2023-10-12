@@ -70,9 +70,6 @@ Summary:        %{summary}
 {% if doc_files -%}
 %doc {{doc_files}}
 {% endif -%}
-{% if license_files -%}
-%license {{license_files}}
-{% endif -%}
 {% if binary_files -%}
 {% for bf in binary_files -%}
 %{_bindir}/{{bf}}
