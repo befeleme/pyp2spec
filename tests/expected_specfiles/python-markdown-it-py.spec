@@ -19,7 +19,7 @@ BuildRequires:  python3-devel
 Markdown parser done right. Its features: Follows the CommonMark spec for
 baseline parsing. Has configurable syntax: you can add new rules and even
 replace existing ones. Pluggable: Adds syntax extensions to extend the parser.
-High speed & safe by default}
+High speed & safe by default.}
 
 %description %_description
 

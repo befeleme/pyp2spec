@@ -5,6 +5,7 @@ configurations.
 """
 
 from pathlib import Path
+from textwrap import dedent
 import pytest
 
 from pyp2spec import conf2spec
@@ -16,15 +17,19 @@ def config_dir():
 
 
 def test_long_description_is_split(config_dir):
-    config_path = config_dir + "customized_jupyter-packaging.conf"
+    config_path = config_dir + "customized_markdown-it-py.conf"
     config = conf2spec.ConfigFile(config_path)
-    expected = "This package contains utilities for making Python packages with and without\naccompanying JavaScript packages."
-    assert conf2spec.wrap_description(config) == expected
+    expected = """\
+        Markdown parser done right. Its features: Follows the CommonMark spec for
+        baseline parsing. Has configurable syntax: you can add new rules and even
+        replace existing ones. Pluggable: Adds syntax extensions to extend the parser.
+        High speed & safe by default."""
+    assert conf2spec.wrap_description(config) == dedent(expected)
 
 
 @pytest.mark.parametrize(
     ("conf", "expected"), [
-        ("customized_click.conf", False),
+        ("default_python-click.conf", False),
         ("customized_markdown-it-py.conf", True),
     ]
 )
@@ -37,8 +42,8 @@ def test_automode_flag_is_loaded(config_dir, conf, expected):
 
 @pytest.mark.parametrize(
     ("conf", "expected"), [
-        ("customized_click.conf", False),
-        ("customized_tornado.conf", True),
+        ("default_python-click.conf", False),
+        ("default_python-numpy.conf", True),
     ]
 )
 def test_archful_flag_is_loaded(config_dir, conf, expected):
@@ -49,11 +54,11 @@ def test_archful_flag_is_loaded(config_dir, conf, expected):
 
 @pytest.mark.parametrize(
     "conf", [
-        "default_python-click.conf",
-        "customized_markdown-it-py.conf",
-        "customized_python-sphinx.conf",
-        "default_python-numpy.conf",
-        "default_python3.9-pello.conf",
+        "default_python-click.conf",  # default, noarch, no quirks
+        "customized_markdown-it-py.conf",  # automode on
+        "customized_python-sphinx.conf",  # contains extras
+        "default_python-numpy.conf",  # archful
+        "default_python3.9-pello.conf",  # custom Python version
     ]
 )
 def test_default_generated_specfile(file_regression, config_dir, conf):
