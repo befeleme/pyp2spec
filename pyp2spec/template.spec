@@ -67,9 +67,6 @@ Summary:        %{summary}
 
 
 %files -n python{{python3_pkgversion}}-{{name}} -f %{pyproject_files}
-{% if doc_files -%}
-%doc {{doc_files}}
-{% endif -%}
 {% if binary_files -%}
 {% for bf in binary_files -%}
 %{_bindir}/{{bf}}

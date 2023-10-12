@@ -36,19 +36,6 @@ def test_top_level_flag_is_loaded(config_dir, conf, expected):
 
 @pytest.mark.parametrize(
     ("conf", "expected"), [
-        ("customized_click.conf", ["README.rst", "CHANGES.rst"]),
-        ("customized_markdown-it-py.conf", ["README.md"]),
-        ("customized_aionotion.conf", []),
-    ]
-)
-def test_doc_files_are_loaded(config_dir, conf, expected):
-    config_path = config_dir + conf
-    config = conf2spec.ConfigFile(config_path)
-    assert config.get_list("doc_files") == expected
-
-
-@pytest.mark.parametrize(
-    ("conf", "expected"), [
         ("customized_click.conf", []),
         ("customized_markdown-it-py.conf", ["markdown-it"]),
     ]
