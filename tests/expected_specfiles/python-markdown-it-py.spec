@@ -49,7 +49,7 @@ Summary:        %{summary}
 
 
 %check
-%pyproject_check_import
+%_pyproject_check_import_allow_no_modules -t
 
 
 %files -n python3-markdown-it-py -f %{pyproject_files}

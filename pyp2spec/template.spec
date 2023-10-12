@@ -63,7 +63,11 @@ Summary:        %{summary}
 
 
 %check
-%pyproject_check_import{% if automode %} -t{% endif %}
+{% if automode -%}
+%_pyproject_check_import_allow_no_modules -t
+{%- else -%}
+%pyproject_check_import
+{%- endif %}
 
 
 %files -n python{{python3_pkgversion}}-{{name}} -f %{pyproject_files}
