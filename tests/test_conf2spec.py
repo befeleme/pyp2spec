@@ -24,8 +24,8 @@ def test_long_description_is_split(config_dir):
 
 @pytest.mark.parametrize(
     ("conf", "expected"), [
-        ("customized_boutdata.conf", True),
-        ("customized_markdown-it-py.conf", False),
+        ("customized_click.conf", False),
+        ("customized_markdown-it-py.conf", True),
     ]
 )
 def test_automode_flag_is_loaded(config_dir, conf, expected):
