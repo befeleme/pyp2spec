@@ -24,20 +24,6 @@ def test_long_description_is_split(config_dir):
 
 @pytest.mark.parametrize(
     ("conf", "expected"), [
-        ("customized_boutdata.conf", "%pytest"),
-        ("customized_click.conf", "%tox"),
-        ("customized_aionotion.conf", ""),
-        ("customized_markdown-it-py.conf", "%pytest -k 'not test_file and \\\nnot test_linkify'")
-    ]
-)
-def test_check_is_generated(config_dir, conf, expected):
-    config_path = config_dir + conf
-    config = conf2spec.ConfigFile(config_path)
-    assert conf2spec.generate_check(config) == expected
-
-
-@pytest.mark.parametrize(
-    ("conf", "expected"), [
         ("customized_boutdata.conf", True),
         ("customized_markdown-it-py.conf", False),
     ]

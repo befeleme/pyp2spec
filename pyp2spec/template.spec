@@ -64,9 +64,7 @@ Summary:        %{summary}
 
 %check
 %pyproject_check_import{% if test_top_level %} -t{% endif %}
-{% if test_method -%}
-{{test_method}}
-{% endif %}
+
 
 %files -n python{{python3_pkgversion}}-{{name}} -f %{pyproject_files}
 {% if doc_files -%}

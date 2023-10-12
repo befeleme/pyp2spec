@@ -50,8 +50,6 @@ Summary:        %{summary}
 
 %check
 %pyproject_check_import
-%pytest -k 'not test_file and \
-not test_linkify'
 
 
 %files -n python3-markdown-it-py -f %{pyproject_files}

@@ -102,9 +102,7 @@ Configuration data is stored in a TOML file.
 
 | Field | Description | Type |
 | -------- | -------- | -------- |
-| test_method     | `pytest`, `tox`     | string     |
 | test_top_level     | filter and test only top-level modules in %check   | bool     |
-| unwanted_tests     | test names to skip with pytest     | list     |
 | binary_files     | list binary files from the package     | list     |
 | license_files     | list license files from the package     | list     |
 | doc_files     | list doc files from the package     | list |

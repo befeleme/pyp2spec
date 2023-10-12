@@ -65,51 +65,6 @@ class ConfigFile:
         return val
 
 
-def generate_check(config):
-    """Generate valid check section.
-    If defined in config file, use applicable test macro.
-    If no test method was defined, return an empty string."""
-
-    test_method = config.get_string("test_method")
-    if test_method == "pytest":
-        return generate_pytest(config)
-    elif test_method == "tox":
-        return generate_tox(config)
-    else:
-        return ""
-
-
-def generate_pytest(config):
-    """Return valid pytest macro with unwanted tests (if defined)."""
-
-    if unwanted_tests := generate_unwanted_tests(config):
-        return f"%pytest {unwanted_tests}"
-    return "%pytest"
-
-
-def generate_tox(config):
-    """Return valid tox macro. If additional unwanted are defined,
-    raise NotImplementedError."""
-
-    if unwanted_tests := generate_unwanted_tests(config):
-        raise NotImplementedError("It's currently impossible to filter out tests with %tox")
-    return "%tox"
-
-
-def generate_unwanted_tests(config):
-    """If defined in config file, get the unwanted tests.
-    Given the unwanted tests are [a, b], return `-k "not a and\\\nnot b"`."""
-
-    unwanted_tests = config.get_list("unwanted_tests")
-    if not unwanted_tests:
-        return ""
-    else:
-        prep_unwanteds = [f"not {test}" for test in unwanted_tests]
-        unwanteds_as_str = " and \\\n".join(prep_unwanteds)
-        formatted_unwanteds = f"-k '{unwanteds_as_str}'"
-        return formatted_unwanteds
-
-
 def list_additional_build_requires(config):
     """Returns a list of additionally defined BuildRequires,
 
@@ -160,7 +115,6 @@ def fill_in_template(config):
         python_alt_version=config.get_string("python_alt_version"),
         source=config.get_string("source"),
         summary=config.get_string("summary"),
-        test_method=generate_check(config),
         test_top_level=config.get_bool("test_top_level"),
         python3_pkgversion=python3_pkgversion_or_3(config),
         url=config.get_string("url"),
