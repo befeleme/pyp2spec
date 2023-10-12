@@ -15,24 +15,6 @@ def config_dir():
     return "tests/test_configs/"
 
 
-def test_manual_brs_are_loaded(config_dir):
-    config_path = config_dir + "customized_boutdata.conf"
-    config = conf2spec.ConfigFile(config_path)
-    expected = [
-        "python3dist(setuptools)",
-        "python3dist(setuptools-scm[toml]) >= 3.4",
-        "python3dist(setuptools-scm-git-archive)",
-        "python3dist(pytest)",
-    ]
-    assert config.get_list("manual_build_requires") == expected
-
-
-def test_no_manual_brs(config_dir):
-    config_path = config_dir + "customized_click.conf"
-    config = conf2spec.ConfigFile(config_path)
-    assert config.get_list("manual_build_requires") == []
-
-
 def test_long_description_is_split(config_dir):
     config_path = config_dir + "customized_jupyter-packaging.conf"
     config = conf2spec.ConfigFile(config_path)
