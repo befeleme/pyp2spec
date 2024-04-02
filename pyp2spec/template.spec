@@ -1,5 +1,6 @@
 {% if python_version %}
 %global python3_pkgversion {{ python_version }}
+%global __python3 /usr/bin/python3.X
 
 {% endif -%}
 Name:           {{python_name}}
