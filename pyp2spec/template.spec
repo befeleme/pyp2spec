@@ -1,5 +1,5 @@
-{% if python_version %}
-%global python3_pkgversion {{ python_version }}
+{% if python_alt_version -%}
+%global python3_pkgversion {{ python_alt_version }}
 
 {% endif -%}
 Name:           {{python_name}}
@@ -15,11 +15,7 @@ Source:         {{source}}
 {% if not archful %}
 BuildArch:      noarch
 {%- endif %}
-{% if python_version %}
-BuildRequires:  python%{python3_pkgversion}-devel
-{% else -%}
-BuildRequires:  python3-devel
-{% endif -%}
+BuildRequires:  python{{python3_pkgversion}}-devel
 {% for br in additional_build_requires -%}
 BuildRequires:  {{br}}
 {% endfor %}
@@ -29,25 +25,18 @@ BuildRequires:  {{br}}
 {{description}}}
 
 %description %_description
-{% if python_version %}
-%package -n     python%{python3_pkgversion}-{{name}}
-{% else %}
-%package -n     python3-{{name}}
-{% endif -%}
+
+{% if not python_alt_version -%}
+%package -n     python{{python3_pkgversion}}-{{name}}
 Summary:        %{summary}
-{% if python_version %}
-%description -n python%{python3_pkgversion}-{{name}} %_description
-{% else %}
-%description -n python3-{{name}} %_description
+
+%description -n python{{python3_pkgversion}}-{{name}} %_description
 {% endif -%}
+
 {% if extras %}
 # For official Fedora packages, review which extras should be actually packaged
 # See: https://docs.fedoraproject.org/en-US/packaging-guidelines/Python/#Extras
-{%- if python_version %}
-%pyproject_extras_subpkg -n python%{python3_pkgversion}-{{name}} {{extras}}
-{% else %}
-%pyproject_extras_subpkg -n python3-{{name}} {{extras}}
-{% endif -%}
+%pyproject_extras_subpkg -n python{{python3_pkgversion}}-{{name}} {{extras}}
 {% endif %}
 
 %prep
@@ -77,11 +66,8 @@ Summary:        %{summary}
 {% if test_method -%}
 {{test_method}}
 {% endif %}
-{% if python_version %}
-%files -n python%{python3_pkgversion}-{{name}} -f %{pyproject_files}
-{% else %}
-%files -n python3-{{name}} -f %{pyproject_files}
-{% endif -%}
+
+%files -n python{{python3_pkgversion}}-{{name}} -f %{pyproject_files}
 {% if doc_files -%}
 %doc {{doc_files}}
 {% endif -%}

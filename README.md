@@ -80,7 +80,7 @@ Configuration data is stored in a TOML file.
 | Field  | Description | Type |
 | -------- | -------- | -------- |
 | pypi_name | package name as stored in PyPI  | string   |
-| python_name | pypi_name prepended with `python-` | string |
+| python_name | pypi_name prepended with `python-` and alternative Python version, if `python_alt_version` is defined| string |
 | archive_name | source tarball name, stripped of version and file extension  | string |
 | version | package version to create spec file for (RPM format) | string |
 | pypi_version | package version string as in PyPI, '%{version}' if the same as version | string
@@ -90,7 +90,8 @@ Configuration data is stored in a TOML file.
 | source | %{pypi_source} macro with optional arguments (tarball URL can be used instead) | string |
 | description | long package description | multiline string |
 | extras | extra subpackages names | list of strings |
-| archful | package contains compiled extensions, implies not using `BuildArch: noarch` and adding `BuildRequires: gcc` | bool
+| archful | package contains compiled extensions, implies not using `BuildArch: noarch` and adding `BuildRequires: gcc` | bool |
+| python_alt_version | specific Python version to create the spec file for, e.g. 3.9, 3.10, 3.12 | string |
 
 
 ### Optional fields

@@ -133,7 +133,12 @@ def wrap_description(config):
         break_long_words=False
     )
 
-def fill_in_template(config, python_version):
+
+def python3_pkgversion_or_3(config):
+    return "%{python3_pkgversion}" if config.get_string("python_alt_version") else "3"
+
+
+def fill_in_template(config):
     """Return template rendered with data from config file."""
 
     with (files("pyp2spec") / TEMPLATE_FILENAME).open("r", encoding="utf-8") as f:
@@ -152,11 +157,12 @@ def fill_in_template(config, python_version):
         name=config.get_string("pypi_name"),
         python_name=config.get_string("python_name"),
         pypi_version=config.get_string("pypi_version"),
-        python_version=python_version,
+        python_alt_version=config.get_string("python_alt_version"),
         source=config.get_string("source"),
         summary=config.get_string("summary"),
         test_method=generate_check(config),
         test_top_level=config.get_bool("test_top_level"),
+        python3_pkgversion=python3_pkgversion_or_3(config),
         url=config.get_string("url"),
         version=config.get_string("version"),
     )
@@ -164,11 +170,11 @@ def fill_in_template(config, python_version):
     return result
 
 
-def save_spec_file(config, output, python_version):
+def save_spec_file(config, output):
     """Save the spec file in the current directory if custom output is not set.
     Return the saved file name."""
 
-    result = fill_in_template(config, python_version)
+    result = fill_in_template(config)
     if output is None:
         output = config.get_string("python_name") + ".spec"
     with open(output, "w", encoding="utf-8") as spec_file:
@@ -177,10 +183,10 @@ def save_spec_file(config, output, python_version):
     return output
 
 
-def create_spec_file(config_file, spec_output=None, python_version=None):
+def create_spec_file(config_file, spec_output=None):
     """Create and save the generate spec file."""
     config = ConfigFile(config_file)
-    return save_spec_file(config, spec_output, python_version)
+    return save_spec_file(config, spec_output)
 
 
 @click.command()
@@ -190,15 +196,9 @@ def create_spec_file(config_file, spec_output=None, python_version=None):
     "-o",
     help="Provide custom output for spec file",
 )
-@click.option(
-    "--python-version",
-    "-p",
-    help="Specify specific python version to build for, e.g 3.11",
-)
-
-def main(config, spec_output, python_version):
+def main(config, spec_output):
     try:
-        create_spec_file(config, spec_output, python_version)
+        create_spec_file(config, spec_output)
     except (Pyp2specError, NotImplementedError) as exc:
         click.secho(f"Fatal exception occurred: {exc}", fg="red")
         sys.exit(1)
