@@ -87,11 +87,30 @@ class PypiPackage:
         error_str = f"Package `{self.package_name}` or version `{self.version}` was not found on PyPI"
         return self._get_from_url(pkg_index, error_str)
 
-    def python_name(self):
+    def python_name(self, *, python_alt_version=None):
+        """Create a component name for the specfile.
+
+        Prepend the name with 'python' (unless it already starts with it).
+        Add the Python alternative version, if it's defined.
+
+        Valid outcomes:
+        package name: foo, python_alt_version: 3.11
+        -> python3.11-foo
+
+        package name: foo, python_alt_version: None
+        -> python-foo
+
+        package name: python-foo, python_alt_version: 3.12
+        -> python3.12-foo
+
+        package name: python-foo, python_alt_version: None
+        -> python-foo
+        """
+
+        alt_version = "" if python_alt_version is None else python_alt_version
         if self.pypi_name.startswith("python"):
-            return self.pypi_name
-        else:
-            return f"python-{self.pypi_name}"
+            return self.pypi_name.replace("python", f"python{alt_version}")
+        return f"python{alt_version}-{self.pypi_name}"
 
     def source(self):
         """Return valid pypi_source RPM macro.
@@ -335,6 +354,7 @@ def create_config_contents(
     license=None,
     compliant=False,
     top_level=False,
+    python_alt_version=None,
 ):
     """Use `package` and provided kwargs to create the whole config contents.
     Return contents dictionary.
@@ -372,6 +392,10 @@ def create_config_contents(
     if archful := pkg.is_archful():
         click.secho("Package is archful - you may need to specify additional build requirements", fg="magenta")
 
+    if python_alt_version is not None:
+        click.secho(f"Assuming build for Python: {python_alt_version}", fg="yellow")
+        contents["python_alt_version"] = python_alt_version
+
     contents["archful"] = archful
     contents["description"] = description
     contents["summary"] = summary
@@ -379,7 +403,7 @@ def create_config_contents(
     contents["pypi_version"] = pkg.pypi_version_or_macro()
     contents["license"] = license
     contents["pypi_name"] = pkg.pypi_name
-    contents["python_name"] = pkg.python_name()
+    contents["python_name"] = pkg.python_name(python_alt_version=python_alt_version)
     contents["url"] = pkg.project_url()
     contents["source"] = pkg.source()
     contents["archive_name"] = pkg.archive_name()
@@ -414,6 +438,7 @@ def create_config(options):
         license=options["license"],
         compliant=options["fedora_compliant"],
         top_level=options["top_level"],
+        python_alt_version=options["python_alt_version"]
     )
     return save_config(contents, options["config_output"])
 
@@ -447,6 +472,10 @@ def pypconf_args(func):
     @click.option(
         "--top-level", "-t", is_flag=True,
         help="Test only top-level modules in %check",
+    )
+    @click.option(
+        "--python-alt-version", "-p",
+        help="Provide specific Python version to build for, e.g 3.11",
     )
     @wraps(func)
     def wrapper(*args, **kwargs):

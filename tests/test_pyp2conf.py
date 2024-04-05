@@ -38,6 +38,28 @@ def test_automatically_generated_config_is_valid(betamax_parametrized_session, p
     assert config == loaded_contents
 
 
+@pytest.mark.parametrize("package, version, alt_python",
+    [
+        ("Pello", "1.0.4", "3.9"),
+    ]
+)
+def test_automatically_generated_config_with_alt_python_is_valid(
+        betamax_parametrized_session, package, version, alt_python
+    ):
+    """Run the config rendering in fully automated mode and compare the results"""
+    config = create_config_contents(
+        package=package,
+        version=version,
+        python_alt_version=alt_python,
+        session=betamax_parametrized_session,
+    )
+
+    with open(f"tests/test_configs/default_python{alt_python}-{package.lower()}.conf", "rb") as config_file:
+        loaded_contents = tomllib.load(config_file)
+
+    assert config == loaded_contents
+
+
 def test_config_with_customization_is_valid(betamax_session):
     """Get the upstream metadata and modify some fields to get the custom config file.
     This also tests the compliance with Fedora Legal data by making
@@ -222,6 +244,22 @@ def test_capitalized_underscored_pypi_name_is_normalized():
     pkg = PypiPackage("Awesome_TestPkg", version="1.2.3",package_metadata=fake_pkg_data)
     assert pkg.pypi_name == "awesome-testpkg"
     assert pkg.python_name() == "python-awesome-testpkg"
+
+
+@pytest.mark.parametrize(
+    ("pypi_name", "alt_version", "expected"), [
+        ("foo", "3.10", "python3.10-foo"),
+        ("python-foo", "3.9", "python3.9-foo"),
+        ("python_foo", "3.12", "python3.12-foo"),
+        ("foo", None, "python-foo"),
+        ("python-foo", None, "python-foo"),
+        ("python_foo", None, "python-foo"),
+    ]
+)
+def test_python_name(pypi_name, alt_version, expected):
+    fake_pkg_data = {"info": {"name": pypi_name}}
+    pkg = PypiPackage(pypi_name, version="1.2.3", package_metadata=fake_pkg_data)
+    assert pkg.python_name(python_alt_version=alt_version) == expected
 
 
 @pytest.mark.parametrize(
