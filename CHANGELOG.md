@@ -1,5 +1,11 @@
 # Changelog
 
+# [0.9.0] - 2024-04-11
+### Added
+- Added a possibility to create spec files for specific Python versions
+Use a new command-line option `-p, --python-alt-version` to set it.
+
+
 # [0.8.0] - 2023-10-11
 ### Added
 - Automatically detect whether a package is archful or not based on a wheel name.
