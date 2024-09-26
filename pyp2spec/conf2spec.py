@@ -144,7 +144,7 @@ def save_spec_file(config, output):
         output = config.get_string("python_name") + ".spec"
     with open(output, "w", encoding="utf-8") as spec_file:
         spec_file.write(result)
-    click.secho(f"Spec file was saved successfully to '{output}'", fg="green")
+    click.secho(f"Spec file was saved successfully to '{output}'")
     return output
 
 
