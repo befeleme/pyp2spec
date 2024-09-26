@@ -85,10 +85,10 @@ def test_compliance_check_with_fedora(identifier, expected, fake_fedora_licenses
 @pytest.mark.parametrize(
     ("identifiers", "expected"),
     (
-        (["AAL", "MIT", "CECILL-B"], (True, [])),
-        ([], (False, [])),
-        (["LicenseRef-LPPL", "MIT"], (False, ["LicenseRef-LPPL"])),  # mixed not allowed/allowed
-        (["LicenseRef-LPPL", "Aladdin", "LicenseRef-OpenFlow", "APL-1.0"], (False, ["LicenseRef-LPPL", "Aladdin", "LicenseRef-OpenFlow", "APL-1.0"])),
+        (["AAL", "MIT", "CECILL-B"], (True, {"bad": [], "good": ["AAL", "MIT", "CECILL-B"]})),
+        ([], (False, {"bad": [], "good": []})),
+        (["LicenseRef-LPPL", "MIT"], (False, {"bad": ["LicenseRef-LPPL"], "good": ["MIT"]})),  # mixed not allowed/allowed
+        (["LicenseRef-LPPL", "Aladdin", "LicenseRef-OpenFlow", "APL-1.0"], (False, {"bad": ["LicenseRef-LPPL", "Aladdin", "LicenseRef-OpenFlow", "APL-1.0"], "good": []})),
     ),
 )
 def test_is_allowed_in_fedora(identifiers, expected, fake_fedora_licenses):

@@ -149,10 +149,11 @@ def _is_compliant_with_fedora(identifier, fedora_licenses):
 def good_for_fedora(spdx_identifiers, *, licenses_dict=None, session=None):
     """Determine whether all of the given SPDX identifiers are good for Fedora.
 
-    If no `spdx_identifiers` are given, return tuple: (False, []).
-    If all of the given identifiers are good, return (True, []),
-    otherwise return (False, [<all bad identifiers>]).
-    bad_identifiers are returned in the same order as the given spdx_identifiers.
+    Store the results in the checked_identifiers dictionary, under the
+    respective `bad` and `good` keys.
+    If no `spdx_identifiers` are given or not all are good, return tuple:
+    (False, checked_identifies).
+    Otherwise, return (True, checked_identifies).
     """
 
     # populate FEDORA_LICENSES only if they're still empty and
@@ -161,12 +162,18 @@ def good_for_fedora(spdx_identifiers, *, licenses_dict=None, session=None):
         FEDORA_LICENSES.update(_load_fedora_licenses(session=session))
     fedora_licenses = licenses_dict or FEDORA_LICENSES
 
+    checked_identifies = {
+        "bad": [],
+        "good": [],
+    }
+
     if not spdx_identifiers:
-        return (False, [])
-    bad_identifiers = []
+        return (False, checked_identifies)
     for spdx_identifier in spdx_identifiers:
-        if not _is_compliant_with_fedora(spdx_identifier, fedora_licenses):
-            bad_identifiers.append(spdx_identifier)
-    if bad_identifiers:
-        return (False, bad_identifiers)
-    return (True, [])
+        if _is_compliant_with_fedora(spdx_identifier, fedora_licenses):
+            checked_identifies["good"].append(spdx_identifier)
+        else:
+            checked_identifies["bad"].append(spdx_identifier)
+    if checked_identifies["bad"]:
+        return (False, checked_identifies)
+    return (True, checked_identifies)
