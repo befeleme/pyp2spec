@@ -4,9 +4,8 @@ Release:        %autorelease
 # Fill in the actual package summary to submit package to Fedora
 Summary:        Python documentation generator
 
-# Check if the automatically generated License and its spelling is correct for Fedora
-# https://docs.fedoraproject.org/en-US/packaging-guidelines/LicensingGuidelines/
-License:        fake-license
+# No license information obtained, it's up to the packager to fill it in
+License:        ...
 URL:            https://www.sphinx-doc.org/
 Source:         %{pypi_source sphinx}
 

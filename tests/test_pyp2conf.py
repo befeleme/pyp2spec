@@ -85,7 +85,6 @@ def test_archful_package(betamax_session):
     package = "numpy"
     config = create_config_contents(
         package=package,
-        license="fake-string",
         version="1.25.2",
         automode=True,
         session=betamax_session,
@@ -101,7 +100,6 @@ def test_package_with_extras(betamax_session):
     package = "sphinx"
     config = create_config_contents(
         package=package,
-        license="fake-license",
         session=betamax_session,
     )
 
@@ -131,8 +129,7 @@ def test_license_classifier_read_correctly():
 def test_no_license_classifiers_and_no_license_keyword():
     pkg = PypiPackage("_", version="1.2.3", package_metadata={"info":{"classifiers": [], "license": ""}})
     assert pkg.filter_license_classifiers() == []
-    with pytest.raises(NoLicenseDetectedError):
-        pkg.license()
+    assert pkg.license() is None
 
 
 def test_compliant_license_is_returned(fake_fedora_licenses):
@@ -155,8 +152,7 @@ def test_bad_license_fails_compliance_check(fake_fedora_licenses):
     ]}}
     pkg = PypiPackage("_", version="1.2.3", package_metadata=fake_pkg_data)
 
-    with pytest.raises(NoLicenseDetectedError):
-        pkg.license(check_compliance=True, licenses_dict=fake_fedora_licenses)
+    assert pkg.license(check_compliance=True, licenses_dict=fake_fedora_licenses) is None
 
 
 def test_bad_license_without_compliance_check_is_returned():
@@ -174,8 +170,7 @@ def test_mix_good_bad_licenses_fail_compliance_check(fake_fedora_licenses):
         "License :: OSI Approved :: MIT License",
     ]}}
     pkg = PypiPackage("_", version="1.2.3", package_metadata=fake_pkg_data)
-    with pytest.raises(NoLicenseDetectedError):
-        pkg.license(check_compliance=True, licenses_dict=fake_fedora_licenses)
+    assert pkg.license(check_compliance=True, licenses_dict=fake_fedora_licenses) is None
 
 
 def test_mix_good_bad_licenses_without_compliance_check_are_returned():
@@ -196,16 +191,14 @@ def test_license_keyword_without_compliance_check():
 def test_license_keyword_with_compliance_check(fake_fedora_licenses):
     fake_pkg_data = {"info": {"license": "RSCPL", "classifiers": []}}
     pkg = PypiPackage("_", version="1.2.3", package_metadata=fake_pkg_data)
-    with pytest.raises(NoLicenseDetectedError):
-        pkg.license(check_compliance=True, licenses_dict=fake_fedora_licenses)
+    assert pkg.license(check_compliance=True, licenses_dict=fake_fedora_licenses) is None
 
 
 @pytest.mark.parametrize("compliant", (True, False))
 def test_empty_license_keyword_fails(compliant, fake_fedora_licenses):
     fake_pkg_data = {"info": {"license": "", "classifiers": []}}
     pkg = PypiPackage("_", version="1.2.3", package_metadata=fake_pkg_data)
-    with pytest.raises(NoLicenseDetectedError):
-        pkg.license(check_compliance=compliant, licenses_dict=fake_fedora_licenses)
+    assert pkg.license(check_compliance=compliant, licenses_dict=fake_fedora_licenses) is None
 
 
 def test_zip_sdist_is_added_to_source_macro():

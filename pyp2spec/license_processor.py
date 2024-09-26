@@ -15,9 +15,6 @@ class NoSuchClassifierError(Pyp2specError):
     """Raised when the detected license classifier doesn't exist in pyp2spec's data"""
 
 
-class InvalidSPDXExpressionError(Pyp2specError):
-    """Raised when the assumed SPDX expression is not valid"""
-
 
 def _load_package_resource(filename):
     with (files("pyp2spec") / filename).open("r", encoding="utf-8") as f:
@@ -69,9 +66,12 @@ def classifiers_to_spdx_identifiers(classifiers):
 def license_keyword_to_spdx_identifiers(license_keyword):
     """Return a sorted list of SPDX identifiers extracted from the license_keyword
     
-    If no identifiers were parsed out of the license_keyword, return None.
-    Raise ValueError if the license_keyword isn't a valid SPDX expression.
+    If no identifiers were parsed out of the license_keyword or
+    the license_keyword is unparseable, return None.
     """
+    # nothing to transform, ergo no identifiers
+    if not license_keyword:
+        return None
 
     # `Artistic-1.0-Perl` alone is forbidden in Fedora, but the combination is allowed
     # These expressions may be a part of even longer license strings, which is impossible to cover
@@ -90,12 +90,11 @@ def license_keyword_to_spdx_identifiers(license_keyword):
     licensing = get_spdx_licensing()
     try:
         parsed_license = licensing.parse(license_keyword, validate=True)
-        if parsed_license is None:  # license keyword is probably empty
-            return None
         # The objects are stored in sets, sort and return as a list
         return sorted(parsed_license.objects)
     except ExpressionError as err:
-        raise InvalidSPDXExpressionError(f"Invalid SPDX expression: {license_keyword}") from err
+        # Don't bubble the error up, the calling function will handle the invalid result
+        return None
 
 
 def _load_fedora_licenses(source_path=None, session=None):
