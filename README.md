@@ -19,6 +19,35 @@ Inside, there are two parts:
 - *pyp2conf*: gathers of all the necessary information to produce a spec file and stores it in a configuration file
 - *conf2spec*: produces working spec file using all the information from configuration file
 
+### Standard mode
+
+pyp2spec attempts to detect all unambiguous information from the package
+metadata, but avoids applying complicated heuristics to provide *at least
+somewhat accurate* results.
+In the standard mode it generates files with all the detected information which
+may not be enough to generate a valid RPM immediately. There are placeholders
+in the fields that couldn't be determined automatically which are left for
+the packager to fill in.
+The generated spec contains comments helping to locate the missing pieces.
+This is the default mode of pyp2spec.
+
+### Automode
+
+Automode, invoked with `--automode` or `-a` command-line options,
+is the preferred way of generating spec files in the automated environments.
+It sets the convenient defaults that increase the chance of creating a buildable package.
+The defaults:
+- import check attempts to import the the top-level modules only
+  (since importing all of the detected modules can fail on e.g. OS-related dependencies)
+- all the found license names are validated as existing SPDX identifiers and
+  checked for compliance with Fedora Legal data - the script warns about
+  the incorrectness but creates a spec file anyways
+- the license string, if not a valid SPDX expression already, is a combination
+  of all detected identifiers joined with the "AND" operator
+
+The generated spec files don't fulfill all the necessities of the official
+Fedora packages and hence cannot be submitted for review.
+
 ## How to run
 
 To run whatever this project offers at this point,
