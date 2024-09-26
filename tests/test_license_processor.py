@@ -2,7 +2,7 @@ import pytest
 
 from pyp2spec.license_processor import classifiers_to_spdx_identifiers, license_keyword_to_spdx_identifiers
 from pyp2spec.license_processor import _is_compliant_with_fedora, good_for_fedora
-from pyp2spec.license_processor import InvalidSPDXExpressionError, NoSuchClassifierError
+from pyp2spec.license_processor import NoSuchClassifierError
 
 
 @pytest.mark.parametrize(
@@ -61,9 +61,8 @@ def test_perl_license_raises_exception():
         ("string"),
     ),
 )
-def test_invalid_expressions_raise_errors(expression):
-    with pytest.raises(InvalidSPDXExpressionError):
-        license_keyword_to_spdx_identifiers(expression)
+def test_invalid_expressions_return_None(expression):
+    assert license_keyword_to_spdx_identifiers(expression) is None
 
 
 

@@ -93,11 +93,23 @@ def python3_pkgversion_or_3(config):
     return "%{python3_pkgversion}" if config.get_string("python_alt_version") else "3"
 
 
+def get_license_string(config):
+    none_notice = "# No license information obtained, it's up to the packager to fill it in"
+    detected_notice = ("# Check if the automatically generated License and its "
+        "spelling is correct for Fedora\n"
+        "# https://docs.fedoraproject.org/en-US/packaging-guidelines/LicensingGuidelines/")
+    if (license := config.get_string("license")):
+        return (license, detected_notice)
+    return ("...", none_notice)
+
+
 def fill_in_template(config):
     """Return template rendered with data from config file."""
 
     with (files("pyp2spec") / TEMPLATE_FILENAME).open("r", encoding="utf-8") as f:
         spec_template = Template(f.read())
+
+    license, license_notice = get_license_string(config)
 
     result = spec_template.render(
         additional_build_requires=list_additional_build_requires(config),
@@ -106,7 +118,8 @@ def fill_in_template(config):
         automode=config.get_bool("automode"),
         description=wrap_description(config),
         extras=",".join(config.get_list("extras")),
-        license=config.get_string("license"),
+        license=license,
+        license_notice=license_notice,
         name=config.get_string("pypi_name"),
         python_name=config.get_string("python_name"),
         pypi_version=config.get_string("pypi_version"),

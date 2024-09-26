@@ -169,7 +169,6 @@ class PypiPackage:
         package license metadata (classifiers or license keyword).
         
         If multiple identifiers are found, create an expression that's the safest option (with AND as joining operator).
-        Raise NoLicenseDetectedError if no valid SPDX identifiers are found.
         """
 
         if (license_classifiers := self.filter_license_classifiers()):
@@ -181,9 +180,6 @@ class PypiPackage:
         license_keyword = self.package_data["info"]["license"]
         identifiers = license_keyword_to_spdx_identifiers(license_keyword)
 
-        # No more options to detect licenses left, hence explicit fail
-        if not identifiers:
-            raise NoLicenseDetectedError("No valid license detected.")
         return (identifiers, license_keyword)
 
     def license(self, *, check_compliance=False, licenses_dict=None):
@@ -193,18 +189,25 @@ class PypiPackage:
         SPDX identifiers against the Fedora allowed licenses.
         This isn't a 100% reliable solution and in case of ambiguous results,
         the license is discarded as invalid.
-        If the compliant license can't be determined, raise NoLicenseDetectedError.
         """
 
         identifiers, expression = self.transform_to_spdx()
+        if not identifiers:
+            inspect_notice = "Inspect the project manually to find the license."
+            if expression:
+                err_string = f"WARNING: The found license `{expression}` is not a valid SPDX expression. " + inspect_notice
+                click.secho(err_string, fg="red")
+            else:
+                err_string = "WARNING: No license found. " + inspect_notice
+                click.secho(err_string, fg="red")
+            return None
         if check_compliance:
             is_compliant, bad_identifiers = good_for_fedora(identifiers, session=self._session, licenses_dict=licenses_dict)
             if not is_compliant:
                 if bad_identifiers:
                     err_string = "The detected licenses: `{0}` aren't allowed in Fedora."
                     click.secho(err_string.format(", ".join(bad_identifiers), fg="red"))
-                raise NoLicenseDetectedError("Could not create a compliant license field.")
-
+                return None
         return expression
 
     def summary(self):
@@ -349,7 +352,6 @@ def create_config_contents(
     package,
     version=None,
     session=None,
-    license=None,
     compliant=False,
     python_alt_version=None,
     automode=False,
@@ -371,9 +373,8 @@ def create_config_contents(
     if version is None:
         click.secho(f"Assuming PyPI --version={pkg.version}", fg="yellow")
 
-    if license is None:
-        license = pkg.license(check_compliance=compliant)
-        click.secho(f"Assuming --license={license}", fg="yellow")
+    if (license := pkg.license(check_compliance=compliant)) is not None:
+        contents["license"] = license
 
     if automode:
         contents["automode"] = True
@@ -390,7 +391,6 @@ def create_config_contents(
     contents["summary"] = pkg.summary()
     contents["version"] = convert_version_to_rpm_scheme(pkg.version)
     contents["pypi_version"] = pkg.pypi_version_or_macro()
-    contents["license"] = license
     contents["pypi_name"] = pkg.pypi_name
     contents["python_name"] = pkg.python_name(python_alt_version=python_alt_version)
     contents["url"] = pkg.project_url()
@@ -422,7 +422,6 @@ def create_config(options):
     contents = create_config_contents(
         options["package"],
         version=options["version"],
-        license=options["license"],
         compliant=options["fedora_compliant"],
         python_alt_version=options["python_alt_version"],
         automode=options["automode"]
@@ -439,10 +438,6 @@ def pypconf_args(func):
     @click.option(
         "--version", "-v",
         help="Provide package version to query PyPI for, default: latest",
-    )
-    @click.option(
-        "--license", "-l",
-        help="Provide license name",
     )
     @click.option(
         "--fedora-compliant", is_flag=True,
