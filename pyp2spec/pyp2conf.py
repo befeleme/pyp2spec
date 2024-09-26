@@ -202,11 +202,18 @@ class PypiPackage:
                 click.secho(err_string, fg="red")
             return None
         if check_compliance:
-            is_compliant, bad_identifiers = good_for_fedora(identifiers, session=self._session, licenses_dict=licenses_dict)
+            is_compliant, checked_identifiers = good_for_fedora(
+                    identifiers,
+                    session=self._session,
+                    licenses_dict=licenses_dict
+            )
+            if checked_identifiers["bad"]:
+                err_string = "Found identifiers: `{0}` aren't allowed in Fedora."
+                click.secho(err_string.format(", ".join(checked_identifiers["bad"])), fg="red")
+            if checked_identifiers["good"]:
+                err_string = "Found identifiers: `{0}` are good for Fedora."
+                click.secho(err_string.format(", ".join(checked_identifiers["good"])), fg="green")
             if not is_compliant:
-                if bad_identifiers:
-                    err_string = "The detected licenses: `{0}` aren't allowed in Fedora."
-                    click.secho(err_string.format(", ".join(bad_identifiers), fg="red"))
                 return None
         return expression
 
