@@ -193,9 +193,10 @@ class PypiPackage:
 
         identifiers, expression = self.transform_to_spdx()
         if not identifiers:
-            inspect_notice = "Inspect the project manually to find the license."
+            inspect_notice = "Inspect the project manually to find the license"
             if expression:
-                err_string = f"WARNING: The found license `{expression}` is not a valid SPDX expression. " + inspect_notice
+                err_string = (f"WARNING: The found license expression '{expression}' "
+                    "is not a valid SPDX expression. " + inspect_notice)
                 click.secho(err_string, fg="red")
             else:
                 err_string = "WARNING: No license found. " + inspect_notice
@@ -208,11 +209,11 @@ class PypiPackage:
                     licenses_dict=licenses_dict
             )
             if checked_identifiers["bad"]:
-                err_string = "Found identifiers: `{0}` aren't allowed in Fedora."
+                err_string = "Found identifiers: '{0}' aren't allowed in Fedora."
                 click.secho(err_string.format(", ".join(checked_identifiers["bad"])), fg="red")
             if checked_identifiers["good"]:
-                err_string = "Found identifiers: `{0}` are good for Fedora."
-                click.secho(err_string.format(", ".join(checked_identifiers["good"])), fg="green")
+                err_string = "Found identifiers: '{0}' are good for Fedora."
+                click.secho(err_string.format(", ".join(checked_identifiers["good"])), fg="yellow")
             if not is_compliant:
                 return None
         return expression
@@ -370,15 +371,14 @@ def create_config_contents(
 
     # a package name was given as the `package`, look for it on PyPI
     if is_package_name(package):
-        click.secho(f"Assuming '{package}' is a package name", fg="yellow")
+        click.secho(f"Querying PyPI for package '{package}'", fg="yellow")
         pkg = PypiPackage(package, version=version, session=session)
-        click.secho(f"Querying PyPI for package '{package}'", fg="cyan")
     # a URL was given as the `package`
     else:
         raise NotImplementedError("pyp2spec can't currently handle URLs.")
 
     if version is None:
-        click.secho(f"Assuming PyPI --version={pkg.version}", fg="yellow")
+        click.secho(f"Assuming the latest version found on PyPI: '{pkg.version}'", fg="yellow")
 
     if (license := pkg.license(check_compliance=compliant)) is not None:
         contents["license"] = license
@@ -387,7 +387,7 @@ def create_config_contents(
         contents["automode"] = True
 
     if archful := pkg.is_archful():
-        click.secho("Package is archful - you may need to specify additional build requirements", fg="magenta")
+        click.secho("Package contains compiled extensions - you may need to specify additional build requirements", fg="magenta")
 
     if python_alt_version is not None:
         click.secho(f"Assuming build for Python: {python_alt_version}", fg="yellow")
@@ -415,11 +415,10 @@ def save_config(contents, output=None):
     """
     if not output:
         package = contents["python_name"]
-        output = f"./{package}.conf"
+        output = f"{package}.conf"
     with open(output, "wb") as f:
-        click.secho(f"Saving configuration file to '{output}'", fg="yellow")
         tomli_w.dump(contents, f, multiline_strings=True)
-    click.secho("Configuration file was saved successfully", fg="green")
+    click.secho(f"Configuration file was saved successfully to '{output}'")
     return output
 
 
