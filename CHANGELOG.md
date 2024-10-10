@@ -1,5 +1,21 @@
 # Changelog
 
+# [0.10.0] - 2024-10-10
+### Added
+- CLI `--automode`, `-a` to create buildable spec files (suitable for automated
+environments)
+
+### Changed
+- In the default mode of pyp2spec create a spec file that requires a human input
+The top-level modules cannot be easily detected, hence `%pyproject_save_files`
+has to be filled in by a packager
+- Continue with creating the spec files even if the license is not detected,
+leave the field blank to fill in by the packager
+
+### Removed
+- Many CLI options and manual config entries. The tool now only takes care of what it can detect from the package data.
+
+
 # [0.9.0] - 2024-04-11
 ### Added
 - Added a possibility to create spec files for specific Python versions

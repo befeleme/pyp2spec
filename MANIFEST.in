@@ -1,2 +1,3 @@
 recursive-include tests *
 recursive-exclude tests/__pycache__ *
+include tox.ini
