@@ -1,4 +1,5 @@
 from functools import wraps
+import email.parser
 import re
 import sys
 
@@ -44,7 +45,7 @@ class PypiPackage:
     This is only relevant for testing.
     """
 
-    def __init__(self, package_name, *, version=None, package_metadata=None, session=None):
+    def __init__(self, package_name, *, version=None, package_metadata=None, core_metadata=None, session=None):
         self.package_name = package_name
         self._session = session or requests.Session()
         self.version = version or self._get_version_from_package_metadata()
@@ -52,6 +53,7 @@ class PypiPackage:
         # in the typical app run it's not set,
         # meaning we jump to the other sources package metadata data (eg. PyPI)
         self.package_data = package_metadata or self._get_package_version_metadata()
+        self.core_metadata = core_metadata or self.parse_core_metadata()
         self.sdist_filename = None
 
     @property
@@ -86,6 +88,20 @@ class PypiPackage:
         pkg_index = f"https://pypi.org/pypi/{self.package_name}/{self.version}/json"
         error_str = f"Package `{self.package_name}` or version `{self.version}` was not found on PyPI"
         return self._get_from_url(pkg_index, error_str)
+
+    def _get_metadata_file(self):
+        for entry in self.package_data["urls"]:
+            if entry["packagetype"] == "bdist_wheel":
+                response = self._session.get(entry["url"] + ".metadata")
+                if not response.ok:
+                    click.secho("The metadata file could not be located", fg="red")
+                    response.text = None
+                return response.text
+
+    def parse_core_metadata(self):
+        metadata = self._get_metadata_file()
+        parser = email.parser.Parser()
+        return parser.parsestr(metadata)
 
     def python_name(self, *, python_alt_version=None):
         """Create a component name for the specfile.
@@ -328,6 +344,9 @@ class PypiPackage:
                     extras.add(found.group(1))
         return sorted(extras)
 
+    def are_license_files_included(self):
+        return bool(self.core_metadata.get_all("License-File"))
+
 
 def get_description(package):
     """Return a default package description."""
@@ -404,6 +423,7 @@ def create_config_contents(
     contents["source"] = pkg.source()
     contents["archive_name"] = pkg.archive_name()
     contents["extras"] = pkg.extras()
+    contents["license_files_present"] = pkg.are_license_files_included()
 
     return contents
 

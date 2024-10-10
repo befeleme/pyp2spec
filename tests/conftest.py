@@ -1,3 +1,4 @@
+import email.parser
 import json
 
 import betamax
@@ -17,3 +18,9 @@ config.default_cassette_options["record_mode"] = "none"
 def fake_fedora_licenses():
     with open("tests/fedora_license_data.json", "r", encoding="utf-8") as f:
         return json.load(f)
+
+
+@pytest.fixture(scope="session")
+def fake_core_metadata():
+    # Return an object with fake metadata
+    return email.parser.Parser().parsestr("Name: foo")

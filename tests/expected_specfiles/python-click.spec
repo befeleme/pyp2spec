@@ -1,5 +1,5 @@
 Name:           python-click
-Version:        7.1.2
+Version:        8.1.7
 Release:        %autorelease
 # Fill in the actual package summary to submit package to Fedora
 Summary:        Composable command line interface toolkit
@@ -41,7 +41,7 @@ Summary:        %{summary}
 %install
 %pyproject_install
 # Add top-level Python module names here as arguments, you can use globs
-%pyproject_save_files ...
+%pyproject_save_files -l ...
 
 
 %check

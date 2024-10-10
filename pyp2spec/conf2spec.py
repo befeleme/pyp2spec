@@ -120,6 +120,7 @@ def fill_in_template(config):
         extras=",".join(config.get_list("extras")),
         license=license,
         license_notice=license_notice,
+        mandate_license=config.get_bool("license_files_present"),
         name=config.get_string("pypi_name"),
         python_name=config.get_string("python_name"),
         pypi_version=config.get_string("pypi_version"),
