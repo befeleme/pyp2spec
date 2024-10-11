@@ -44,7 +44,7 @@ This is package 'Pello' generated automatically by pyp2spec.}
 %install
 %pyproject_install
 # Add top-level Python module names here as arguments, you can use globs
-%pyproject_save_files ...
+%pyproject_save_files -l ...
 
 
 %check

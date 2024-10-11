@@ -62,7 +62,7 @@ Summary:        %{summary}
 %pyproject_save_files '*' +auto
 {%- else -%}
 # Add top-level Python module names here as arguments, you can use globs
-%pyproject_save_files ...
+%pyproject_save_files{% if mandate_license %} -l{% endif %} ...
 {%- endif %}
 
 
