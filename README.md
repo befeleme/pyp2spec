@@ -127,7 +127,7 @@ Configuration data is stored in a TOML file.
 
 ```
 summary = "A simple Python 3 library for Notion Home Monitoring"
-version = "2.0.3"
+version = "2024.3.1"
 license = "MIT"
 pypi_name = "aionotion"
 pypi_version = %{version}
@@ -138,15 +138,16 @@ archive_name = "aionotion"
 extras = []
 archful = false
 automode = false
-license_files_present = false
+license_files_present = true
 ```
 
 ### Spec file generated using the example config
 
 ```
 Name:           python-aionotion
-Version:        3.0.2
+Version:        2024.3.1
 Release:        %autorelease
+# Fill in the actual package summary to submit package to Fedora
 Summary:        A simple Python 3 library for Notion Home Monitoring
 
 # Check if the automatically generated License and its spelling is correct for Fedora
@@ -158,9 +159,10 @@ Source:         %{pypi_source aionotion}
 BuildArch:      noarch
 BuildRequires:  python3-devel
 
+
+# Fill in the actual package description to submit package to Fedora
 %global _description %{expand:
 This is package 'aionotion' generated automatically by pyp2spec.}
-
 
 %description %_description
 
@@ -184,9 +186,8 @@ Summary:        %{summary}
 
 %install
 %pyproject_install
-# For official Fedora packages, including files with '*' +auto is not allowed
-# Replace it with a list of relevant Python modules/globs and list extra files in %%files
-%pyproject_save_files '*' +auto
+# Add top-level Python module names here as arguments, you can use globs
+%pyproject_save_files -l ...
 
 
 %check
