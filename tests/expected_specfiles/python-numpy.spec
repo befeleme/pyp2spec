@@ -40,12 +40,13 @@ Summary:        %{summary}
 
 %install
 %pyproject_install
-# Add top-level Python module names here as arguments, you can use globs
-%pyproject_save_files ...
+# For official Fedora packages, including files with '*' +auto is not allowed
+# Replace it with a list of relevant Python modules/globs and list extra files in %%files
+%pyproject_save_files '*' +auto
 
 
 %check
-%pyproject_check_import
+%_pyproject_check_import_allow_no_modules -t
 
 
 %files -n python3-numpy -f %{pyproject_files}

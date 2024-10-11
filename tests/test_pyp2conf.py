@@ -95,6 +95,7 @@ def test_archful_package(betamax_session):
         loaded_contents = tomllib.load(config_file)
 
     assert config["archful"] == loaded_contents["archful"]
+    assert config == loaded_contents
 
 
 def test_package_with_extras(betamax_session):
@@ -108,6 +109,7 @@ def test_package_with_extras(betamax_session):
         loaded_contents = tomllib.load(config_file)
 
     assert config["extras"] == loaded_contents["extras"]
+    assert config == loaded_contents
 
 
 def test_license_classifier_read_correctly(fake_core_metadata):
