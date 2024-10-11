@@ -15,10 +15,6 @@ from pyp2spec.license_processor import license_keyword_to_spdx_identifiers, good
 from pyp2spec.utils import Pyp2specError
 
 
-class NoLicenseDetectedError(Pyp2specError):
-    """Raised when there's no valid license detected"""
-
-
 class SdistNotFoundError(Pyp2specError):
     """Raised when there's no sdist file in the PyPI metadata"""
 

@@ -11,7 +11,7 @@ except ImportError:
     import tomli as tomllib
 
 from pyp2spec.pyp2conf import PypiPackage, create_config_contents
-from pyp2spec.pyp2conf import convert_version_to_rpm_scheme, NoLicenseDetectedError, PackageNotFoundError
+from pyp2spec.pyp2conf import convert_version_to_rpm_scheme, PackageNotFoundError
 
 
 def test_non_existent_package(betamax_session):
