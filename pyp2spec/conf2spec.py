@@ -1,7 +1,6 @@
 import sys
 
 from importlib.resources import files
-from textwrap import fill
 
 import click
 
@@ -75,20 +74,6 @@ def list_additional_build_requires(config):
     return ADDITIONAL_BUILD_REQUIRES_NOARCH
 
 
-def wrap_description(config):
-    """Wrap description line to 79 characters at most.
-
-    If the description line length exceeds 79 lines, tools like rpmlint start
-    emit warnings. Use newlines to prevent exceeding the max. length.
-    Return the modified description string.
-    """
-    return fill(
-        config.get_string("description"),
-        width=79,
-        break_long_words=False
-    )
-
-
 def python3_pkgversion_or_3(config):
     return "%{python3_pkgversion}" if config.get_string("python_alt_version") else "3"
 
@@ -116,7 +101,6 @@ def fill_in_template(config):
         archful=config.get_bool("archful"),
         archive_name=config.get_string("archive_name"),
         automode=config.get_bool("automode"),
-        description=wrap_description(config),
         extras=",".join(config.get_list("extras")),
         license=license,
         license_notice=license_notice,

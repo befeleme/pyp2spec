@@ -344,12 +344,6 @@ class PypiPackage:
         return bool(self.core_metadata.get_all("License-File"))
 
 
-def get_description(package):
-    """Return a default package description."""
-
-    return f"This is package '{package}' generated automatically by pyp2spec."
-
-
 def convert_version_to_rpm_scheme(version):
     """If version follows PEP 440, return its value converted to RPM scheme.
 
@@ -409,7 +403,6 @@ def create_config_contents(
         contents["python_alt_version"] = python_alt_version
 
     contents["archful"] = archful
-    contents["description"] = get_description(package)
     contents["summary"] = pkg.summary()
     contents["version"] = convert_version_to_rpm_scheme(pkg.version)
     contents["pypi_version"] = pkg.pypi_version_or_macro()

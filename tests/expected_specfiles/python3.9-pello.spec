@@ -18,7 +18,7 @@ BuildRequires:  python%{python3_pkgversion}-devel
 
 # Fill in the actual package description to submit package to Fedora
 %global _description %{expand:
-This is package 'Pello' generated automatically by pyp2spec.}
+This is package 'pello' generated automatically by pyp2spec.}
 
 %description %_description
 

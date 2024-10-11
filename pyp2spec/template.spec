@@ -22,7 +22,7 @@ BuildRequires:  {{br}}
 
 # Fill in the actual package description to submit package to Fedora
 %global _description %{expand:
-{{description}}}
+This is package '{{name}}' generated automatically by pyp2spec.}
 
 %description %_description
 

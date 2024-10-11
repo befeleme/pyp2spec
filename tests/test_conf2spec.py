@@ -5,7 +5,6 @@ configurations.
 """
 
 from pathlib import Path
-from textwrap import dedent
 import pytest
 
 from pyp2spec import conf2spec
@@ -14,17 +13,6 @@ from pyp2spec import conf2spec
 @pytest.fixture
 def config_dir():
     return "tests/test_configs/"
-
-
-def test_long_description_is_split(config_dir):
-    config_path = config_dir + "customized_markdown-it-py.conf"
-    config = conf2spec.ConfigFile(config_path)
-    expected = """\
-        Markdown parser done right. Its features: Follows the CommonMark spec for
-        baseline parsing. Has configurable syntax: you can add new rules and even
-        replace existing ones. Pluggable: Adds syntax extensions to extend the parser.
-        High speed & safe by default."""
-    assert conf2spec.wrap_description(config) == dedent(expected)
 
 
 @pytest.mark.parametrize(
