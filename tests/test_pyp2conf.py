@@ -120,7 +120,7 @@ def test_license_classifier_read_correctly(fake_core_metadata):
         "Development Status :: 3 - Alpha",
     ]}}
 
-    pkg = PypiPackage("_", version="1.2.3", package_metadata=fake_pkg_data, core_metadata=fake_core_metadata)
+    pkg = PypiPackage("_", version="1.2.3", pypi_package_data=fake_pkg_data, core_metadata=fake_core_metadata)
     assert pkg.filter_license_classifiers() == [
         "License :: OSI Approved :: MIT License",
         "License :: OSI Approved :: MIT No Attribution License (MIT-0)"
@@ -128,7 +128,7 @@ def test_license_classifier_read_correctly(fake_core_metadata):
 
 
 def test_no_license_classifiers_and_no_license_keyword(fake_core_metadata):
-    pkg = PypiPackage("_", version="1.2.3", package_metadata={"info":{"classifiers": [], "license": ""}}, core_metadata=fake_core_metadata)
+    pkg = PypiPackage("_", version="1.2.3", pypi_package_data={"info":{"classifiers": [], "license": ""}}, core_metadata=fake_core_metadata)
     assert pkg.filter_license_classifiers() == []
     assert pkg.license() is None
 
@@ -143,7 +143,7 @@ def test_compliant_license_is_returned(fake_fedora_licenses, fake_core_metadata)
         "Development Status :: 3 - Alpha",
     ]}}
 
-    pkg = PypiPackage("_", version="1.2.3", package_metadata=fake_pkg_data, core_metadata=fake_core_metadata)
+    pkg = PypiPackage("_", version="1.2.3", pypi_package_data=fake_pkg_data, core_metadata=fake_core_metadata)
     assert pkg.license(check_compliance=True, licenses_dict=fake_fedora_licenses) == "MIT AND MIT-0"
 
 
@@ -151,7 +151,7 @@ def test_bad_license_fails_compliance_check(fake_fedora_licenses, fake_core_meta
     fake_pkg_data = {"info": {"classifiers" : [
         "License :: OSI Approved :: European Union Public Licence 1.0 (EUPL 1.0)"
     ]}}
-    pkg = PypiPackage("_", version="1.2.3", package_metadata=fake_pkg_data, core_metadata=fake_core_metadata)
+    pkg = PypiPackage("_", version="1.2.3", pypi_package_data=fake_pkg_data, core_metadata=fake_core_metadata)
 
     assert pkg.license(check_compliance=True, licenses_dict=fake_fedora_licenses) is None
 
@@ -160,7 +160,7 @@ def test_bad_license_without_compliance_check_is_returned(fake_core_metadata):
     fake_pkg_data = {"info": {"classifiers" : [
         "License :: OSI Approved :: European Union Public Licence 1.0 (EUPL 1.0)"
     ]}}
-    pkg = PypiPackage("_", version="1.2.3", package_metadata=fake_pkg_data, core_metadata=fake_core_metadata)
+    pkg = PypiPackage("_", version="1.2.3", pypi_package_data=fake_pkg_data, core_metadata=fake_core_metadata)
 
     assert pkg.license(check_compliance=False) == "EUPL-1.0"
 
@@ -170,7 +170,7 @@ def test_mix_good_bad_licenses_fail_compliance_check(fake_fedora_licenses, fake_
         "License :: OSI Approved :: European Union Public Licence 1.0 (EUPL 1.0)",
         "License :: OSI Approved :: MIT License",
     ]}}
-    pkg = PypiPackage("_", version="1.2.3", package_metadata=fake_pkg_data, core_metadata=fake_core_metadata)
+    pkg = PypiPackage("_", version="1.2.3", pypi_package_data=fake_pkg_data, core_metadata=fake_core_metadata)
     assert pkg.license(check_compliance=True, licenses_dict=fake_fedora_licenses) is None
 
 
@@ -179,26 +179,26 @@ def test_mix_good_bad_licenses_without_compliance_check_are_returned(fake_core_m
         "License :: OSI Approved :: European Union Public Licence 1.0 (EUPL 1.0)",
         "License :: OSI Approved :: MIT License",
     ]}}
-    pkg = PypiPackage("_", version="1.2.3", package_metadata=fake_pkg_data, core_metadata=fake_core_metadata)
+    pkg = PypiPackage("_", version="1.2.3", pypi_package_data=fake_pkg_data, core_metadata=fake_core_metadata)
     assert pkg.license(check_compliance=False) == "EUPL-1.0 AND MIT"
 
 
 def test_license_keyword_without_compliance_check(fake_core_metadata):
     fake_pkg_data = {"info": {"license": "BSD-2-Clause", "classifiers": []}}
-    pkg = PypiPackage("_", version="1.2.3", package_metadata=fake_pkg_data, core_metadata=fake_core_metadata)
+    pkg = PypiPackage("_", version="1.2.3", pypi_package_data=fake_pkg_data, core_metadata=fake_core_metadata)
     assert pkg.license(check_compliance=False) == "BSD-2-Clause"
 
 
 def test_license_keyword_with_compliance_check(fake_fedora_licenses, fake_core_metadata):
     fake_pkg_data = {"info": {"license": "RSCPL", "classifiers": []}}
-    pkg = PypiPackage("_", version="1.2.3", package_metadata=fake_pkg_data, core_metadata=fake_core_metadata)
+    pkg = PypiPackage("_", version="1.2.3", pypi_package_data=fake_pkg_data, core_metadata=fake_core_metadata)
     assert pkg.license(check_compliance=True, licenses_dict=fake_fedora_licenses) is None
 
 
 @pytest.mark.parametrize("compliant", (True, False))
 def test_empty_license_keyword_fails(compliant, fake_fedora_licenses, fake_core_metadata):
     fake_pkg_data = {"info": {"license": "", "classifiers": []}}
-    pkg = PypiPackage("_", version="1.2.3", package_metadata=fake_pkg_data, core_metadata=fake_core_metadata)
+    pkg = PypiPackage("_", version="1.2.3", pypi_package_data=fake_pkg_data, core_metadata=fake_core_metadata)
     assert pkg.license(check_compliance=compliant, licenses_dict=fake_fedora_licenses) is None
 
 
@@ -210,31 +210,31 @@ def test_zip_sdist_is_added_to_source_macro(fake_core_metadata):
             "packagetype": "sdist",
         }],
     }
-    pkg = PypiPackage("_", version="1.2.3", package_metadata=fake_pkg_data, core_metadata=fake_core_metadata)
+    pkg = PypiPackage("_", version="1.2.3", pypi_package_data=fake_pkg_data, core_metadata=fake_core_metadata)
     assert pkg.source() == "%{pypi_source Awesome_TestPkg %{version} zip}"
 
 
 def test_no_homepage_in_metadata(fake_core_metadata):
     fake_pkg_data = {"info": {"package_url": "https://foo"}}
-    pkg = PypiPackage("_", version="1.2.3", package_metadata=fake_pkg_data, core_metadata=fake_core_metadata)
+    pkg = PypiPackage("_", version="1.2.3", pypi_package_data=fake_pkg_data, core_metadata=fake_core_metadata)
     assert pkg.project_url() == "https://foo"
 
 
 def test_summary_is_generated_if_not_in_upstream(fake_core_metadata):
     fake_pkg_data = {"info": {"summary": ""}}
-    pkg = PypiPackage("_", version="1.2.3", package_metadata=fake_pkg_data, core_metadata=fake_core_metadata)
+    pkg = PypiPackage("_", version="1.2.3", pypi_package_data=fake_pkg_data, core_metadata=fake_core_metadata)
     assert pkg.summary() == "..."
 
 
 def test_summary_is_generated_if_upstream_data_is_multiline(fake_core_metadata):
     fake_pkg_data = {"info": {"summary": "I\nforgot\nthat summary\nmust\nbe short"}}
-    pkg = PypiPackage("_", version="1.2.3", package_metadata=fake_pkg_data, core_metadata=fake_core_metadata)
+    pkg = PypiPackage("_", version="1.2.3", pypi_package_data=fake_pkg_data, core_metadata=fake_core_metadata)
     assert pkg.summary() == "..."
 
 
 def test_capitalized_underscored_pypi_name_is_normalized(fake_core_metadata):
     fake_pkg_data = {"info": {"name": "Awesome_TestPkg"}}
-    pkg = PypiPackage("Awesome_TestPkg", version="1.2.3",package_metadata=fake_pkg_data, core_metadata=fake_core_metadata)
+    pkg = PypiPackage("Awesome_TestPkg", version="1.2.3",pypi_package_data=fake_pkg_data, core_metadata=fake_core_metadata)
     assert pkg.pypi_name == "awesome-testpkg"
     assert pkg.python_name() == "python-awesome-testpkg"
 
@@ -251,7 +251,7 @@ def test_capitalized_underscored_pypi_name_is_normalized(fake_core_metadata):
 )
 def test_python_name(pypi_name, alt_version, expected, fake_core_metadata):
     fake_pkg_data = {"info": {"name": pypi_name}}
-    pkg = PypiPackage(pypi_name, version="1.2.3", package_metadata=fake_pkg_data, core_metadata=fake_core_metadata)
+    pkg = PypiPackage(pypi_name, version="1.2.3", pypi_package_data=fake_pkg_data, core_metadata=fake_core_metadata)
     assert pkg.python_name(python_alt_version=alt_version) == expected
 
 
@@ -280,7 +280,7 @@ def test_pypi_version_or_macro(pypi_version, pypi_version_macro, fake_core_metad
     fake_pkg_data = {
         "info": "intentionally not empty package metadata"
     }
-    pkg = PypiPackage("_", version=pypi_version, package_metadata=fake_pkg_data, core_metadata=fake_core_metadata)
+    pkg = PypiPackage("_", version=pypi_version, pypi_package_data=fake_pkg_data, core_metadata=fake_core_metadata)
     assert pkg.pypi_version_or_macro() == pypi_version_macro
 
 
@@ -299,7 +299,7 @@ def test_extras_detected_correctly(fake_core_metadata):
             ]
         }
     }
-    pkg = PypiPackage("_", version="0", package_metadata=fake_pkg_data, core_metadata=fake_core_metadata)
+    pkg = PypiPackage("_", version="0", pypi_package_data=fake_pkg_data, core_metadata=fake_core_metadata)
     assert pkg.extras() == ["dev", "docs", "lint", "test"]
 
 
@@ -320,7 +320,7 @@ def test_archfulness_is_detected(wheel_name, archful, fake_core_metadata):
             }
         ]
     }
-    pkg = PypiPackage("_", version="0", package_metadata=fake_pkg_data, core_metadata=fake_core_metadata)
+    pkg = PypiPackage("_", version="0", pypi_package_data=fake_pkg_data, core_metadata=fake_core_metadata)
     assert pkg.is_archful() is archful
 
 
@@ -337,7 +337,7 @@ def test_archfulness_is_detected_from_multiple_urls_1(fake_core_metadata):
             },
         ]
     }
-    pkg = PypiPackage("_", version="0", package_metadata=fake_pkg_data, core_metadata=fake_core_metadata)
+    pkg = PypiPackage("_", version="0", pypi_package_data=fake_pkg_data, core_metadata=fake_core_metadata)
     assert not pkg.is_archful()
 
 
@@ -355,7 +355,7 @@ def test_archfulness_is_detected_from_multiple_urls_2(fake_core_metadata):
 
         ]
     }
-    pkg = PypiPackage("_", version="0", package_metadata=fake_pkg_data, core_metadata=fake_core_metadata)
+    pkg = PypiPackage("_", version="0", pypi_package_data=fake_pkg_data, core_metadata=fake_core_metadata)
     assert pkg.is_archful()
 
 
@@ -376,7 +376,7 @@ def test_archfulness_is_detected_from_multiple_urls_3(fake_core_metadata):
             },
         ]
     }
-    pkg = PypiPackage("_", version="0", package_metadata=fake_pkg_data, core_metadata=fake_core_metadata)
+    pkg = PypiPackage("_", version="0", pypi_package_data=fake_pkg_data, core_metadata=fake_core_metadata)
     assert pkg.is_archful()
 
 
@@ -393,5 +393,5 @@ def test_license_files_in_metadata_files(metadata, lf_present):
         "info": "intentionally not empty package metadata"
     }
     core_metadata = email.parser.Parser().parsestr(metadata)
-    pkg = PypiPackage("_", version="0", package_metadata=fake_pkg_data, core_metadata=core_metadata)
+    pkg = PypiPackage("_", version="0", pypi_package_data=fake_pkg_data, core_metadata=core_metadata)
     assert pkg.are_license_files_included() is lf_present
