@@ -12,7 +12,7 @@ from packaging.requirements import Requirement
 from pyp2spec.rpmversion import RpmVersion
 from pyp2spec.license_processor import classifiers_to_spdx_identifiers
 from pyp2spec.license_processor import license_keyword_to_spdx_identifiers, good_for_fedora
-from pyp2spec.utils import Pyp2specError
+from pyp2spec.utils import Pyp2specError, normalize
 
 
 class SdistNotFoundError(Pyp2specError):
@@ -58,12 +58,7 @@ class PypiPackage:
         The resulting string better conforms with Fedora's Packaging Guidelines.
         """
 
-        return self.normalize(self.pypi_package_data["info"]["name"])
-
-    def normalize(self, package_name):
-        """Normalize given package name as defined in PEP 503"""
-
-        return re.sub(r"[-_.]+", "-", package_name).lower()
+        return normalize(self.pypi_package_data["info"]["name"])
 
     def _get_from_url(self, url, error_str):
         response = self._session.get(url)
