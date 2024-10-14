@@ -11,7 +11,7 @@ except ImportError:
     import tomli as tomllib
 
 from pyp2spec.pyp2conf import PypiPackage, create_config_contents
-from pyp2spec.pyp2conf import convert_version_to_rpm_scheme, PackageNotFoundError
+from pyp2spec.pyp2conf import PackageNotFoundError
 
 
 def test_non_existent_package(betamax_session):
@@ -245,35 +245,6 @@ def test_python_name(pypi_name, alt_version, expected, fake_core_metadata):
     assert pkg.python_name(python_alt_version=alt_version) == expected
 
 
-@pytest.mark.parametrize(
-    ("pypi_version", "rpm_version"), [
-        ("1.1.0", "1.1.0"),
-        ("1!0.2.13", "1:0.2.13"),
-        ("0.0.2-beta1", "0.0.2~b1"),
-        ("0.5.40-0", "0.5.40^post0"),
-    ]
-)
-def test_pypi_version_is_converted_to_rpm(pypi_version, rpm_version):
-    assert convert_version_to_rpm_scheme(pypi_version) == rpm_version
-
-
-@pytest.mark.parametrize(
-    ("pypi_version", "pypi_version_macro"), [
-        ("1.1.0", "%{version}"),  # conversion to RPM doesn't change the string
-        ("1!0.2.13", "1!0.2.13"),  # Version string is normalized, see previous test
-        ("0.0.2-beta1", "0.0.2-beta1"),
-        ("0.5.40-0", "0.5.40-0"),
-    ]
-)
-def test_pypi_version_or_macro(pypi_version, pypi_version_macro, fake_core_metadata):
-    # to prevent tests sending requests to PyPI
-    fake_pkg_data = {
-        "info": "intentionally not empty package metadata"
-    }
-    pkg = PypiPackage("_", version=pypi_version, pypi_package_data=fake_pkg_data, core_metadata=fake_core_metadata)
-    assert pkg.pypi_version_or_macro() == pypi_version_macro
-
-
 def test_extras_detected_correctly(fake_core_metadata):
     fake_pkg_data = {
         "info": {
@@ -385,15 +356,3 @@ def test_license_files_in_metadata_files(metadata, lf_present):
     core_metadata = email.parser.Parser().parsestr(metadata)
     pkg = PypiPackage("_", version="0", pypi_package_data=fake_pkg_data, core_metadata=core_metadata)
     assert pkg.are_license_files_included() is lf_present
-
-
-@pytest.mark.parametrize(
-    ("version", "expected"), [
-        ("1.2-3", " 1.2-3"),  # not the same when converted to RPM version scheme
-        ("1.2.3", ""),  # the same when converted to RPM version scheme
-    ]
-)
-def test_source_macro(version, expected, fake_core_metadata):
-    fake_pkg_data = {"info": {"name": "Awesome-TestPkg"}}
-    pkg = PypiPackage("Awesome-TestPkg", version=version, pypi_package_data=fake_pkg_data, core_metadata=fake_core_metadata)
-    assert pkg.source() == "%{pypi_source awesome_testpkg" + expected + "}"

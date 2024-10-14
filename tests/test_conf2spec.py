@@ -64,3 +64,25 @@ def test_default_generated_specfile(file_regression, config_dir, conf):
     finally:
         # Cleanup - remove created file
         Path.unlink(Path(rendered_file))
+
+
+@pytest.mark.parametrize(
+    ("pypi_version", "rpm_version"), [
+        ("1.1.0", "1.1.0"),
+        ("1!0.2.13", "1:0.2.13"),
+        ("0.0.2-beta1", "0.0.2~b1"),
+        ("0.5.40-0", "0.5.40^post0"),
+    ]
+)
+def test_pypi_version_is_converted_to_rpm(pypi_version, rpm_version):
+    assert conf2spec.convert_version_to_rpm_scheme(pypi_version) == rpm_version
+
+
+@pytest.mark.parametrize(
+    ("version", "expected"), [
+        ("1.2-3", False),
+        ("1.2.3", True),
+    ]
+)
+def test_source_macro(version, expected):
+    assert conf2spec.same_as_rpm(version) is expected

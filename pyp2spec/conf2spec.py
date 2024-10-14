@@ -11,6 +11,7 @@ except ImportError:
 
 from jinja2 import Template
 
+from pyp2spec.rpmversion import RpmVersion
 from pyp2spec.utils import Pyp2specError
 
 
@@ -88,6 +89,57 @@ def get_license_string(config):
     return ("...", none_notice)
 
 
+def convert_version_to_rpm_scheme(version):
+    """If version follows PEP 440, return its value converted to RPM scheme.
+
+    PEP 440: https://www.python.org/dev/peps/pep-0440/
+    If the package uses a different versioning scheme (i.e. LegacyVersion),
+    the returned value will be the same as the input one.
+    Such value may or may not work with RPM.
+    Automatic conversion of the LegacyVersions is not feasible, as stated in:
+    https://lists.fedoraproject.org/archives/list/python-devel@lists.fedoraproject.org/message/5MGEHMTKOKR5U7ACIMUDRBKMSP6Y5NQD/
+    """
+    return str(RpmVersion(version))
+
+
+def same_as_rpm(pypi_version):
+    return pypi_version == convert_version_to_rpm_scheme(pypi_version)
+
+
+def archive_name(config):
+    """
+    PEP 625 specifies the sdist name to be normalized according to the wheel spec:
+    https://packaging.python.org/en/latest/specifications/binary-distribution-format/#escaping-and-unicode
+    """
+    return config.get_string("pypi_name").replace("-", "_")
+
+
+def source(config, pypi_version):
+    """Return valid pypi_source RPM macro.
+
+    %pypi_source takes three optional arguments:
+    <name>, <version> and <file_extension>.
+    <name> is always passed: "%{pypi_source foo}".
+    <version> is passed if PyPI's and RPM's version strings differ:
+    "%{pypi_source foo 1.2-3}". If they're the same, version is not passed.
+    Since PEP 625, the required file extension for sdists is `tar.gz`,
+    which is the default <file_extension> accepted by the macro, hence
+    we don't have to define it here.
+    """
+    if config.get_string("source") == "PyPI":
+        source_macro_args = archive_name(config)
+
+        if not same_as_rpm(pypi_version):
+            source_macro_args +=  f" {pypi_version}"
+        return "%{pypi_source " + source_macro_args + "}"
+
+
+def pypi_version_or_macro(pypi_version):
+    if same_as_rpm(pypi_version):
+        return "%{version}"
+    return pypi_version
+
+
 def fill_in_template(config):
     """Return template rendered with data from config file."""
 
@@ -96,10 +148,12 @@ def fill_in_template(config):
 
     license, license_notice = get_license_string(config)
 
+    pypi_version = config.get_string("pypi_version")
+
     result = spec_template.render(
         additional_build_requires=list_additional_build_requires(config),
         archful=config.get_bool("archful"),
-        archive_name=config.get_string("archive_name"),
+        archive_name=archive_name(config),
         automode=config.get_bool("automode"),
         extras=",".join(config.get_list("extras")),
         license=license,
@@ -107,14 +161,14 @@ def fill_in_template(config):
         mandate_license=config.get_bool("license_files_present"),
         name=config.get_string("pypi_name"),
         python_name=config.get_string("python_name"),
-        pypi_version=config.get_string("pypi_version"),
+        pypi_version=pypi_version_or_macro(pypi_version),
         python_alt_version=config.get_string("python_alt_version"),
-        source=config.get_string("source"),
+        source=source(config, pypi_version),
         summary=config.get_string("summary"),
         test_top_level=config.get_bool("test_top_level"),
         python3_pkgversion=python3_pkgversion_or_3(config),
         url=config.get_string("url"),
-        version=config.get_string("version"),
+        version=convert_version_to_rpm_scheme(pypi_version),
     )
 
     return result

@@ -124,36 +124,6 @@ class PypiPackage:
             return self.pypi_name.replace("python", f"python{alt_version}")
         return f"python{alt_version}-{self.pypi_name}"
 
-    def source(self):
-        """Return valid pypi_source RPM macro.
-
-        %pypi_source takes three optional arguments:
-        <name>, <version> and <file_extension>.
-        <name> is always passed: "%{pypi_source foo}".
-        <version> is passed if PyPI's and RPM's version strings differ:
-        "%{pypi_source foo 1.2-3}". If they're the same, version is not passed.
-        Since PEP 625, the required file extension for sdists is `tar.gz`,
-        which is the default <file_extension> accepted by the macro, hence
-        we don't have to define it here.
-        """
-        version_str = self.pypi_version_or_macro()
-        source_macro_args = self.archive_name()
-        if version_str == self.version:
-            source_macro_args += f" {version_str}"
-        return "%{pypi_source " + source_macro_args + "}"
-
-    def pypi_version_or_macro(self):
-        """If PyPI and RPM version's strings are the same, there's no need to
-        duplicate them across the spec file.
-        Return '%{version}' as a reference to the RPM's version string.
-        If they are different, both variants of string need to be used.
-        In such case return version string as from PyPI.
-        """
-        rpm_version = convert_version_to_rpm_scheme(self.version)
-        if self.version == rpm_version:
-            return "%{version}"
-        return self.version
-
     def filter_license_classifiers(self):
         """Return the list of license classifiers defined for the package.
 
@@ -264,13 +234,6 @@ class PypiPackage:
         # all of the found wheel names had 'none' as abi_tag
         return False
 
-    def archive_name(self):
-        """
-        PEP 625 specifies the sdist name to be normalized according to the wheel spec:
-        https://packaging.python.org/en/latest/specifications/binary-distribution-format/#escaping-and-unicode
-        """
-        return self.pypi_name.replace("-", "_")
-
     def extras(self):
         """Return the sorted list of the found extras names.
 
@@ -297,19 +260,6 @@ class PypiPackage:
 
     def are_license_files_included(self):
         return bool(self.core_metadata.get_all("License-File"))
-
-
-def convert_version_to_rpm_scheme(version):
-    """If version follows PEP 440, return its value converted to RPM scheme.
-
-    PEP 440: https://www.python.org/dev/peps/pep-0440/
-    If the package uses a different versioning scheme (i.e. LegacyVersion),
-    the returned value will be the same as the input one.
-    Such value may or may not work with RPM.
-    Automatic conversion of the LegacyVersions is not feasible, as stated in:
-    https://lists.fedoraproject.org/archives/list/python-devel@lists.fedoraproject.org/message/5MGEHMTKOKR5U7ACIMUDRBKMSP6Y5NQD/
-    """
-    return str(RpmVersion(version))
 
 
 def is_package_name(package):
@@ -359,13 +309,11 @@ def create_config_contents(
 
     contents["archful"] = archful
     contents["summary"] = pkg.summary()
-    contents["version"] = convert_version_to_rpm_scheme(pkg.version)
-    contents["pypi_version"] = pkg.pypi_version_or_macro()
+    contents["pypi_version"] = pkg.version
     contents["pypi_name"] = pkg.pypi_name
     contents["python_name"] = pkg.python_name(python_alt_version=python_alt_version)
     contents["url"] = pkg.project_url()
-    contents["source"] = pkg.source()
-    contents["archive_name"] = pkg.archive_name()
+    contents["source"] = "PyPI"
     contents["extras"] = pkg.extras()
     contents["license_files_present"] = pkg.are_license_files_included()
 
