@@ -12,7 +12,7 @@ except ImportError:
 from jinja2 import Template
 
 from pyp2spec.rpmversion import RpmVersion
-from pyp2spec.utils import Pyp2specError
+from pyp2spec.utils import Pyp2specError, normalize_as_wheel_name
 
 
 TEMPLATE_FILENAME = "template.spec"
@@ -104,11 +104,7 @@ def same_as_rpm(pypi_version):
 
 
 def archive_name(config):
-    """
-    PEP 625 specifies the sdist name to be normalized according to the wheel spec:
-    https://packaging.python.org/en/latest/specifications/binary-distribution-format/#escaping-and-unicode
-    """
-    return config.get_string("pypi_name").replace("-", "_")
+    return normalize_as_wheel_name(config.get_string("pypi_name"))
 
 
 def source(config, pypi_version):
