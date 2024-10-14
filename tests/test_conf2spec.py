@@ -5,6 +5,7 @@ configurations.
 """
 
 from pathlib import Path
+
 import pytest
 
 from pyp2spec import conf2spec
@@ -86,3 +87,81 @@ def test_pypi_version_is_converted_to_rpm(pypi_version, rpm_version):
 )
 def test_source_macro(version, expected):
     assert conf2spec.same_as_rpm(version) is expected
+
+
+def test_additional_build_requires_if_archful():
+    fake_config_data = {"archful": True}
+    fake_config = conf2spec.ConfigFile(fake_config_data)
+    assert "gcc" in conf2spec.list_additional_build_requires(fake_config)
+
+
+def test_additional_build_requires_if_noarch():
+    fake_config_data = {"archful": False}
+    fake_config = conf2spec.ConfigFile(fake_config_data)
+    assert "gcc" not in conf2spec.list_additional_build_requires(fake_config)
+
+
+@pytest.mark.parametrize(
+    ("version", "expected"), [
+        ("4.2", "%{python3_pkgversion}"),
+        ("3.15", "%{python3_pkgversion}"),
+        ("", "3"),
+    ]
+)
+def test_python3_pkgversion_or_3(version, expected):
+    fake_config_data = {"python_alt_version": version}
+    fake_config = conf2spec.ConfigFile(fake_config_data)
+    assert conf2spec.python3_pkgversion_or_3(fake_config) == expected
+
+
+def test_empty_license_string():
+    fake_config_data = {"archful": False}
+    fake_config = conf2spec.ConfigFile(fake_config_data)
+    license_data = conf2spec.get_license_string(fake_config)
+    assert license_data[0] == "..."
+    assert license_data[1] == "# No license information obtained, it's up to the packager to fill it in"
+
+
+def test_license_strings():
+    fake_config_data = {"license": "MIT"}
+    fake_config = conf2spec.ConfigFile(fake_config_data)
+    license_data = conf2spec.get_license_string(fake_config)
+    assert license_data[0] == "MIT"
+    assert "# Check if the automatically generated License and its spelling is correct for Fedora" in license_data[1] 
+
+
+@pytest.mark.parametrize(
+    ("pypi_name", "expected"), [
+        ("awesome-pkg", "awesome_pkg"),
+        ("pkg_with_underscores-and-hyphens", "pkg_with_underscores_and_hyphens"),
+        ("pkg", "pkg"),
+    ]
+)
+def test_archive_names_normalized(pypi_name, expected):
+    fake_config_data = {"pypi_name": pypi_name}
+    fake_config = conf2spec.ConfigFile(fake_config_data)
+    assert conf2spec.archive_name(fake_config) == expected
+
+
+@pytest.mark.parametrize(
+    ("version", "expected"), [
+        ("1.2", "%{pypi_source foo}"),
+        ("1.2-3", "%{pypi_source foo 1.2-3}"),
+        ("0.0.2-beta1", "%{pypi_source foo 0.0.2-beta1}"),
+    ]
+)
+def test_source(version, expected):
+    fake_config_data = {"pypi_name": "foo", "source": "PyPI"}
+    fake_config = conf2spec.ConfigFile(fake_config_data)
+    assert conf2spec.source(fake_config, version) == expected
+
+
+@pytest.mark.parametrize(
+    ("version", "expected"), [
+        ("1.2", "%{version}"),
+        ("1.2-3", "1.2-3"),
+        ("0.0.2-beta1", "0.0.2-beta1"),
+    ]
+)
+def test_pypi_version_or_macro(version, expected):
+    assert conf2spec.pypi_version_or_macro(version) == expected
