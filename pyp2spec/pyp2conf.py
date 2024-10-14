@@ -129,25 +129,17 @@ class PypiPackage:
 
         %pypi_source takes three optional arguments:
         <name>, <version> and <file_extension>.
-        <name> is always passed, it's spelled as the name of the archive file:
-        "%{pypi_source foo}".
+        <name> is always passed: "%{pypi_source foo}".
         <version> is passed if PyPI's and RPM's version strings differ:
-        "%{pypi_source foo 1.2-3}". If they're the same and the file extension
-        is not zip, version is not passed.
-        If archive is a zip file, %{pypi_source} must take all three args:
-        "%{pypi_source foo %{version} zip}", "{pypi_source foo 1.2-3 zip}"
+        "%{pypi_source foo 1.2-3}". If they're the same, version is not passed.
+        Since PEP 625, the required file extension for sdists is `tar.gz`,
+        which is the default <file_extension> accepted by the macro, hence
+        we don't have to define it here.
         """
-        is_zip = self.is_zip_archive()
         version_str = self.pypi_version_or_macro()
-
         source_macro_args = self.archive_name()
-
-        if is_zip:
-            source_macro_args += f" {version_str} zip"
-        else:
-            if version_str == self.version:
-                source_macro_args += f" {version_str}"
-
+        if version_str == self.version:
+            source_macro_args += f" {version_str}"
         return "%{pypi_source " + source_macro_args + "}"
 
     def pypi_version_or_macro(self):
@@ -272,49 +264,12 @@ class PypiPackage:
         # all of the found wheel names had 'none' as abi_tag
         return False
 
-    def find_and_save_sdist_filename(self):
-        """Save the given's package version sdist name for further processing.
-
-        Quit the script if not found (bdists can't be processed).
-        """
-        for entry in self.pypi_package_data["urls"]:
-            if entry["packagetype"] == "sdist":
-                self.sdist_filename = entry["filename"]
-                return
-        raise SdistNotFoundError("sdist not found.")
-
-    def is_zip_archive(self):
-        """Return True if archive is a zip file, False otherwise.
-
-        The archive format encouraged in PEP 517 is tar.gz, zip is discouraged,
-        some projects however still use it.
-        If so, it has to be explicitly declared as an argument of %{pypi_source}.
-        """
-        if self.sdist_filename is None:
-            self.find_and_save_sdist_filename()
-        if self.sdist_filename.endswith(".zip"):
-            return True
-        return False
-
     def archive_name(self):
-        """Return the package name as spelled in the archive file.
-
-        According to:
-        https://packaging.python.org/en/latest/specifications/source-distribution-format/#source-distribution-file-name
-        the `de facto` standard for sdist naming is '{name}-{version}.tar.gz'.
-        The format is not standardised, so extract the {name} as defined by upstream.
-        Example: "My-package_Archive-1.0.4-12.tar.gz" -> "My-package_Archive"
         """
-        if self.sdist_filename is None:
-            self.find_and_save_sdist_filename()
-
-        edited_sdist_filename = self.sdist_filename
-        # First, strip the suffix
-        for suffix in (".tar.gz", ".zip"):
-            edited_sdist_filename = edited_sdist_filename.removesuffix(suffix)
-        # Second, get rid of the version string and the delimiter "-"
-        archive_name = edited_sdist_filename.replace("-" + self.version, "")
-        return archive_name
+        PEP 625 specifies the sdist name to be normalized according to the wheel spec:
+        https://packaging.python.org/en/latest/specifications/binary-distribution-format/#escaping-and-unicode
+        """
+        return self.pypi_name.replace("-", "_")
 
     def extras(self):
         """Return the sorted list of the found extras names.

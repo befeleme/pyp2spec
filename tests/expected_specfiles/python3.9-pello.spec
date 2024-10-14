@@ -10,7 +10,7 @@ Summary:        An example Python Hello World package
 # https://docs.fedoraproject.org/en-US/packaging-guidelines/LicensingGuidelines/
 License:        MIT-0
 URL:            https://github.com/fedora-python/Pello
-Source:         %{pypi_source Pello}
+Source:         %{pypi_source pello}
 
 BuildArch:      noarch
 BuildRequires:  python%{python3_pkgversion}-devel
@@ -29,7 +29,7 @@ This is package 'pello' generated automatically by pyp2spec.}
 
 
 %prep
-%autosetup -p1 -n Pello-%{version}
+%autosetup -p1 -n pello-%{version}
 
 
 %generate_buildrequires

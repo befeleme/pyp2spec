@@ -1,5 +1,10 @@
 # Changelog
 
+# [Unreleased]
+### Changed
+- Implemented PEP 625: only the standardized sdist filenames are now supported
+
+
 # [0.10.0] - 2024-10-10
 ### Added
 - CLI `--automode`, `-a` to create buildable spec files (suitable for automated

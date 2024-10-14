@@ -204,18 +204,6 @@ def test_empty_license_keyword_fails(compliant, fake_fedora_licenses, fake_core_
     assert pkg.license(check_compliance=compliant, licenses_dict=fake_fedora_licenses) is None
 
 
-def test_zip_sdist_is_added_to_source_macro(fake_core_metadata):
-
-    fake_pkg_data = {
-        "urls": [{
-            "filename": "Awesome_TestPkg-1.2.3.zip",
-            "packagetype": "sdist",
-        }],
-    }
-    pkg = PypiPackage("_", version="1.2.3", pypi_package_data=fake_pkg_data, core_metadata=fake_core_metadata)
-    assert pkg.source() == "%{pypi_source Awesome_TestPkg %{version} zip}"
-
-
 def test_no_homepage_in_metadata(fake_core_metadata):
     fake_pkg_data = {"info": {"package_url": "https://foo"}}
     pkg = PypiPackage("_", version="1.2.3", pypi_package_data=fake_pkg_data, core_metadata=fake_core_metadata)
@@ -397,3 +385,15 @@ def test_license_files_in_metadata_files(metadata, lf_present):
     core_metadata = email.parser.Parser().parsestr(metadata)
     pkg = PypiPackage("_", version="0", pypi_package_data=fake_pkg_data, core_metadata=core_metadata)
     assert pkg.are_license_files_included() is lf_present
+
+
+@pytest.mark.parametrize(
+    ("version", "expected"), [
+        ("1.2-3", " 1.2-3"),  # not the same when converted to RPM version scheme
+        ("1.2.3", ""),  # the same when converted to RPM version scheme
+    ]
+)
+def test_source_macro(version, expected, fake_core_metadata):
+    fake_pkg_data = {"info": {"name": "Awesome-TestPkg"}}
+    pkg = PypiPackage("Awesome-TestPkg", version=version, pypi_package_data=fake_pkg_data, core_metadata=fake_core_metadata)
+    assert pkg.source() == "%{pypi_source awesome_testpkg" + expected + "}"
