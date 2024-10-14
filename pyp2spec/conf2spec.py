@@ -25,20 +25,10 @@ class ConfigError(Pyp2specError):
 
 
 class ConfigFile:
-    """Load configuration file and return its validated values."""
+    """Validate configuration data."""
 
-    def __init__(self, filename):
-        self.filename = filename
-        self.contents = self.load_configuration
-
-    @property
-    def load_configuration(self):
-        """Return loaded TOML configuration file contents."""
-
-        with open(self.filename, "rb") as configuration_file:
-            loaded_contents = tomllib.load(configuration_file)
-
-        return loaded_contents
+    def __init__(self, contents):
+        self.contents = contents
 
     def get_string(self, key):
         """Return a value for given key. Validate the value is a string.
@@ -63,6 +53,13 @@ class ConfigFile:
         if not isinstance(val, val_type):
             raise ConfigError(f"{val} must be a {val_type}")
         return val
+
+
+def load_config_file(filename):
+    """Return loaded TOML configuration file contents."""
+
+    with open(filename, "rb") as configuration_file:
+        return tomllib.load(configuration_file)
 
 
 def list_additional_build_requires(config):
@@ -189,7 +186,7 @@ def save_spec_file(config, output):
 
 def create_spec_file(config_file, spec_output=None):
     """Create and save the generate spec file."""
-    config = ConfigFile(config_file)
+    config = ConfigFile(load_config_file(config_file))
     return save_spec_file(config, spec_output)
 
 

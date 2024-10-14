@@ -23,7 +23,7 @@ def config_dir():
 )
 def test_automode_flag_is_loaded(config_dir, conf, expected):
     config_path = config_dir + conf
-    config = conf2spec.ConfigFile(config_path)
+    config = conf2spec.ConfigFile(conf2spec.load_config_file(config_path))
     assert config.get_bool("automode") == expected
 
 
@@ -36,7 +36,7 @@ def test_automode_flag_is_loaded(config_dir, conf, expected):
 )
 def test_archful_flag_is_loaded(config_dir, conf, expected):
     config_path = config_dir + conf
-    config = conf2spec.ConfigFile(config_path)
+    config = conf2spec.ConfigFile(conf2spec.load_config_file(config_path))
     assert config.get_bool("archful") is expected
 
 
