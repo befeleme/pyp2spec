@@ -1,6 +1,11 @@
 # Changelog
 
-# [Unreleased]
+# [0.11.0] - 2024-10-22
+### Added
+- For packages that publish METADATA with `License-File` field on PyPI,
+the generated spec files contain a flag `%pyproject_save_files -l`
+which asserts the presence of license files in the distribution during the RPM build
+
 ### Changed
 - Implemented PEP 625: only the standardized sdist filenames are now supported
 
