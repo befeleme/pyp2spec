@@ -177,3 +177,45 @@ def good_for_fedora(spdx_identifiers, *, licenses_dict=None, session=None):
     if checked_identifies["bad"]:
         return (False, checked_identifies)
     return (True, checked_identifies)
+
+
+def check_compliance(license, *, session=None, licenses_dict=None):
+    identifiers = license_keyword_to_spdx_identifiers(license)
+
+    is_compliant, checked_identifiers = good_for_fedora(
+        identifiers,
+        session=session,
+        licenses_dict=licenses_dict
+    )
+    return is_compliant, checked_identifiers
+
+
+def transform_to_spdx(license_field, classifiers):
+    """Return SPDX identifiers and expression based on the found
+    package license metadata (classifiers or license keyword).
+
+    If multiple identifiers are found, create an expression that's the safest option (with AND as joining operator).
+    """
+
+    if classifiers:
+        identifiers = classifiers_to_spdx_identifiers(classifiers)
+        if identifiers:
+            expression = " AND ".join(identifiers)
+            return (identifiers, expression)
+
+    identifiers = license_keyword_to_spdx_identifiers(license_field)
+    return (identifiers, license_field)
+
+
+def license(license_field, classifiers):
+    """Return the license expression based on detected metadata.
+
+    If there are no identifiers, transformation to SPDX was unsuccessful.
+    We don't want to process invalid license strings, so return None.
+    Otherwise, we treat the expression as valid.
+    """
+
+    identifiers, expression = transform_to_spdx(license_field, classifiers)
+    if not identifiers:
+        return None
+    return expression

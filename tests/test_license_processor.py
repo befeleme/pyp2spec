@@ -2,7 +2,7 @@ import pytest
 
 from pyp2spec.license_processor import classifiers_to_spdx_identifiers, license_keyword_to_spdx_identifiers
 from pyp2spec.license_processor import _is_compliant_with_fedora, good_for_fedora
-from pyp2spec.license_processor import NoSuchClassifierError
+from pyp2spec.license_processor import NoSuchClassifierError, license, check_compliance
 
 
 @pytest.mark.parametrize(
@@ -95,3 +95,66 @@ def test_is_allowed_in_fedora(identifiers, expected, fake_fedora_licenses):
     """Test the function logic, bear in mind that Fedora status may change in time"""
 
     assert good_for_fedora(identifiers, licenses_dict=fake_fedora_licenses) == expected
+
+
+def test_no_license_classifiers_and_no_license_keyword():
+    classifiers = []
+    license_keyword = ""
+    assert license(license_keyword, classifiers) is None
+
+
+def test_license_from_multiple_classifiers():
+    classifiers = [
+        "License :: OSI Approved :: MIT License",
+        "License :: OSI Approved :: MIT No Attribution License (MIT-0)",
+    ]
+    license_keyword = ""
+    assert license(license_keyword, classifiers) == "MIT AND MIT-0"
+
+
+def test_license_from_single_classifier():
+    classifiers = ["License :: OSI Approved :: European Union Public Licence 1.0 (EUPL 1.0)"]
+    license_keyword = ""
+    assert license(license_keyword, classifiers) == "EUPL-1.0"
+
+
+def test_mix_good_bad_classifiers():
+    classifiers = [
+        "License :: OSI Approved :: European Union Public Licence 1.0 (EUPL 1.0)",
+        "License :: OSI Approved :: MIT License"
+    ]
+    license_keyword = ""
+    assert license(license_keyword, classifiers) == "EUPL-1.0 AND MIT"
+
+
+def test_license_keyword():
+    license_keyword = "BSD-2-Clause"
+    classifiers = []
+    assert license(license_keyword, classifiers) == "BSD-2-Clause"
+
+
+def test_license_keyword_and_classifiers():
+    classifiers = [
+        "License :: OSI Approved :: European Union Public Licence 1.0 (EUPL 1.0)",
+        "License :: OSI Approved :: MIT License"
+    ]
+    license_keyword = "BSD-2-Clause"
+    # classifiers always take precedence
+    assert license(license_keyword, classifiers) == "EUPL-1.0 AND MIT"
+
+
+@pytest.mark.parametrize(
+    ("license", "good", "bad", "expected"),
+    (
+        ("MIT AND MIT-0", ["MIT", "MIT-0"], [], True),
+        ("EUPL-1.0", [], ["EUPL-1.0"] , False),
+        ("MIT AND EUPL-1.0", ["MIT"], ["EUPL-1.0"], False),
+        ("RSCPL", [], ["RSCPL"], False),
+        ("Fake-identifier", [], [], False),  # not a valid identifier, ergo not in "bad" list
+    )
+)
+def test_check_compliance(license, good, bad, expected, fake_fedora_licenses):
+    result, identifiers = check_compliance(license, licenses_dict=fake_fedora_licenses)
+    assert result is expected
+    assert identifiers["good"] == good
+    assert identifiers["bad"] == bad

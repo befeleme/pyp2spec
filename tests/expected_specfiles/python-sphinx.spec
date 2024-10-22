@@ -1,12 +1,12 @@
 Name:           python-sphinx
-Version:        8.1.0
+Version:        8.1.3
 Release:        %autorelease
 # Fill in the actual package summary to submit package to Fedora
 Summary:        Python documentation generator
 
 # No license information obtained, it's up to the packager to fill it in
 License:        ...
-URL:            https://www.sphinx-doc.org/
+URL:            https://www.sphinx-doc.org/en/master/changes.html
 Source:         %{pypi_source sphinx}
 
 BuildArch:      noarch
