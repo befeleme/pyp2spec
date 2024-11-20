@@ -103,8 +103,31 @@ def same_as_rpm(pypi_version):
     return pypi_version == convert_version_to_rpm_scheme(pypi_version)
 
 
-def archive_name(config):
-    return normalize_as_wheel_name(config.get_string("pypi_name"))
+def archive_basename(config, pypi_version):
+    """Return the archive basename.
+
+    The filename has been standardized in PEP 625, but many projects out there
+    use the legacy, pre-standard, custom naming. Extract the basename the same
+    way it's spelled in the archive name.
+
+    Example: "My-package_Archive-1.0.4-12.tar.gz" -> "My-package_Archive"
+    """
+    filename = config.get_string("archive_name")
+
+    # First, strip the suffix
+    for suffix in (".tar.gz", ".zip"):
+        filename = filename.removesuffix(suffix)
+    # Second, get rid of the version string and the delimiter "-"
+    return filename.replace("-" + pypi_version, "")
+
+
+def is_zip(config):
+    """
+    The archive format standardized in PEP 625 is tar.gz,
+    however some projects still use the legacy zip.
+    If so, it has to be explicitly declared as an argument of %{pypi_source}.
+    """
+    return config.get_string("archive_name").endswith(".zip")
 
 
 def source(config, pypi_version):
@@ -114,16 +137,21 @@ def source(config, pypi_version):
     <name>, <version> and <file_extension>.
     <name> is always passed: "%{pypi_source foo}".
     <version> is passed if PyPI's and RPM's version strings differ:
-    "%{pypi_source foo 1.2-3}". If they're the same, version is not passed.
-    Since PEP 625, the required file extension for sdists is `tar.gz`,
-    which is the default <file_extension> accepted by the macro, hence
-    we don't have to define it here.
+    "%{pypi_source foo 1.2-3}". If they're the same and the file extension
+    is not zip, version is not passed.
+    If archive is a zip file, %{pypi_source} must take all three args:
+    "%{pypi_source foo %{version} zip}", "{pypi_source foo 1.2-3 zip}"
     """
     if config.get_string("source") == "PyPI":
-        source_macro_args = archive_name(config)
+        version_str = pypi_version_or_macro(pypi_version)
+        basename = archive_basename(config, pypi_version)
+        source_macro_args = basename
 
-        if not same_as_rpm(pypi_version):
-            source_macro_args +=  f" {pypi_version}"
+        if is_zip(config):
+            source_macro_args += f" {version_str} zip"
+        else:
+            if version_str == pypi_version:
+                source_macro_args += f" {version_str}"
         return "%{pypi_source " + source_macro_args + "}"
 
 
@@ -146,7 +174,7 @@ def fill_in_template(config):
     result = spec_template.render(
         additional_build_requires=list_additional_build_requires(config),
         archful=config.get_bool("archful"),
-        archive_name=archive_name(config),
+        archive_name=archive_basename(config, pypi_version),
         automode=config.get_bool("automode"),
         extras=",".join(config.get_list("extras")),
         license=license,
