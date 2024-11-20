@@ -131,27 +131,15 @@ def test_license_strings():
 
 
 @pytest.mark.parametrize(
-    ("pypi_name", "expected"), [
-        ("awesome-pkg", "awesome_pkg"),
-        ("pkg_with_underscores-and-hyphens", "pkg_with_underscores_and_hyphens"),
-        ("pkg", "pkg"),
+    ("version", "extension", "expected"), [
+        ("1.2", "tar.gz", "%{pypi_source foo}"),
+        ("1.2", "zip", "%{pypi_source foo %{version} zip}"),
+        ("1.2-3", "tar.gz", "%{pypi_source foo 1.2-3}"),
+        ("0.0.2-beta1", "zip", "%{pypi_source foo 0.0.2-beta1 zip}"),
     ]
 )
-def test_archive_names_normalized(pypi_name, expected):
-    fake_config_data = {"pypi_name": pypi_name}
-    fake_config = conf2spec.ConfigFile(fake_config_data)
-    assert conf2spec.archive_name(fake_config) == expected
-
-
-@pytest.mark.parametrize(
-    ("version", "expected"), [
-        ("1.2", "%{pypi_source foo}"),
-        ("1.2-3", "%{pypi_source foo 1.2-3}"),
-        ("0.0.2-beta1", "%{pypi_source foo 0.0.2-beta1}"),
-    ]
-)
-def test_source(version, expected):
-    fake_config_data = {"pypi_name": "foo", "source": "PyPI"}
+def test_source(version, extension, expected):
+    fake_config_data = {"pypi_name": "foo", "archive_name": f"foo-{version}.{extension}", "source": "PyPI"}
     fake_config = conf2spec.ConfigFile(fake_config_data)
     assert conf2spec.source(fake_config, version) == expected
 

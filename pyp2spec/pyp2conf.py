@@ -50,7 +50,6 @@ class PypiPackage:
         # meaning we jump to the other sources package metadata data (eg. PyPI)
         self.pypi_package_data = pypi_package_data or self._get_pypi_package_version_data()
         self.core_metadata = core_metadata or self.parse_core_metadata()
-        self.sdist_filename = None
 
     @property
     def pypi_name(self):
@@ -229,6 +228,16 @@ class PypiPackage:
         # all of the found wheel names had 'none' as abi_tag
         return False
 
+    def archive_name(self):
+        """Return the given's package version sdist name for further processing.
+        Quit the script if not found (bdists can't be processed).
+        """
+        for entry in self.pypi_package_data["urls"]:
+            if entry["packagetype"] == "sdist":
+                return entry["filename"]
+        raise SdistNotFoundError("sdist not found.")
+
+
     def extras(self):
         """Return the sorted list of the found extras names.
 
@@ -309,6 +318,7 @@ def create_config_contents(
     contents["python_name"] = pkg.python_name(python_alt_version=python_alt_version)
     contents["url"] = pkg.project_url()
     contents["source"] = "PyPI"
+    contents["archive_name"] = pkg.archive_name()
     contents["extras"] = pkg.extras()
     contents["license_files_present"] = pkg.are_license_files_included()
 
