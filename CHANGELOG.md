@@ -1,5 +1,10 @@
 # Changelog
 
+# [0.11.1] - 2024-11-21
+### Changed
+- Bring back the processing of the legacy sdist filenames (removed in v0.11.0).
+
+
 # [0.11.0] - 2024-10-22
 ### Added
 - For packages that publish METADATA with `License-File` field on PyPI,
