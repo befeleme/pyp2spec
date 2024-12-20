@@ -8,6 +8,7 @@ from pyp2spec.license_processor import check_compliance, license
 from pyp2spec.utils import Pyp2specError, normalize_name, extras, summary
 from pyp2spec.utils import prepend_name_with_python, archive_name
 from pyp2spec.utils import is_archful, find_project_url, filter_license_classifiers
+from pyp2spec.utils import warn, caution, inform, yay
 from pyp2spec.pypi_loaders import load_from_pypi, load_core_metadata_from_pypi, CoreMetadataNotFoundError
 
 
@@ -80,31 +81,31 @@ def create_config_contents(
     pkg_info["python_name"] = prepend_name_with_python(pkg_info["pypi_name"], python_alt_version)
 
     if python_alt_version is not None:
-        click.secho(f"Assuming build for Python: {python_alt_version}", fg="yellow")
+        inform(f"Assuming build for Python: {python_alt_version}")
         pkg_info["python_alt_version"] = python_alt_version
 
     if version is None:
         ver = pkg_info["pypi_version"]
-        click.secho(f"Assuming the latest version found on PyPI: '{ver}'", fg="yellow")
+        inform(f"Assuming the latest version found on PyPI: '{ver}'")
 
     if pkg_info["archful"]:
-        click.secho("Package contains compiled extensions - you may need to specify additional build requirements", fg="magenta")
+        caution("Package contains compiled extensions - you may need to specify additional build requirements")
 
     if pkg_info["license"] is None:
-        click.secho("WARNING: No valid license found. Inspect the project manually to find the license", fg="red")
+        warn("WARNING: No valid license found. Inspect the project manually to find the license")
         # TOML can't handle None value; we don't need this key explicitly
         del pkg_info["license"]
     else:
         if compliant:
             is_compliant, results = check_compliance(pkg_info["license"], session=session)
             if not is_compliant:
-                click.secho(f"The license '{pkg_info['license']}' is not compliant with Fedora, discarding", fg="red")
+                warn(f"The license '{pkg_info['license']}' is not compliant with Fedora")
             if results["bad"]:
-                err_string = "Found identifiers: '{0}' aren't allowed in Fedora."
-                click.secho(err_string.format(", ".join(results["bad"])), fg="red")
+                info_str = "Found identifiers: '{0}' aren't allowed in Fedora."
+                warn(info_str.format(", ".join(results["bad"])))
             if results["good"]:
-                err_string = "Found identifiers: '{0}' are good for Fedora."
-                click.secho(err_string.format(", ".join(results["good"])), fg="yellow")
+                info_str = "Found identifiers: '{0}' are good for Fedora."
+                inform(info_str.format(", ".join(results["good"])))
 
     if automode:
         pkg_info["automode"] = True
@@ -126,7 +127,7 @@ def save_config(contents, output=None):
         output = f"{package}.conf"
     with open(output, "wb") as f:
         tomli_w.dump(contents, f, multiline_strings=True)
-    click.secho(f"Configuration file was saved successfully to '{output}'")
+    yay(f"Configuration file was saved successfully to '{output}'")
     return output
 
 
@@ -176,7 +177,7 @@ def main(**options):
     try:
         create_config(options)
     except (Pyp2specError, NotImplementedError) as exc:
-        click.secho(f"Fatal exception occurred: {exc}", fg="red")
+        warn(f"Fatal exception occurred: {exc}")
         sys.exit(1)
 
 if __name__ == "__main__":

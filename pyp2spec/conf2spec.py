@@ -13,6 +13,7 @@ from jinja2 import Template
 
 from pyp2spec.rpmversion import RpmVersion
 from pyp2spec.utils import Pyp2specError, normalize_as_wheel_name
+from pyp2spec.utils import warn, yay
 
 
 TEMPLATE_FILENAME = "template.spec"
@@ -204,7 +205,7 @@ def save_spec_file(config, output):
         output = config.get_string("python_name") + ".spec"
     with open(output, "w", encoding="utf-8") as spec_file:
         spec_file.write(result)
-    click.secho(f"Spec file was saved successfully to '{output}'")
+    yay(f"Spec file was saved successfully to '{output}'")
     return output
 
 
@@ -225,7 +226,7 @@ def main(config, spec_output):
     try:
         create_spec_file(config, spec_output)
     except (Pyp2specError, NotImplementedError) as exc:
-        click.secho(f"Fatal exception occurred: {exc}", fg="red")
+        warn(f"Fatal exception occurred: {exc}")
         sys.exit(1)
 
 if __name__ == "__main__":

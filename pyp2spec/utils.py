@@ -3,8 +3,17 @@ This module contains common functions and classes imported in multiple other mod
 """
 
 import re
+from functools import partial
+
+import click
 
 from packaging.requirements import Requirement
+
+
+warn = partial(click.secho, fg="red")
+caution = partial(click.secho, fg="magenta")
+inform = partial(click.secho, fg="yellow")
+yay = partial(click.secho, fg="green")
 
 
 class Pyp2specError(Exception):

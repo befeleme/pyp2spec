@@ -5,6 +5,7 @@ import click
 from pyp2spec.pyp2conf import create_config, pypconf_args
 from pyp2spec.conf2spec import create_spec_file
 from pyp2spec.utils import Pyp2specError
+from pyp2spec.utils import warn
 
 
 @click.command()
@@ -18,7 +19,7 @@ def main(**options):
         config_file = create_config(options)
         create_spec_file(config_file, options["spec_output"])
     except (Pyp2specError, NotImplementedError) as exc:
-        click.secho(f"Fatal exception occurred: {exc}", fg="red")
+        warn(f"Fatal exception occurred: {exc}")
         sys.exit(1)
 
 
