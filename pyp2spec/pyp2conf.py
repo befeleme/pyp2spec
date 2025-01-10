@@ -17,7 +17,7 @@ def is_package_name(package):
     Canonical package names can't contain '/'.
     """
 
-    return not "/" in package
+    return "/" not in package
 
 
 def prepare_package_info(data):
