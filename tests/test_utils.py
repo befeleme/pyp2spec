@@ -1,9 +1,9 @@
 import pytest
 
 from pyp2spec.utils import filter_license_classifiers, prepend_name_with_python
-from pyp2spec.utils import normalize_name, extras, is_archful
+from pyp2spec.utils import normalize_name, get_extras, is_archful
 from pyp2spec.utils import normalize_as_wheel_name, archive_name
-from pyp2spec.utils import find_project_url, SdistNotFoundError
+from pyp2spec.utils import get_first_url_or_placeholder, SdistNotFoundError
 
 
 def test_license_classifier_read_correctly():
@@ -48,7 +48,7 @@ def test_extras_detected_correctly():
         "eggs>=2.12; implementation_name != 'pypy' and extra == 'dev'",
     ]
 
-    assert extras(requires_dist) == ["dev", "docs", "lint", "test"]
+    assert get_extras(requires_dist) == ["dev", "docs", "lint", "test"]
 
 
 @pytest.mark.parametrize(
@@ -159,18 +159,18 @@ def test_archive_name_empty_list():
         archive_name([])
 
 
-def test_find_project_url_valid_single():
+def test_project_urls_valid_single():
     urls = {"homepage": "https://example.com"}
-    assert find_project_url(urls) == "https://example.com"
+    assert get_first_url_or_placeholder(urls) == "https://example.com"
 
 
-def test_find_project_url_valid_multiple():
+def test_project_urls_valid_multiple():
     urls = {
         "homepage": "https://example.com",
         "documentation": "https://docs.example.com",
     }
-    assert find_project_url(urls) == "https://example.com"
+    assert get_first_url_or_placeholder(urls) == "https://example.com"
 
 
-def test_find_project_url_empty():
-    assert find_project_url({}) == "..."
+def test_project_urls_empty():
+    assert get_first_url_or_placeholder({}) == "..."

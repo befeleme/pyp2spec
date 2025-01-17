@@ -4,10 +4,10 @@ import sys
 import click
 import tomli_w
 
-from pyp2spec.license_processor import check_compliance, license
-from pyp2spec.utils import Pyp2specError, normalize_name, extras, summary
+from pyp2spec.license_processor import check_compliance, resolve_license_expression
+from pyp2spec.utils import Pyp2specError, normalize_name, get_extras, get_summary_or_placeholder
 from pyp2spec.utils import prepend_name_with_python, archive_name
-from pyp2spec.utils import is_archful, find_project_url, filter_license_classifiers
+from pyp2spec.utils import is_archful, get_first_url_or_placeholder
 from pyp2spec.utils import warn, caution, inform, yay
 from pyp2spec.pypi_loaders import load_from_pypi, load_core_metadata_from_pypi, CoreMetadataNotFoundError
 
@@ -27,13 +27,11 @@ def prepare_package_info(data):
     return {
         "pypi_name": normalize_name(data.get("name")),
         "pypi_version": data.get("version"),
-        "summary": summary(data.get("summary")),
-        "url": find_project_url(project_urls),
-        "extras": extras(data.get("requires_dist", [])),
+        "summary": get_summary_or_placeholder(data.get("summary")),
+        "url": get_first_url_or_placeholder(project_urls),
+        "extras": get_extras(data.get("requires_dist", [])),
         "license_files_present": bool(data.get("license_files")),
-        "license": data.get("license_expression") or license(
-            data.get("license"), filter_license_classifiers(data.get("classifiers", []))
-        ),
+        "license": resolve_license_expression(data),
     }
 
 

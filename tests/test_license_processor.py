@@ -2,7 +2,7 @@ import pytest
 
 from pyp2spec.license_processor import classifiers_to_spdx_identifiers, license_keyword_to_spdx_identifiers
 from pyp2spec.license_processor import _is_compliant_with_fedora, good_for_fedora
-from pyp2spec.license_processor import NoSuchClassifierError, license, check_compliance
+from pyp2spec.license_processor import NoSuchClassifierError, check_compliance, generate_spdx_expression
 
 
 @pytest.mark.parametrize(
@@ -100,7 +100,7 @@ def test_is_allowed_in_fedora(identifiers, expected, fake_fedora_licenses):
 def test_no_license_classifiers_and_no_license_keyword():
     classifiers = []
     license_keyword = ""
-    assert license(license_keyword, classifiers) is None
+    assert generate_spdx_expression(license_keyword, classifiers) is None
 
 
 def test_license_from_multiple_classifiers():
@@ -109,13 +109,13 @@ def test_license_from_multiple_classifiers():
         "License :: OSI Approved :: MIT No Attribution License (MIT-0)",
     ]
     license_keyword = ""
-    assert license(license_keyword, classifiers) == "MIT AND MIT-0"
+    assert generate_spdx_expression(license_keyword, classifiers) == "MIT AND MIT-0"
 
 
 def test_license_from_single_classifier():
     classifiers = ["License :: OSI Approved :: European Union Public Licence 1.0 (EUPL 1.0)"]
     license_keyword = ""
-    assert license(license_keyword, classifiers) == "EUPL-1.0"
+    assert generate_spdx_expression(license_keyword, classifiers) == "EUPL-1.0"
 
 
 def test_mix_good_bad_classifiers():
@@ -124,13 +124,13 @@ def test_mix_good_bad_classifiers():
         "License :: OSI Approved :: MIT License"
     ]
     license_keyword = ""
-    assert license(license_keyword, classifiers) == "EUPL-1.0 AND MIT"
+    assert generate_spdx_expression(license_keyword, classifiers) == "EUPL-1.0 AND MIT"
 
 
 def test_license_keyword():
     license_keyword = "BSD-2-Clause"
     classifiers = []
-    assert license(license_keyword, classifiers) == "BSD-2-Clause"
+    assert generate_spdx_expression(license_keyword, classifiers) == "BSD-2-Clause"
 
 
 def test_license_keyword_and_classifiers():
@@ -140,7 +140,7 @@ def test_license_keyword_and_classifiers():
     ]
     license_keyword = "BSD-2-Clause"
     # classifiers always take precedence
-    assert license(license_keyword, classifiers) == "EUPL-1.0 AND MIT"
+    assert generate_spdx_expression(license_keyword, classifiers) == "EUPL-1.0 AND MIT"
 
 
 @pytest.mark.parametrize(

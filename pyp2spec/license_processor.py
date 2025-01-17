@@ -4,7 +4,7 @@ import json
 import requests
 from license_expression import get_spdx_licensing, ExpressionError
 
-from pyp2spec.utils import Pyp2specError
+from pyp2spec.utils import Pyp2specError, filter_license_classifiers
 
 
 TROVE2FEDORA_MAP = {}
@@ -207,7 +207,7 @@ def transform_to_spdx(license_field, classifiers):
     return (identifiers, license_field)
 
 
-def license(license_field, classifiers):
+def generate_spdx_expression(license_field, classifiers):
     """Return the license expression based on detected metadata.
 
     If there are no identifiers, transformation to SPDX was unsuccessful.
@@ -219,3 +219,12 @@ def license(license_field, classifiers):
     if not identifiers:
         return None
     return expression
+
+
+def resolve_license_expression(data):
+    if (expression := data.get("license_expression")):
+        return expression
+    return generate_spdx_expression(
+        data.get("license"),
+        filter_license_classifiers(data.get("classifiers", []))
+    )

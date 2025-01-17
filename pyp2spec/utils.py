@@ -79,19 +79,19 @@ def filter_license_classifiers(classifiers_list):
     ]
 
 
-def summary(raw_summary):
+def get_summary_or_placeholder(summary):
     """Return either a summary or a "..." string.
 
     Summary is an optional field, so it may be empty or it can consist of
     multi-line strings which we can't use.
     """
 
-    if not raw_summary or len(raw_summary.split("\n")) > 1:
-        raw_summary = "..."
-    return raw_summary
+    if not summary or len(summary.split("\n")) > 1:
+        summary = "..."
+    return summary
 
 
-def extras(requires_dist):
+def get_extras(requires_dist):
     """Return the sorted list of the found extras names.
 
     Packages define extras explicitly via `Provides-Extra` and
@@ -152,7 +152,7 @@ def is_archful(archive_urls):
     return False
 
 
-def find_project_url(urls):
+def get_first_url_or_placeholder(urls):
     """
     Project urls are an optional field and come in a form of a dict, e.g.:
     {"homepage": "https://mypackagehomepage.com"}.
