@@ -1,14 +1,17 @@
+from __future__ import annotations
 from importlib.resources import files
+from typing import Any
 import json
 
-import requests
-from license_expression import get_spdx_licensing, ExpressionError
+from packaging.metadata import RawMetadata
+from requests import Session
+from license_expression import get_spdx_licensing, ExpressionError  # type: ignore
 
 from pyp2spec.utils import Pyp2specError, filter_license_classifiers
 
 
-TROVE2FEDORA_MAP = {}
-FEDORA_LICENSES = {}
+TROVE2FEDORA_MAP: dict[str, str | None] = {}
+FEDORA_LICENSES: dict[int, Any] = {}
 
 
 class NoSuchClassifierError(Pyp2specError):
@@ -16,24 +19,24 @@ class NoSuchClassifierError(Pyp2specError):
 
 
 
-def _load_package_resource(filename):
+def _load_package_resource(filename: str) -> dict[Any, Any]:
     with (files("pyp2spec") / filename).open("r", encoding="utf-8") as f:
         return json.load(f)
 
 
-def _load_from_drive(source_path):
+def _load_from_drive(source_path: str) -> dict[Any, Any]:
     with open(source_path, "r", encoding="utf-8") as f:
         return json.load(f)
 
 
-def _load_from_url(url, session=None):
-    s = session or requests.Session()
+def _load_from_url(url: str, session: Session | None=None) -> dict[Any, Any]:
+    s = session or Session()
     response = s.get(url)
     response.raise_for_status()
     return response.json()
 
 
-def classifiers_to_spdx_identifiers(classifiers):
+def classifiers_to_spdx_identifiers(classifiers: list) -> list | None:
     """Return the list of SPDX identifiers converted from the license classifiers.
 
     If the conversion of any of the classifiers is not possible, return None.
@@ -63,7 +66,7 @@ def classifiers_to_spdx_identifiers(classifiers):
     return spdx_identifiers
 
 
-def license_keyword_to_spdx_identifiers(license_keyword):
+def license_keyword_to_spdx_identifiers(license_keyword: str | None) -> list | None:
     """Return a sorted list of SPDX identifiers extracted from the license_keyword
     
     If no identifiers were parsed out of the license_keyword or
@@ -97,7 +100,10 @@ def license_keyword_to_spdx_identifiers(license_keyword):
         return None
 
 
-def _load_fedora_licenses(source_path=None, session=None):
+def _load_fedora_licenses(
+    source_path: str | None = None,
+    session: Session | None = None
+) -> dict[Any, Any]:
     """Load the dictionary of licenses evaluated for Fedora by the Fedora Legal team.
 
     Try to get them from the hard drive (installed by `fedora-license-data`).
@@ -113,7 +119,7 @@ def _load_fedora_licenses(source_path=None, session=None):
         return _load_from_url(url, session=session)
 
 
-def _is_compliant_with_fedora(identifier, fedora_licenses):
+def _is_compliant_with_fedora(identifier: str, fedora_licenses: dict[Any, Any]) -> bool:
     """Return True if the given identifier is "allowed" for Fedora and False if not.
 
     Fedora allows different types of licenses: "allowed for content", "allowed fonts",
@@ -146,7 +152,12 @@ def _is_compliant_with_fedora(identifier, fedora_licenses):
     return False
 
 
-def check_compliance(license, *, licenses_dict=None, session=None):
+def check_compliance(
+    license: str, *,
+    licenses_dict: dict[Any, Any] | None = None,
+    session: Session | None = None
+) -> tuple[bool, dict[str, list[str]]]:
+
     """Determine whether the license is good for Fedora.
 
     Store the results in the checked_identifiers dictionary, under the
@@ -162,7 +173,7 @@ def check_compliance(license, *, licenses_dict=None, session=None):
         FEDORA_LICENSES.update(_load_fedora_licenses(session=session))
     fedora_licenses = licenses_dict or FEDORA_LICENSES
 
-    checked_identifies = {
+    checked_identifies: dict[str, list[str]] = {
         "bad": [],
         "good": [],
     }
@@ -180,7 +191,7 @@ def check_compliance(license, *, licenses_dict=None, session=None):
     return (True, checked_identifies)
 
 
-def transform_to_spdx(license_field, classifiers):
+def transform_to_spdx(license_field: str | None, classifiers: list) -> tuple[list[str] | None, str | None]:
     """Return SPDX identifiers and expression based on the found
     package license metadata (classifiers or license keyword).
 
@@ -197,7 +208,7 @@ def transform_to_spdx(license_field, classifiers):
     return (identifiers, license_field)
 
 
-def generate_spdx_expression(license_field, classifiers):
+def generate_spdx_expression(license_field: str | None, classifiers: list) -> str | None:
     """Return the license expression based on detected metadata.
 
     If there are no identifiers, transformation to SPDX was unsuccessful.
@@ -211,7 +222,7 @@ def generate_spdx_expression(license_field, classifiers):
     return expression
 
 
-def resolve_license_expression(data):
+def resolve_license_expression(data: RawMetadata | dict) -> str | None:
     if (expression := data.get("license_expression")):
         return expression
     return generate_spdx_expression(

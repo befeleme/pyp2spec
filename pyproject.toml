@@ -56,3 +56,7 @@ pyp2spec = [
     "template.spec",
     "classifiers_to_fedora.json"
 ]
+
+[tool.ruff]
+lint.select = ["ANN"]
+exclude = ["tests/", "pyp2spec/rpmversion.py"]

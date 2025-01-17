@@ -1,13 +1,16 @@
+from __future__ import annotations
+
 import sys
 
 from importlib.resources import files
+from typing import Any
 
 import click
 
 try:
     import tomllib
 except ImportError:
-    import tomli as tomllib
+    import tomli as tomllib  # type: ignore
 
 from jinja2 import Template
 
@@ -18,7 +21,7 @@ from pyp2spec.utils import warn, yay
 
 TEMPLATE_FILENAME = "template.spec"
 ADDITIONAL_BUILD_REQUIRES_ARCHFUL = ["gcc"]
-ADDITIONAL_BUILD_REQUIRES_NOARCH = []
+ADDITIONAL_BUILD_REQUIRES_NOARCH: list[str] = []
 
 
 class ConfigError(Pyp2specError):
@@ -28,42 +31,42 @@ class ConfigError(Pyp2specError):
 class ConfigFile:
     """Validate configuration data."""
 
-    def __init__(self, contents):
+    def __init__(self, contents: dict) -> None:
         self.contents = contents
 
-    def get_string(self, key):
+    def get_string(self, key: str) -> str:
         """Return a value for given key. Validate the value is a string.
         Raise ConfigError otherwise."""
 
         return self._get_value(key, str)
 
-    def get_list(self, key):
+    def get_list(self, key: str) -> str:
         """Return a value for given key. Validate the value is a list.
         Raise ConfigError otherwise."""
 
         return self._get_value(key, list)
 
-    def get_bool(self, key):
+    def get_bool(self, key: str) -> str:
         """Return a value for given key. Validate the value is a boolean.
         Raise ConfigError otherwise."""
 
         return self._get_value(key, bool)
 
-    def _get_value(self, key, val_type):
+    def _get_value(self, key: str, val_type: type) -> Any:
         val = self.contents.get(key, val_type())
         if not isinstance(val, val_type):
             raise ConfigError(f"{val} must be a {val_type}")
         return val
 
 
-def load_config_file(filename):
+def load_config_file(filename: str) -> dict:
     """Return loaded TOML configuration file contents."""
 
     with open(filename, "rb") as configuration_file:
         return tomllib.load(configuration_file)
 
 
-def list_additional_build_requires(config):
+def list_additional_build_requires(config: ConfigFile) -> list[str]:
     """Returns a list of additionally defined BuildRequires,
 
     The list differs for packages that are or aren't archful.
@@ -73,11 +76,11 @@ def list_additional_build_requires(config):
     return ADDITIONAL_BUILD_REQUIRES_NOARCH
 
 
-def python3_pkgversion_or_3(config):
+def python3_pkgversion_or_3(config: ConfigFile) -> str:
     return "%{python3_pkgversion}" if config.get_string("python_alt_version") else "3"
 
 
-def get_license_string(config):
+def get_license_string(config: ConfigFile) -> tuple[str, str]:
     none_notice = "# No license information obtained, it's up to the packager to fill it in"
     detected_notice = ("# Check if the automatically generated License and its "
         "spelling is correct for Fedora\n"
@@ -87,7 +90,7 @@ def get_license_string(config):
     return ("...", none_notice)
 
 
-def convert_version_to_rpm_scheme(version):
+def convert_version_to_rpm_scheme(version: str) -> str:
     """If version follows PEP 440, return its value converted to RPM scheme.
 
     PEP 440: https://www.python.org/dev/peps/pep-0440/
@@ -100,11 +103,11 @@ def convert_version_to_rpm_scheme(version):
     return str(RpmVersion(version))
 
 
-def same_as_rpm(pypi_version):
+def same_as_rpm(pypi_version: str) -> bool:
     return pypi_version == convert_version_to_rpm_scheme(pypi_version)
 
 
-def archive_basename(config, pypi_version):
+def archive_basename(config: ConfigFile, pypi_version: str) -> str:
     """Return the archive basename.
 
     The filename has been standardized in PEP 625, but many projects out there
@@ -122,7 +125,7 @@ def archive_basename(config, pypi_version):
     return filename.replace("-" + pypi_version, "")
 
 
-def is_zip(config):
+def is_zip(config: ConfigFile) -> bool:
     """
     The archive format standardized in PEP 625 is tar.gz,
     however some projects still use the legacy zip.
@@ -131,7 +134,7 @@ def is_zip(config):
     return config.get_string("archive_name").endswith(".zip")
 
 
-def source(config, pypi_version):
+def source(config: ConfigFile, pypi_version: str) -> str:
     """Return valid pypi_source RPM macro.
 
     %pypi_source takes three optional arguments:
@@ -156,13 +159,13 @@ def source(config, pypi_version):
         return "%{pypi_source " + source_macro_args + "}"
 
 
-def pypi_version_or_macro(pypi_version):
+def pypi_version_or_macro(pypi_version: str) -> str:
     if same_as_rpm(pypi_version):
         return "%{version}"
     return pypi_version
 
 
-def fill_in_template(config):
+def fill_in_template(config: ConfigFile) -> str:
     """Return template rendered with data from config file."""
 
     with (files("pyp2spec") / TEMPLATE_FILENAME).open("r", encoding="utf-8") as f:
@@ -196,7 +199,7 @@ def fill_in_template(config):
     return result
 
 
-def save_spec_file(config, output):
+def save_spec_file(config: ConfigFile, output: str | None) -> str:
     """Save the spec file in the current directory if custom output is not set.
     Return the saved file name."""
 
@@ -209,7 +212,7 @@ def save_spec_file(config, output):
     return output
 
 
-def create_spec_file(config_file, spec_output=None):
+def create_spec_file(config_file: str, spec_output: str | None=None) -> str | None:
     """Create and save the generate spec file."""
     config = ConfigFile(load_config_file(config_file))
     return save_spec_file(config, spec_output)
@@ -222,7 +225,7 @@ def create_spec_file(config_file, spec_output=None):
     "-o",
     help="Provide custom output for spec file",
 )
-def main(config, spec_output):
+def main(config: str, spec_output: str) -> None:
     try:
         create_spec_file(config, spec_output)
     except (Pyp2specError, NotImplementedError) as exc:

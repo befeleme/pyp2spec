@@ -1,6 +1,7 @@
 """
 This module contains common functions and classes imported in multiple other modules.
 """
+from __future__ import annotations
 
 import re
 import string
@@ -25,14 +26,14 @@ class SdistNotFoundError(Pyp2specError):
     """Raised when there's no sdist file in the PyPI metadata"""
 
 
-def normalize_name(package_name):
+def normalize_name(package_name: str) -> str:
     """Normalize given package name as defined in PEP 503.
     The resulting string better conforms with Fedora's Packaging Guidelines."""
 
     return re.sub(r"[-_.]+", "-", package_name).lower()
 
 
-def normalize_as_wheel_name(package_name):
+def normalize_as_wheel_name(package_name: str) -> str:
     """Normalize as in the wheel specification:
     https://packaging.python.org/en/latest/specifications/binary-distribution-format/#escaping-and-unicode
     PEP 625 specifies sdist names to this format."""
@@ -40,7 +41,7 @@ def normalize_as_wheel_name(package_name):
     return normalize_name(package_name).replace("-", "_")
 
 
-def prepend_name_with_python(name, python_alt_version=None):
+def prepend_name_with_python(name: str, python_alt_version: str | None = None) -> str:
     """Create a component name for the specfile.
 
     Prepend the name with 'python' (unless it already starts with it).
@@ -65,7 +66,7 @@ def prepend_name_with_python(name, python_alt_version=None):
     return f"python{alt_version}-{name}"
 
 
-def filter_license_classifiers(classifiers_list):
+def filter_license_classifiers(classifiers_list: list) -> list:
     """Return the list of license classifiers defined for the package.
 
     Filter out the parent categories `OSI-/DFSG Approved` which don't have any meaning.
@@ -80,7 +81,7 @@ def filter_license_classifiers(classifiers_list):
     ]
 
 
-def get_summary_or_placeholder(summary):
+def get_summary_or_placeholder(summary: str) -> str:
     """Return either a summary or a "..." string.
 
     Summary is an optional field, so it may be empty or it can consist of
@@ -92,7 +93,7 @@ def get_summary_or_placeholder(summary):
     return summary
 
 
-def get_extras(requires_dist):
+def get_extras(requires_dist: list) -> list:
     """Return the sorted list of the found extras names.
 
     Packages define extras explicitly via `Provides-Extra` and
@@ -116,7 +117,7 @@ def get_extras(requires_dist):
     return sorted(extras)
 
 
-def archive_name(archive_urls):
+def archive_name(archive_urls: list) -> str:
     """Return the given's package version sdist name for further processing.
     Quit the script if not found (bdists can't be processed).
     """
@@ -126,7 +127,7 @@ def archive_name(archive_urls):
     raise SdistNotFoundError("Sdist not found, valid spec file cannot be produced")
 
 
-def is_archful(archive_urls):
+def is_archful(archive_urls: list) -> bool:
     """Determine if package is archful by checking the wheel filenames.
 
     Wheel name consists of defined fields, one of them being an abi tag.
@@ -163,7 +164,7 @@ def _normalize_url_label(label: str) -> str:
     return label.translate(removal_map).lower()
 
 
-def resolve_url(urls):
+def resolve_url(urls: dict) -> str:
     """
     Project urls are an optional field and come in a form of a dict, e.g.:
     {"homepage": "https://mypackagehomepage.com"}.

@@ -1,10 +1,12 @@
+from __future__ import annotations
 from dataclasses import dataclass, asdict, field
 from functools import wraps
-from typing import Optional
 import sys
 
 import click
 import tomli_w
+from packaging.metadata import RawMetadata
+from requests import Session
 
 from pyp2spec.license_processor import check_compliance, resolve_license_expression
 from pyp2spec.utils import Pyp2specError, normalize_name, get_extras, get_summary_or_placeholder
@@ -22,18 +24,18 @@ class PackageInfo:
     url: str
     extras: list
     license_files_present: bool
-    license: Optional[str] = None
+    license: str | None = None
     source: str = "PyPI"  # only one default source now
     # These are added later, when the object is already constructed:
     python_name: str = field(init=False)
     archful: bool = field(init=False)
     archive_name: str = field(init=False)
     # These may or may not be ever set
-    python_alt_version: Optional[str] = field(default=None)
-    automode: Optional[bool] = field(default=None)
+    python_alt_version: str | None = field(default=None)
+    automode: bool | None = field(default=None)
 
 
-def is_package_name(package):
+def is_package_name(package: str) -> bool:
     """Least-effort check whether `package` is a package name or URL.
     Canonical package names can't contain '/'.
     """
@@ -41,14 +43,14 @@ def is_package_name(package):
     return "/" not in package
 
 
-def prepare_package_info(data):
+def prepare_package_info(data: RawMetadata | dict) -> PackageInfo:
     if not (project_urls := data.get("project_urls", {})):
         if (homepage := data.get("home_page", "")):
             project_urls["home_page"] = homepage
     return PackageInfo(
-        pypi_name=normalize_name(data.get("name")),
-        pypi_version=data.get("version"),
-        summary=get_summary_or_placeholder(data.get("summary")),
+        pypi_name=normalize_name(data.get("name", "")),
+        pypi_version=data.get("version", ""),
+        summary=get_summary_or_placeholder(data.get("summary", "")),
         url=resolve_url(project_urls),
         extras=get_extras(data.get("requires_dist", [])),
         license_files_present=bool(data.get("license_files")),
@@ -56,14 +58,14 @@ def prepare_package_info(data):
     )
 
 
-def add_archive_data(pkg, pypi_data):
+def add_archive_data(pkg: PackageInfo, pypi_data: dict) -> PackageInfo:
     """We can obtain the archive information from PyPI only."""
     pkg.archful = is_archful(pypi_data["urls"])
     pkg.archive_name = archive_name(pypi_data["urls"])
     return pkg
 
 
-def gather_package_info(core_metadata, pypi_package_data):
+def gather_package_info(core_metadata: RawMetadata | None, pypi_package_data: dict) -> PackageInfo:
     if core_metadata is not None:
         pkg = prepare_package_info(core_metadata)
     else:
@@ -73,13 +75,13 @@ def gather_package_info(core_metadata, pypi_package_data):
 
 
 def create_config_contents(
-    package,
-    version=None,
-    session=None,
-    compliant=False,
-    python_alt_version=None,
-    automode=False,
-):
+    package: str,
+    version: str | None = None,
+    session: Session | None = None,
+    compliant: bool = False,
+    python_alt_version: str | None = None,
+    automode: bool = False,
+) -> dict:
     """Use `package` and provided kwargs to create the whole config contents.
     Return pkg_info dictionary.
     """
@@ -133,7 +135,7 @@ def create_config_contents(
     return {key: pkg_dict[key] for key in sorted(pkg_dict.keys()) if pkg_dict[key] is not None}
 
 
-def save_config(contents, output=None):
+def save_config(contents: dict, output: str | None = None) -> str:
     """Write config file to a given destination.
     If none is provided, save it to current directory with package name as file name.
     Return the saved file name.
@@ -147,7 +149,7 @@ def save_config(contents, output=None):
     return output
 
 
-def create_config(options):
+def create_config(options: dict) -> str:
     """Create and save config file."""
 
     contents = create_config_contents(
@@ -160,7 +162,7 @@ def create_config(options):
     return save_config(contents, options["config_output"])
 
 
-def pypconf_args(func):
+def pypconf_args(func):  # noqa
     @click.argument("package")
     @click.option(
         "--config-output", "-c",
@@ -183,13 +185,13 @@ def pypconf_args(func):
         help="Provide specific Python version to build for, e.g 3.11",
     )
     @wraps(func)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args, **kwargs): # noqa
         return func(*args, **kwargs)
     return wrapper
 
 @click.command()
 @pypconf_args
-def main(**options):
+def main(**options):  # noqa
     try:
         create_config(options)
     except (Pyp2specError, NotImplementedError) as exc:

@@ -1,6 +1,6 @@
 import json
 
-import betamax
+import betamax  # type: ignore
 import pytest
 
 

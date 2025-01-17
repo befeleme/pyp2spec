@@ -14,7 +14,7 @@ from pyp2spec.utils import warn
     "--spec-output", "-o",
     help="Provide custom output where spec file will be saved",
 )
-def main(**options):
+def main(**options):  # noqa
     try:
         config_file = create_config(options)
         create_spec_file(config_file, options["spec_output"])
