@@ -3,6 +3,7 @@ This module contains common functions and classes imported in multiple other mod
 """
 
 import re
+import string
 from functools import partial
 
 import click
@@ -152,13 +153,31 @@ def is_archful(archive_urls):
     return False
 
 
-def get_first_url_or_placeholder(urls):
+def _normalize_url_label(label: str) -> str:
+    """
+    Copied verbatim from
+    https://packaging.python.org/en/latest/specifications/well-known-project-urls/#label-normalization
+    """
+    chars_to_remove = string.punctuation + string.whitespace
+    removal_map = str.maketrans("", "", chars_to_remove)
+    return label.translate(removal_map).lower()
+
+
+def resolve_url(urls):
     """
     Project urls are an optional field and come in a form of a dict, e.g.:
     {"homepage": "https://mypackagehomepage.com"}.
     There may be multiple urls defined and keys are arbitrary.
-    As there's no way to programmatically determine "the best" url for the
-    spec file, return the first existing url from the dict.
+    Try to return url for normalized "homepage", then "source" keys.
+    Otherwise return the first value from the dictionary or "..." if the dict is empty.
     """
-
-    return list(urls.values())[0] if urls else "..."
+    normalized_urls = {_normalize_url_label(k): v for k, v in urls.items()}
+    print(normalized_urls)
+    return (
+        normalized_urls.get("homepage")
+        or normalized_urls.get("source")
+        or normalized_urls.get("sourcecode")
+        or normalized_urls.get("github")
+        or normalized_urls.get("repository")
+        or next(iter(normalized_urls.values()), "...")
+    )

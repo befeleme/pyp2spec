@@ -7,7 +7,7 @@ import tomli_w
 from pyp2spec.license_processor import check_compliance, resolve_license_expression
 from pyp2spec.utils import Pyp2specError, normalize_name, get_extras, get_summary_or_placeholder
 from pyp2spec.utils import prepend_name_with_python, archive_name
-from pyp2spec.utils import is_archful, get_first_url_or_placeholder
+from pyp2spec.utils import is_archful, resolve_url
 from pyp2spec.utils import warn, caution, inform, yay
 from pyp2spec.pypi_loaders import load_from_pypi, load_core_metadata_from_pypi, CoreMetadataNotFoundError
 
@@ -28,7 +28,7 @@ def prepare_package_info(data):
         "pypi_name": normalize_name(data.get("name")),
         "pypi_version": data.get("version"),
         "summary": get_summary_or_placeholder(data.get("summary")),
-        "url": get_first_url_or_placeholder(project_urls),
+        "url": resolve_url(project_urls),
         "extras": get_extras(data.get("requires_dist", [])),
         "license_files_present": bool(data.get("license_files")),
         "license": resolve_license_expression(data),

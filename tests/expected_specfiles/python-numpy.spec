@@ -7,7 +7,7 @@ Summary:        Fundamental package for array computing in Python
 # Check if the automatically generated License and its spelling is correct for Fedora
 # https://docs.fedoraproject.org/en-US/packaging-guidelines/LicensingGuidelines/
 License:        BSD-3-Clause
-URL:            https://github.com/numpy/numpy/issues
+URL:            https://github.com/numpy/numpy
 Source:         %{pypi_source numpy}
 
 BuildRequires:  python3-devel

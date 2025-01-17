@@ -6,7 +6,7 @@ Summary:        Python documentation generator
 
 # No license information obtained, it's up to the packager to fill it in
 License:        ...
-URL:            https://www.sphinx-doc.org/en/master/changes.html
+URL:            https://www.sphinx-doc.org/
 Source:         %{pypi_source sphinx}
 
 BuildArch:      noarch

@@ -3,7 +3,7 @@ import pytest
 from pyp2spec.utils import filter_license_classifiers, prepend_name_with_python
 from pyp2spec.utils import normalize_name, get_extras, is_archful
 from pyp2spec.utils import normalize_as_wheel_name, archive_name
-from pyp2spec.utils import get_first_url_or_placeholder, SdistNotFoundError
+from pyp2spec.utils import resolve_url, SdistNotFoundError
 
 
 def test_license_classifier_read_correctly():
@@ -161,7 +161,7 @@ def test_archive_name_empty_list():
 
 def test_project_urls_valid_single():
     urls = {"homepage": "https://example.com"}
-    assert get_first_url_or_placeholder(urls) == "https://example.com"
+    assert resolve_url(urls) == "https://example.com"
 
 
 def test_project_urls_valid_multiple():
@@ -169,8 +169,8 @@ def test_project_urls_valid_multiple():
         "homepage": "https://example.com",
         "documentation": "https://docs.example.com",
     }
-    assert get_first_url_or_placeholder(urls) == "https://example.com"
+    assert resolve_url(urls) == "https://example.com"
 
 
 def test_project_urls_empty():
-    assert get_first_url_or_placeholder({}) == "..."
+    assert resolve_url({}) == "..."
