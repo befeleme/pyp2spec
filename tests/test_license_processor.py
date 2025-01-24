@@ -1,7 +1,7 @@
 import pytest
 
 from pyp2spec.license_processor import classifiers_to_spdx_identifiers, license_keyword_to_spdx_identifiers
-from pyp2spec.license_processor import _is_compliant_with_fedora, good_for_fedora
+from pyp2spec.license_processor import _is_compliant_with_fedora
 from pyp2spec.license_processor import NoSuchClassifierError, check_compliance, generate_spdx_expression
 
 
@@ -82,21 +82,6 @@ def test_compliance_check_with_fedora(identifier, expected, fake_fedora_licenses
     assert _is_compliant_with_fedora(identifier, fake_fedora_licenses) is expected
 
 
-@pytest.mark.parametrize(
-    ("identifiers", "expected"),
-    (
-        (["AAL", "MIT", "CECILL-B"], (True, {"bad": [], "good": ["AAL", "MIT", "CECILL-B"]})),
-        ([], (False, {"bad": [], "good": []})),
-        (["LicenseRef-LPPL", "MIT"], (False, {"bad": ["LicenseRef-LPPL"], "good": ["MIT"]})),  # mixed not allowed/allowed
-        (["LicenseRef-LPPL", "Aladdin", "LicenseRef-OpenFlow", "APL-1.0"], (False, {"bad": ["LicenseRef-LPPL", "Aladdin", "LicenseRef-OpenFlow", "APL-1.0"], "good": []})),
-    ),
-)
-def test_is_allowed_in_fedora(identifiers, expected, fake_fedora_licenses):
-    """Test the function logic, bear in mind that Fedora status may change in time"""
-
-    assert good_for_fedora(identifiers, licenses_dict=fake_fedora_licenses) == expected
-
-
 def test_no_license_classifiers_and_no_license_keyword():
     classifiers = []
     license_keyword = ""
@@ -151,6 +136,10 @@ def test_license_keyword_and_classifiers():
         ("MIT AND EUPL-1.0", ["MIT"], ["EUPL-1.0"], False),
         ("RSCPL", [], ["RSCPL"], False),
         ("Fake-identifier", [], [], False),  # not a valid identifier, ergo not in "bad" list
+        ("AAL AND MIT AND CECILL-B", ["AAL", "CECILL-B", "MIT"], [], True),
+        ("", [], [], False),
+
+
     )
 )
 def test_check_compliance(license, good, bad, expected, fake_fedora_licenses):

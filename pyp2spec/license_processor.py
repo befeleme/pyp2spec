@@ -146,8 +146,8 @@ def _is_compliant_with_fedora(identifier, fedora_licenses):
     return False
 
 
-def good_for_fedora(spdx_identifiers, *, licenses_dict=None, session=None):
-    """Determine whether all of the given SPDX identifiers are good for Fedora.
+def check_compliance(license, *, licenses_dict=None, session=None):
+    """Determine whether the license is good for Fedora.
 
     Store the results in the checked_identifiers dictionary, under the
     respective `bad` and `good` keys.
@@ -167,6 +167,7 @@ def good_for_fedora(spdx_identifiers, *, licenses_dict=None, session=None):
         "good": [],
     }
 
+    spdx_identifiers = license_keyword_to_spdx_identifiers(license)
     if not spdx_identifiers:
         return (False, checked_identifies)
     for spdx_identifier in spdx_identifiers:
@@ -177,17 +178,6 @@ def good_for_fedora(spdx_identifiers, *, licenses_dict=None, session=None):
     if checked_identifies["bad"]:
         return (False, checked_identifies)
     return (True, checked_identifies)
-
-
-def check_compliance(license, *, session=None, licenses_dict=None):
-    identifiers = license_keyword_to_spdx_identifiers(license)
-
-    is_compliant, checked_identifiers = good_for_fedora(
-        identifiers,
-        session=session,
-        licenses_dict=licenses_dict
-    )
-    return is_compliant, checked_identifiers
 
 
 def transform_to_spdx(license_field, classifiers):
