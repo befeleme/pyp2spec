@@ -5,7 +5,7 @@ from packaging.metadata import parse_email
 
 import requests
 
-from pyp2spec.utils import Pyp2specError, filter_license_classifiers
+from pyp2spec.utils import Pyp2specError
 
 
 class PackageNotFoundError(Pyp2specError):

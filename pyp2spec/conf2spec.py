@@ -12,7 +12,7 @@ except ImportError:
 from jinja2 import Template
 
 from pyp2spec.rpmversion import RpmVersion
-from pyp2spec.utils import Pyp2specError, normalize_as_wheel_name
+from pyp2spec.utils import Pyp2specError
 from pyp2spec.utils import warn, yay
 
 
