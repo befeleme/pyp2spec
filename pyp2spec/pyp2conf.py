@@ -1,4 +1,6 @@
+from dataclasses import dataclass, asdict, field
 from functools import wraps
+from typing import Optional
 import sys
 
 import click
@@ -10,6 +12,25 @@ from pyp2spec.utils import prepend_name_with_python, archive_name
 from pyp2spec.utils import is_archful, resolve_url
 from pyp2spec.utils import warn, caution, inform, yay
 from pyp2spec.pypi_loaders import load_from_pypi, load_core_metadata_from_pypi, CoreMetadataNotFoundError
+
+
+@dataclass
+class PackageInfo:
+    pypi_name: str
+    pypi_version: str
+    summary: str
+    url: str
+    extras: list
+    license_files_present: bool
+    license: Optional[str] = None
+    source: str = "PyPI"  # only one default source now
+    # These are added later, when the object is already constructed:
+    python_name: str = field(init=False)
+    archful: bool = field(init=False)
+    archive_name: str = field(init=False)
+    # These may or may not be ever set
+    python_alt_version: Optional[str] = field(default=None)
+    automode: Optional[bool] = field(default=None)
 
 
 def is_package_name(package):
@@ -24,21 +45,21 @@ def prepare_package_info(data):
     if not (project_urls := data.get("project_urls", {})):
         if (homepage := data.get("home_page", "")):
             project_urls["home_page"] = homepage
-    return {
-        "pypi_name": normalize_name(data.get("name")),
-        "pypi_version": data.get("version"),
-        "summary": get_summary_or_placeholder(data.get("summary")),
-        "url": resolve_url(project_urls),
-        "extras": get_extras(data.get("requires_dist", [])),
-        "license_files_present": bool(data.get("license_files")),
-        "license": resolve_license_expression(data),
-    }
+    return PackageInfo(
+        pypi_name=normalize_name(data.get("name")),
+        pypi_version=data.get("version"),
+        summary=get_summary_or_placeholder(data.get("summary")),
+        url=resolve_url(project_urls),
+        extras=get_extras(data.get("requires_dist", [])),
+        license_files_present=bool(data.get("license_files")),
+        license=resolve_license_expression(data)
+    )
 
 
 def add_archive_data(pkg, pypi_data):
     """We can obtain the archive information from PyPI only."""
-    pkg["archful"] = is_archful(pypi_data["urls"])
-    pkg["archive_name"] = archive_name(pypi_data["urls"])
+    pkg.archful = is_archful(pypi_data["urls"])
+    pkg.archive_name = archive_name(pypi_data["urls"])
     return pkg
 
 
@@ -76,28 +97,21 @@ def create_config_contents(
     # The processed package info is the basis for config contents
     pkg_info = gather_package_info(core_metadata, pypi_pkg_data)
 
-    pkg_info["python_name"] = prepend_name_with_python(pkg_info["pypi_name"], python_alt_version)
-
-    if python_alt_version is not None:
-        inform(f"Assuming build for Python: {python_alt_version}")
-        pkg_info["python_alt_version"] = python_alt_version
+    pkg_info.python_name = prepend_name_with_python(pkg_info.pypi_name, python_alt_version)
 
     if version is None:
-        ver = pkg_info["pypi_version"]
-        inform(f"Assuming the latest version found on PyPI: '{ver}'")
+        inform(f"Assuming the latest version found on PyPI: '{pkg_info.pypi_version}'")
 
-    if pkg_info["archful"]:
+    if pkg_info.archful:
         caution("Package contains compiled extensions - you may need to specify additional build requirements")
 
-    if pkg_info["license"] is None:
+    if pkg_info.license is None:
         warn("WARNING: No valid license found. Inspect the project manually to find the license")
-        # TOML can't handle None value; we don't need this key explicitly
-        del pkg_info["license"]
     else:
         if compliant:
-            is_compliant, results = check_compliance(pkg_info["license"], session=session)
+            is_compliant, results = check_compliance(pkg_info.license, session=session)
             if not is_compliant:
-                warn(f"The license '{pkg_info['license']}' is not compliant with Fedora")
+                warn(f"The license '{pkg_info.license}' is not compliant with Fedora")
             if results["bad"]:
                 info_str = "Found identifiers: '{0}' aren't allowed in Fedora."
                 warn(info_str.format(", ".join(results["bad"])))
@@ -105,14 +119,18 @@ def create_config_contents(
                 info_str = "Found identifiers: '{0}' are good for Fedora."
                 inform(info_str.format(", ".join(results["good"])))
 
+    # Configuration settings
+    if python_alt_version is not None:
+        inform(f"Assuming build for Python: {python_alt_version}")
+        pkg_info.python_alt_version = python_alt_version
+
     if automode:
-        pkg_info["automode"] = True
+        pkg_info.automode = True
 
-    # The default source of archives pyp2spec can process
-    pkg_info["source"] = "PyPI"
-
+    pkg_dict = asdict(pkg_info)
     # sort the dictionary alphabetically for output consistency
-    return {key: pkg_info[key] for key in sorted(pkg_info.keys())}
+    # only keep the values that aren't None - TOML can't handle that
+    return {key: pkg_dict[key] for key in sorted(pkg_dict.keys()) if pkg_dict[key] is not None}
 
 
 def save_config(contents, output=None):

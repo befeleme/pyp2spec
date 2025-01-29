@@ -120,7 +120,7 @@ def test_no_license_classifiers_and_no_license_keyword():
         "license_keyword": "",
     }
     pkg = prepare_package_info(fake_pkg_data)
-    assert pkg["license"] is None
+    assert pkg.license is None
 
 
 def test_license_expression_takes_precedence(fake_fedora_licenses):
@@ -131,8 +131,8 @@ def test_license_expression_takes_precedence(fake_fedora_licenses):
         "license_expression": "BSD-2-Clauseo",
     }
     pkg = prepare_package_info(fake_pkg_data)
-    assert pkg["license"] == "BSD-2-Clauseo"
-    result, identifiers = check_compliance(pkg["license"], licenses_dict=fake_fedora_licenses)
+    assert pkg.license == "BSD-2-Clauseo"
+    result, identifiers = check_compliance(pkg.license, licenses_dict=fake_fedora_licenses)
     assert not result
     assert not identifiers["good"]
     # There are none valid identifiers
@@ -148,8 +148,8 @@ def test_mix_good_bad_licenses_fail_compliance_check(fake_fedora_licenses):
         ],
     }
     pkg = prepare_package_info(fake_pkg_data)
-    assert pkg["license"] == "EUPL-1.0 AND MIT"
-    result, identifiers = check_compliance(pkg["license"], licenses_dict=fake_fedora_licenses)
+    assert pkg.license == "EUPL-1.0 AND MIT"
+    result, identifiers = check_compliance(pkg.license, licenses_dict=fake_fedora_licenses)
     assert not result
     assert identifiers["good"] == ["MIT"]
     assert identifiers["bad"] == ["EUPL-1.0"]
@@ -161,7 +161,7 @@ def test_summary_is_generated_if_not_in_upstream():
         "summary": "",
     }
     pkg = prepare_package_info(fake_pkg_data)
-    assert pkg["summary"] == "..."
+    assert pkg.summary == "..."
 
 
 def test_summary_is_generated_if_upstream_data_is_multiline():
@@ -170,7 +170,7 @@ def test_summary_is_generated_if_upstream_data_is_multiline():
         "summary": "I\nforgot\nthat summary\nmust\nbe short",
     }
     pkg = prepare_package_info(fake_pkg_data)
-    assert pkg["summary"] == "..."
+    assert pkg.summary == "..."
 
 
 def test_capitalized_underscored_pypi_name_is_normalized():
@@ -178,7 +178,7 @@ def test_capitalized_underscored_pypi_name_is_normalized():
         "name": "Awesome_TestPkg",
     }
     pkg = prepare_package_info(fake_pkg_data)
-    assert pkg["pypi_name"] == "awesome-testpkg"
+    assert pkg.pypi_name == "awesome-testpkg"
 
 
 @pytest.mark.parametrize(
@@ -194,7 +194,7 @@ def test_license_files_in_metadata_files(metadata, lf_present):
         "license_files": metadata,
     }
     pkg = prepare_package_info(fake_pkg_data)
-    assert pkg["license_files_present"] is lf_present
+    assert pkg.license_files_present is lf_present
 
 
 def test_prepare_package_info_pypi_source():
@@ -212,16 +212,13 @@ def test_prepare_package_info_pypi_source():
         "maintainer": "John Doe",
     }, "releases": [],}
     result = prepare_package_info(data["info"])
-    expected_result = {
-        "pypi_name": "example",
-        "summary": "A sample project",
-        "license_files_present": True,
-        "license": "MIT",
-        "extras": [],
-        "pypi_version": "1.0.0",
-        "url": "https://example.com",
-    }
-    assert result == expected_result
+    assert result.pypi_name == "example"
+    assert result.summary == "A sample project"
+    assert result.license_files_present is True
+    assert result.license == "MIT"
+    assert result.extras == []
+    assert result.pypi_version == "1.0.0"
+    assert result.url == "https://example.com"
 
 
 def test_prepare_package_info_core_metadata():
@@ -238,16 +235,13 @@ def test_prepare_package_info_core_metadata():
         "metadata_version": "2.1",
     }
     result = prepare_package_info(data)
-    expected_result = {
-        "pypi_name": "example",
-        "summary": "A sample project",
-        "license_files_present": True,
-        "license": "MIT",
-        "extras": [],
-        "pypi_version": "1.0.0",
-        "url": "https://example.com",
-    }
-    assert result == expected_result
+    assert result.pypi_name == "example"
+    assert result.summary == "A sample project"
+    assert result.license_files_present is True
+    assert result.license == "MIT"
+    assert result.extras == []
+    assert result.pypi_version == "1.0.0"
+    assert result.url == "https://example.com"
 
 
 def test_prepare_package_info_missing_keys():
@@ -255,14 +249,10 @@ def test_prepare_package_info_missing_keys():
         "name": "foo",
     }
     result = prepare_package_info(data)
-
-    expected_result = {
-        "pypi_name": "foo",
-        "summary": "...",
-        "license_files_present": False,
-        "license": None,
-        "extras": [],
-        "pypi_version": None,
-        "url": "...",
-    }
-    assert result == expected_result
+    assert result.pypi_name == "foo"
+    assert result.summary == "..."
+    assert result.license_files_present is False
+    assert result.license is None
+    assert result.extras == []
+    assert result.pypi_version is None
+    assert result.url == "..."
