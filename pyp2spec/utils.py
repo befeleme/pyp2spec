@@ -172,7 +172,6 @@ def resolve_url(urls):
     Otherwise return the first value from the dictionary or "..." if the dict is empty.
     """
     normalized_urls = {_normalize_url_label(k): v for k, v in urls.items()}
-    print(normalized_urls)
     return (
         normalized_urls.get("homepage")
         or normalized_urls.get("source")
