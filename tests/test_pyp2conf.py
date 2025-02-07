@@ -9,7 +9,7 @@ try:
 except ImportError:
     import tomli as tomllib
 
-from pyp2spec.pyp2conf import create_config_contents, prepare_package_info, check_compliance
+from pyp2spec.pyp2conf import create_config_contents, prepare_package_info, check_compliance, gather_package_info
 from pyp2spec.pypi_loaders import PackageNotFoundError
 
 
@@ -256,3 +256,73 @@ def test_prepare_package_info_missing_keys():
     assert result.extras == []
     assert result.pypi_version == ""
     assert result.url == "..."
+
+
+def test_gather_package_info_pypi_source():
+    pypi = {"info": {
+        "name": "example",
+        "summary": "A sample project",
+        "license_expression": "MIT",
+        "license": "MIT License",
+        "classifiers": ["License :: OSI Approved :: MIT License"],
+        "requires_dist": ["requests"],
+        "version": "1.0.0",
+        "license_files": ["LICENSE"],
+        "project_urls": {"Homepage": "https://example.com"},
+        "yanked": False,
+        "maintainer": "John Doe",
+        }, "releases": [],
+        "urls": [{
+            "packagetype": "sdist",
+            "filename": "example-0.2-tar.gz"
+        }, {
+            "packagetype": "bdist_wheel",
+            "filename": "example-0.2-py2.py3-none-any.whl"
+        }]}
+    result = gather_package_info(None, pypi)
+    assert result.archive_name == "example-0.2-tar.gz"
+    assert result.archful is False
+
+
+def test_gather_package_info_core_metadata():
+    data = {
+        "name": "example",
+        "summary": "A sample project",
+        "license_expression": "MIT",
+        "license": "MIT License",
+        "classifiers": ["License :: OSI Approved :: MIT License"],
+        "requires_dist": ["requests"],
+        "version": "1.0.0",
+        "license_files": ["LICENSE"],
+        "home_page": "https://example.com",
+        "metadata_version": "2.1",
+    }
+    pypi = {"info": {
+        "name": "discarded",
+        "summary": "Deliberately different metadata",
+        "license_expression": "BSD",
+        "license": "BSD",
+        "classifiers": ["License :: OSI Approved :: BSD License"],
+        "requires_dist": ["click"],
+        "version": "7.0.0",
+        "license_files": ["LICENSE.txt"],
+        "project_urls": {"Source": "https://example.com"},
+        "yanked": False,
+        "maintainer": "John Doe",
+        }, "releases": [],
+        "urls": [{
+            "packagetype": "sdist",
+            "filename": "example-7.0-tar.gz"
+        }, {"packagetype": "bdist_wheel",
+            "filename": "example-7.0-cp34-abi3-manylinux1_x86_64.whl"
+        }]}
+    result = gather_package_info(data, pypi)
+    assert result.pypi_name == "example"
+    assert result.summary == "A sample project"
+    assert result.license_files_present is True
+    assert result.license == "MIT"
+    assert result.extras == []
+    assert result.pypi_version == "1.0.0"
+    assert result.url == "https://example.com"
+    assert result.archive_name == "example-7.0-tar.gz"
+    assert result.archful is True

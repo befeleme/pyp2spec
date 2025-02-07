@@ -74,16 +74,12 @@ def gather_package_info(core_metadata: RawMetadata | None, pypi_package_data: di
     return pkg
 
 
-def create_config_contents(
+def create_package_from_source(
     package: str,
-    version: str | None = None,
-    session: Session | None = None,
-    compliant: bool = False,
-    python_alt_version: str | None = None,
-    automode: bool = False,
-) -> dict:
-    """Use `package` and provided kwargs to create the whole config contents.
-    Return pkg_info dictionary.
+    version: str | None,
+    session: Session | None
+) -> PackageInfo:
+    """Determine the best source for the given package name and create a PackageInfo instance.
     """
     if is_package_name(package):
         # explicit `session` argument is needed for testing
@@ -95,9 +91,22 @@ def create_config_contents(
             core_metadata = None
     else:
         raise NotImplementedError("pyp2spec can't currently handle URLs.")
-
     # The processed package info is the basis for config contents
-    pkg_info = gather_package_info(core_metadata, pypi_pkg_data)
+    return gather_package_info(core_metadata, pypi_pkg_data)
+
+
+def create_config_contents(
+    package: str,
+    version: str | None = None,
+    session: Session | None = None,
+    compliant: bool = False,
+    python_alt_version: str | None = None,
+    automode: bool = False,
+) -> dict:
+    """Use `package` and provided kwargs to create the whole config contents.
+    Return pkg_info dictionary.
+    """
+    pkg_info = create_package_from_source(package, version, session)
 
     pkg_info.python_name = prepend_name_with_python(pkg_info.pypi_name, python_alt_version)
 
