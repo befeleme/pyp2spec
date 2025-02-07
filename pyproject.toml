@@ -30,7 +30,7 @@ dependencies = [
     "click",
     "jinja2",
     "license-expression",
-    "packaging",
+    "packaging >= 24.2",  # for support of license expression and license files
     "requests",
     'tomli; python_version < "3.11"',
     "tomli-w"

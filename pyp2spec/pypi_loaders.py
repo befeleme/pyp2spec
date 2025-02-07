@@ -70,11 +70,6 @@ def load_from_pypi(
 
 def load_core_metadata_from_pypi(pypi_pkg_data: dict[Any, Any], session: Session | None = None) -> RawMetadata:
     metadata = _get_metadata_file(pypi_pkg_data, session=session)
-    raw, unparsed = parse_email(metadata)
-    # in packaging <24.2 `unparsed` still contains 'license-file'
-    # For pyp2spec it's ok to gather all unsupported fields and work with them later
-    # TODO when F41 goes EOL:
-    # - `raw` will be populated with all fields, drop `unparsed`
-    # - consider porting to packaging.Metadata instance?
-    raw.update(unparsed)
+    raw, _ = parse_email(metadata)
+    # TODO: consider porting to packaging.Metadata instance?
     return raw
