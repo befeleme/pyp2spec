@@ -157,6 +157,8 @@ def source(config: ConfigFile, pypi_version: str) -> str:
             if version_str == pypi_version:
                 source_macro_args += f" {version_str}"
         return "%{pypi_source " + source_macro_args + "}"
+    else:
+        raise NotImplementedError("pyp2spec can only construct %pypi_source macros")
 
 
 def pypi_version_or_macro(pypi_version: str) -> str:
