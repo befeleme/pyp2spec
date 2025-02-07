@@ -254,5 +254,5 @@ def test_prepare_package_info_missing_keys():
     assert result.license_files_present is False
     assert result.license is None
     assert result.extras == []
-    assert result.pypi_version is None
+    assert result.pypi_version == ""
     assert result.url == "..."
