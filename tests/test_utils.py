@@ -3,7 +3,7 @@ import pytest
 from pyp2spec.utils import filter_license_classifiers, prepend_name_with_python
 from pyp2spec.utils import normalize_name, get_extras, is_archful
 from pyp2spec.utils import normalize_as_wheel_name, archive_name
-from pyp2spec.utils import resolve_url, SdistNotFoundError
+from pyp2spec.utils import resolve_url, SdistNotFoundError, MissingPackageNameError
 
 
 def test_license_classifier_read_correctly():
@@ -122,11 +122,15 @@ def test_archfulness_is_detected_from_multiple_urls_3():
         ("my.package", "my_package"),
         ("my_package-", "my_package_"),
         ("noweirdchars", "noweirdchars"),
-        ("", ""),
     ]
 )
 def test_normalize_as_wheel_name(name, expected):
     assert normalize_as_wheel_name(name) == expected
+
+
+def test_empty_package_name_results_in_exception():
+    with pytest.raises(MissingPackageNameError):
+        normalize_as_wheel_name("")
 
 
 def test_archive_name_valid():

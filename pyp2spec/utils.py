@@ -26,10 +26,16 @@ class SdistNotFoundError(Pyp2specError):
     """Raised when there's no sdist file in the PyPI metadata"""
 
 
+class MissingPackageNameError(Pyp2specError):
+    """Raised when there's no package name in the metadata"""
+
+
 def normalize_name(package_name: str) -> str:
     """Normalize given package name as defined in PEP 503.
     The resulting string better conforms with Fedora's Packaging Guidelines."""
 
+    if not package_name:
+        raise MissingPackageNameError("Cannot create a package without a name")
     return re.sub(r"[-_.]+", "-", package_name).lower()
 
 
