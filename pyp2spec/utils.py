@@ -179,11 +179,14 @@ def resolve_url(urls: dict) -> str:
     Otherwise return the first value from the dictionary or "..." if the dict is empty.
     """
     normalized_urls = {_normalize_url_label(k): v for k, v in urls.items()}
-    return (
-        normalized_urls.get("homepage")
-        or normalized_urls.get("source")
-        or normalized_urls.get("sourcecode")
-        or normalized_urls.get("github")
+    well_known_urls = normalized_urls.get("homepage") \
+        or normalized_urls.get("source")\
+        or normalized_urls.get("sourcecode")\
+        or normalized_urls.get("github")\
         or normalized_urls.get("repository")
-        or next(iter(normalized_urls.values()), "...")
-    )
+    if well_known_urls:
+        return well_known_urls
+    else:
+        if values_list := list(normalized_urls.values()):
+            return values_list[0]
+        return "..."
