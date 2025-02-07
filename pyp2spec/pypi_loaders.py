@@ -48,8 +48,8 @@ def _get_metadata_file(pypi_pkg_data: dict[Any, Any], session: Session | None = 
         if entry["packagetype"] == "bdist_wheel":
             try:
                 response = _get_from_url(entry["url"] + ".metadata", error_str, session=session)
-            except PackageNotFoundError:
-                raise CoreMetadataNotFoundError(error_str)
+            except PackageNotFoundError as exc:
+                raise CoreMetadataNotFoundError(error_str) from exc
             return response.text
     else:
         raise CoreMetadataNotFoundError(error_str)

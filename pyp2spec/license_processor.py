@@ -95,7 +95,7 @@ def license_keyword_to_spdx_identifiers(license_keyword: str | None) -> list | N
         parsed_license = licensing.parse(license_keyword, validate=True)
         # The objects are stored in sets, sort and return as a list
         return sorted(parsed_license.objects)
-    except ExpressionError as err:
+    except ExpressionError:
         # Don't bubble the error up, the calling function will handle the invalid result
         return None
 
