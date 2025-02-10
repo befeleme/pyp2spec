@@ -33,6 +33,7 @@ class PackageInfo:
     # These may or may not be ever set
     python_alt_version: str | None = field(default=None)
     automode: bool | None = field(default=None)
+    compat: str | None = field(default=None)
 
 
 def is_package_name(package: str) -> bool:
@@ -77,13 +78,15 @@ def gather_package_info(core_metadata: RawMetadata | None, pypi_package_data: di
 def create_package_from_source(
     package: str,
     version: str | None,
+    compat: str | None,
     session: Session | None
 ) -> PackageInfo:
     """Determine the best source for the given package name and create a PackageInfo instance.
     """
     if is_package_name(package):
         # explicit `session` argument is needed for testing
-        pypi_pkg_data = load_from_pypi(package, version=version, session=session)
+        pypi_pkg_data = load_from_pypi(package, version=version,
+        compat=compat, session=session)
         try:
             core_metadata = load_core_metadata_from_pypi(pypi_pkg_data, session=session)
         # if no core metadata found, we will fall back to PyPI API
@@ -102,16 +105,22 @@ def create_config_contents(
     compliant: bool = False,
     python_alt_version: str | None = None,
     automode: bool = False,
+    compat: str | None = None,
 ) -> dict:
     """Use `package` and provided kwargs to create the whole config contents.
     Return pkg_info dictionary.
     """
-    pkg_info = create_package_from_source(package, version, session)
+
+    pkg_info = create_package_from_source(package, version, compat, session)
 
     pkg_info.python_name = prepend_name_with_python(pkg_info.pypi_name, python_alt_version)
 
+    if compat is not None:
+        inform(f"Creating a compat package for version: '{compat}'")
+        pkg_info.compat = compat
+
     if version is None:
-        inform(f"Assuming the latest version found on PyPI: '{pkg_info.pypi_version}'")
+        inform(f"Assuming the version found on PyPI: '{pkg_info.pypi_version}'")
 
     if pkg_info.archful:
         caution("Package contains compiled extensions - you may need to specify additional build requirements")
@@ -151,6 +160,8 @@ def save_config(contents: dict, output: str | None = None) -> str:
     """
     if not output:
         package = contents["python_name"]
+        if compat := contents.get("compat"):
+            package += compat
         output = f"{package}.conf"
     with open(output, "wb") as f:
         tomli_w.dump(contents, f, multiline_strings=True)
@@ -166,7 +177,8 @@ def create_config(options: dict) -> str:
         version=options["version"],
         compliant=options["fedora_compliant"],
         python_alt_version=options["python_alt_version"],
-        automode=options["automode"]
+        automode=options["automode"],
+        compat=options["compat"]
     )
     return save_config(contents, options["config_output"])
 
@@ -192,6 +204,10 @@ def pypconf_args(func):  # noqa
     @click.option(
         "--python-alt-version", "-p",
         help="Provide specific Python version to build for, e.g 3.11",
+    )
+    @click.option(
+        "--compat",
+        help="Create a compat package for a given version",
     )
     @wraps(func)
     def wrapper(*args, **kwargs): # noqa

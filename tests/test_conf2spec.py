@@ -48,6 +48,8 @@ def test_archful_flag_is_loaded(config_dir, conf, expected):
         "customized_python-sphinx.conf",  # contains extras
         "default_python-numpy.conf",  # archful
         "default_python3.9-pello.conf",  # custom Python version
+        "default_python-pytest7.2.conf",  # compat version
+        "default_python-pytest7.conf",  # compat version - lower granularity
     ]
 )
 def test_default_generated_specfile(file_regression, config_dir, conf):

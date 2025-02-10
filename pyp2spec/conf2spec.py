@@ -182,6 +182,7 @@ def fill_in_template(config: ConfigFile) -> str:
         archful=config.get_bool("archful"),
         archive_name=archive_basename(config, pypi_version),
         automode=config.get_bool("automode"),
+        compat=config.get_string("compat"),
         extras=",".join(config.get_list("extras")),
         license=license,
         license_notice=license_notice,
@@ -207,7 +208,10 @@ def save_spec_file(config: ConfigFile, output: str | None) -> str:
 
     result = fill_in_template(config)
     if output is None:
-        output = config.get_string("python_name") + ".spec"
+        output = config.get_string("python_name")
+        if compat := config.get_string("compat"):
+            output += compat
+        output += ".spec"
     with open(output, "w", encoding="utf-8") as spec_file:
         spec_file.write(result)
     yay(f"Spec file was saved successfully to '{output}'")

@@ -1,5 +1,11 @@
 # Changelog
 
+# Unreleased
+### Added
+- Support for compat packages of various granularity (eg. '7', '7.2').
+Invoke with `--compat <compat-version-string>`
+
+
 # [0.11.1] - 2024-11-21
 ### Changed
 - Bring back the processing of the legacy sdist filenames (removed in v0.11.0).

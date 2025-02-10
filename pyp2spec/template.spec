@@ -2,7 +2,7 @@
 %global python3_pkgversion {{ python_alt_version }}
 
 {% endif -%}
-Name:           {{python_name}}
+Name:           {{python_name}}{{compat}}
 Version:        {{version}}
 Release:        %autorelease
 # Fill in the actual package summary to submit package to Fedora
@@ -27,9 +27,12 @@ This is package '{{name}}' generated automatically by pyp2spec.}
 %description %_description
 
 {% if not python_alt_version -%}
-%package -n     python{{python3_pkgversion}}-{{name}}
+%package -n     python{{python3_pkgversion}}-{{name}}{{compat}}
 Summary:        %{summary}
-
+{% if compat %}
+Conflicts:      python{{python3_pkgversion}}-{{name}}
+Provides:       deprecated()
+{% endif %}
 %description -n python{{python3_pkgversion}}-{{name}} %_description
 {% endif -%}
 
@@ -74,7 +77,7 @@ Summary:        %{summary}
 {%- endif %}
 
 
-%files -n python{{python3_pkgversion}}-{{name}} -f %{pyproject_files}
+%files -n python{{python3_pkgversion}}-{{name}}{{compat}} -f %{pyproject_files}
 
 
 %changelog
