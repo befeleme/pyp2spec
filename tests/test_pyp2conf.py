@@ -62,6 +62,28 @@ def test_automatically_generated_config_with_alt_python_is_valid(
     assert config == loaded_contents
 
 
+@pytest.mark.parametrize("package, compat, version",
+    [
+        ("pytest", "7", None),
+        ("pytest", "7.2", "7.2.1")  # not the first, nor latest
+    ]
+)
+def test_automatically_generated_compat_config_is_valid(
+        betamax_parametrized_session, package, compat, version
+    ):
+    config = create_config_contents(
+        package=package,
+        version=version,
+        compat=compat,
+        session=betamax_parametrized_session,
+    )
+
+    with open(f"tests/test_configs/default_python-{package}{compat}.conf", "rb") as config_file:
+        loaded_contents = tomllib.load(config_file)
+    assert config["compat"] == compat
+    assert config == loaded_contents
+
+
 def test_config_with_customization_is_valid(betamax_session):
     """Get the upstream metadata and modify some fields to get the custom config file.
     This also tests the compliance with Fedora Legal data by making

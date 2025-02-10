@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from packaging.metadata import parse_email, RawMetadata
+from packaging.version import Version
 from requests import Response, Session
 
 from pyp2spec.utils import Pyp2specError
@@ -16,6 +17,10 @@ class PackageNotFoundError(Pyp2specError):
 
 class CoreMetadataNotFoundError(Pyp2specError):
     """Raised when there's no Metadata file available on PyPI API"""
+
+
+class CompatibleVersionNotFoundError(Pyp2specError):
+    """Raised when project doesn't have a version compatible with the requested one"""
 
 
 def _get_from_url(url: str, error_str: str, session: Session | None = None) -> Response:
@@ -55,15 +60,36 @@ def _get_metadata_file(pypi_pkg_data: dict[Any, Any], session: Session | None = 
         raise CoreMetadataNotFoundError(error_str)
 
 
+def _find_available_versions(project_releases: dict) -> list[str]:
+    available_versions = []
+    for release in project_releases:
+        available_versions.append(release)
+    return available_versions
+
+
+def _find_compatible_version(compat: str, available_versions: list[str]) -> str | None:
+    compatible_versions = [v for v in available_versions if v.startswith(compat)]
+    if not compatible_versions:
+        raise CompatibleVersionNotFoundError(f"There's no version compatible with the requested: `{compat}`")
+    return max(compatible_versions, key=Version)
+
+
 def load_from_pypi(
     package: str, *,
     version: str | None = None,
+    compat: str | None = None,
     session: Session | None= None
 ) -> dict[Any, Any]:
-    # Looking for the latest version
+
     if version is None:
         pypi_project_data = _get_pypi_package_project_data(package, session=session)
-        version = pypi_project_data["info"]["version"]
+        # Looking for the latest version
+        if compat is None:
+            version = pypi_project_data["info"]["version"]
+        # Looking for the latest version of the compat version line
+        else:
+            available_versions = _find_available_versions(pypi_project_data["releases"])
+            version = _find_compatible_version(compat, available_versions)
 
     return _get_versioned_pypi_package_data(package, version=version, session=session)
 
