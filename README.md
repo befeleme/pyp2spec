@@ -15,7 +15,7 @@ Its API may be a subject of change.
 Fedora spec file and stores it in the current directory alongside with
 the config file used to produce the spec file.
 
-Inside, there are two parts:
+Inside, there are two main parts:
 - *pyp2conf*: gathers of all the necessary information to produce a spec file and stores it in a configuration file
 - *conf2spec*: produces working spec file using all the information from configuration file
 
@@ -63,6 +63,11 @@ or those two commands which will together produce the same result as `pyp2spec`:
 ```
 pyp2conf <pypi_package_name>
 conf2spec <config_file>
+```
+
+pyp2spec is available in Fedora, install it with:
+```
+dnf install pyp2spec
 ```
 
 To see all available command-line options, run `--help` with the respective commands.
