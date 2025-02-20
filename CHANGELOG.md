@@ -4,6 +4,8 @@
 ### Added
 - Support for compat packages of various granularity (eg. '7', '7.2').
 Invoke with `--compat <compat-version-string>`
+- Support for pyproject declarative buildsystem, [rpm documentation](https://rpm-software-management.github.io/rpm/manual/buildsystem.html), [pyproject-rpm-macros documentation](https://src.fedoraproject.org/rpms/pyproject-rpm-macros)
+  - section 'Provisional: Declarative Buildsystem (RPM 4.20+)'.
 
 
 # [0.11.1] - 2024-11-21

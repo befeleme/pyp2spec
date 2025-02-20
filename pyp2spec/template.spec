@@ -12,6 +12,17 @@ Summary:        {{summary}}
 License:        {{license}}
 URL:            {{url}}
 Source:         {{source}}
+{% if declarative_buildsystem %}
+BuildSystem:    pyproject
+# Replace ... with top-level Python module names as arguments, you can use globs
+BuildOption(install): {% if mandate_license %} -l{% endif %} ...
+{% if extras -%}
+# Keep only those extras which you actually want to package or use during tests
+# If you don't want to package any of them, erase the whole line
+BuildOption(generate_buildrequires): -x {{extras}}
+{% endif -%}
+{% endif -%}
+
 {% if not archful %}
 BuildArch:      noarch
 {%- endif %}
@@ -42,6 +53,7 @@ Provides:       deprecated()
 %pyproject_extras_subpkg -n python{{python3_pkgversion}}-{{name}} {{extras}}
 {% endif %}
 
+{% if not declarative_buildsystem -%}
 %prep
 %autosetup -p1 -n {{archive_name}}-{{pypi_version}}
 
@@ -77,6 +89,7 @@ Provides:       deprecated()
 {%- endif %}
 
 
+{% endif -%}
 %files -n python{{python3_pkgversion}}-{{compat_name}} -f %{pyproject_files}
 
 

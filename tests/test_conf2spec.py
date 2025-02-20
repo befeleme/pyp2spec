@@ -42,20 +42,21 @@ def test_archful_flag_is_loaded(config_dir, conf, expected):
 
 
 @pytest.mark.parametrize(
-    "conf", [
-        "default_python-click.conf",  # default, noarch, no quirks
-        "customized_markdown-it-py.conf",  # automode on
-        "customized_python-sphinx.conf",  # contains extras
-        "default_python-numpy.conf",  # archful
-        "default_python3.9-pello.conf",  # custom Python version
-        "default_python-pytest7.2.conf",  # compat version
-        "default_python-pytest7.conf",  # compat version - lower granularity
-        "default_python-urllib3_2.conf",  # compat version - pkgname with a digit
+    ("conf", "db"), [
+        ("default_python-click.conf", False),  # default, noarch, no quirks
+        ("customized_markdown-it-py.conf", False),  # automode on
+        ("customized_python-sphinx.conf", False),  # contains extras
+        ("default_python-numpy.conf", False),  # archful
+        ("default_python3.9-pello.conf", False),  # custom Python version
+        ("default_python-pytest7.2.conf", False),  # compat version
+        ("default_python-pytest7.conf", False),  # compat version - lower granularity
+        ("default_python-urllib3_2.conf", False), # compat version - pkgname with a digit
+        ("default_python-pello.conf", True),  # declarative build system
     ]
 )
-def test_default_generated_specfile(file_regression, config_dir, conf):
+def test_default_generated_specfile(file_regression, config_dir, conf, db):
     # Run the conf2spec converter
-    rendered_file = conf2spec.create_spec_file(config_dir + conf)
+    rendered_file = conf2spec.create_spec_file(config_dir + conf, declarative_buildsystem=db)
 
     # Compare the results
     with open(rendered_file, "r", encoding="utf-8") as rendered_f:
