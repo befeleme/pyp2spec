@@ -48,6 +48,18 @@ The defaults:
 The generated spec files don't fulfill all the necessities of the official
 Fedora packages and hence cannot be submitted for review.
 
+### pyproject declarative buildsystem (experimental)
+
+pyp2spec can create spec files with a new feature of rpm >= 4.20 and pyproject
+RPM macros, called declarative buildsystem.
+Invoke it with the `--declarative-buildsystem` command-line option.
+It is inactive by default. It doesn't work combined with automode.
+
+For details, see [rpm documentation](https://rpm-software-management.github.io/rpm/manual/buildsystem.html)
+and [pyproject-rpm-macros documentation](https://src.fedoraproject.org/rpms/pyproject-rpm-macros)
+- look for the section 'Provisional: Declarative Buildsystem (RPM 4.20+)').
+
+
 ## How to run
 
 To run whatever this project offers at this point,
@@ -205,6 +217,54 @@ Summary:        %{summary}
 %autochangelog
 ```
 
+### Declarative buildsystem spec file (experimental)
+
+```
+Name:           python-aionotion
+Version:        2024.3.1
+Release:        %autorelease
+# Fill in the actual package summary to submit package to Fedora
+Summary:        A simple Python 3 library for Notion Home Monitoring
+
+# Check if the automatically generated License and its spelling is correct for Fedora
+# https://docs.fedoraproject.org/en-US/packaging-guidelines/LicensingGuidelines/
+License:        MIT
+URL:            ...
+Source:         %{pypi_source aionotion}
+
+BuildSystem:    pyproject
+# Replace ... with top-level Python module names as arguments, you can use globs
+BuildOption(install):  ...
+# Keep only those extras which you actually want to package or use during tests
+# If you don't want to package any of them, erase the whole line
+BuildOption(generate_buildrequires): -x build,lint,test
+
+BuildArch:      noarch
+BuildRequires:  python3-devel
+
+
+# Fill in the actual package description to submit package to Fedora
+%global _description %{expand:
+This is package 'aionotion' generated automatically by pyp2spec.}
+
+%description %_description
+
+%package -n     python3-aionotion
+Summary:        %{summary}
+
+%description -n python3-aionotion %_description
+
+# For official Fedora packages, review which extras should be actually packaged
+# See: https://docs.fedoraproject.org/en-US/packaging-guidelines/Python/#Extras
+%pyproject_extras_subpkg -n python3-aionotion build,lint,test
+
+
+%files -n python3-aionotion -f %{pyproject_files}
+
+
+%changelog
+%autochangelog
+```
 
 ## License
 

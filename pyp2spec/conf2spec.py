@@ -167,7 +167,7 @@ def pypi_version_or_macro(pypi_version: str) -> str:
     return pypi_version
 
 
-def fill_in_template(config: ConfigFile) -> str:
+def fill_in_template(config: ConfigFile, declarative_buildsystem: bool) -> str:
     """Return template rendered with data from config file."""
 
     with (files("pyp2spec") / TEMPLATE_FILENAME).open("r", encoding="utf-8") as f:
@@ -184,6 +184,7 @@ def fill_in_template(config: ConfigFile) -> str:
         automode=config.get_bool("automode"),
         compat=config.get_string("compat"),
         compat_name=create_compat_name(config.get_string("pypi_name"), config.get_string("compat")),
+        declarative_buildsystem=declarative_buildsystem,
         extras=",".join(config.get_list("extras")),
         license=license,
         license_notice=license_notice,
@@ -203,11 +204,11 @@ def fill_in_template(config: ConfigFile) -> str:
     return result
 
 
-def save_spec_file(config: ConfigFile, output: str | None) -> str:
+def save_spec_file(config: ConfigFile, output: str | None, declarative_buildsystem: bool) -> str:
     """Save the spec file in the current directory if custom output is not set.
     Return the saved file name."""
 
-    result = fill_in_template(config)
+    result = fill_in_template(config, declarative_buildsystem)
     if output is None:
         output = create_compat_name(config.get_string("python_name"), config.get_string("compat"))
         output += ".spec"
@@ -217,10 +218,10 @@ def save_spec_file(config: ConfigFile, output: str | None) -> str:
     return output
 
 
-def create_spec_file(config_file: str, spec_output: str | None=None) -> str | None:
+def create_spec_file(config_file: str, spec_output: str | None=None, declarative_buildsystem: bool=False) -> str | None:
     """Create and save the generate spec file."""
     config = ConfigFile(load_config_file(config_file))
-    return save_spec_file(config, spec_output)
+    return save_spec_file(config, spec_output, declarative_buildsystem)
 
 
 @click.command()
@@ -230,9 +231,13 @@ def create_spec_file(config_file: str, spec_output: str | None=None) -> str | No
     "-o",
     help="Provide custom output for spec file",
 )
-def main(config: str, spec_output: str) -> None:
+@click.option(
+    "--declarative-buildsystem", is_flag=True, default=False,
+    help="Create a spec file with pyproject declarative buildsystem (experimental)",
+)
+def main(config: str, spec_output: str, declarative_buildsystem: bool) -> None:
     try:
-        create_spec_file(config, spec_output)
+        create_spec_file(config, spec_output, declarative_buildsystem)
     except (Pyp2specError, NotImplementedError) as exc:
         warn(f"Fatal exception occurred: {exc}")
         sys.exit(1)
