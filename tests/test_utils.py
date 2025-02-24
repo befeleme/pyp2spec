@@ -4,6 +4,7 @@ from pyp2spec.utils import filter_license_classifiers, prepend_name_with_python
 from pyp2spec.utils import normalize_name, get_extras, is_archful
 from pyp2spec.utils import normalize_as_wheel_name, archive_name
 from pyp2spec.utils import resolve_url, SdistNotFoundError, MissingPackageNameError
+from pyp2spec.utils import create_compat_name
 
 
 def test_license_classifier_read_correctly():
@@ -178,3 +179,15 @@ def test_project_urls_valid_multiple():
 
 def test_project_urls_empty():
     assert resolve_url({}) == "..."
+
+
+@pytest.mark.parametrize(
+    ("name", "compat", "expected"), [
+        ("my-package-foo", None, "my-package-foo"),
+        ("my-package-foo", "3.5", "my-package-foo3.5"),
+        ("my-package-foo2", None, "my-package-foo2"),
+        ("my-package-foo2", "3.5", "my-package-foo2_3.5"),
+    ]
+)
+def test_create_compat_name(name, compat, expected):
+    assert create_compat_name(name, compat) == expected

@@ -11,7 +11,7 @@ from requests import Session
 from pyp2spec.license_processor import check_compliance, resolve_license_expression
 from pyp2spec.utils import Pyp2specError, normalize_name, get_extras, get_summary_or_placeholder
 from pyp2spec.utils import prepend_name_with_python, archive_name
-from pyp2spec.utils import is_archful, resolve_url
+from pyp2spec.utils import is_archful, resolve_url, create_compat_name
 from pyp2spec.utils import warn, caution, inform, yay
 from pyp2spec.pypi_loaders import load_from_pypi, load_core_metadata_from_pypi, CoreMetadataNotFoundError
 
@@ -159,10 +159,8 @@ def save_config(contents: dict, output: str | None = None) -> str:
     Return the saved file name.
     """
     if not output:
-        package = contents["python_name"]
-        if compat := contents.get("compat"):
-            package += compat
-        output = f"{package}.conf"
+        package_name = create_compat_name(contents.get("python_name"), contents.get("compat"))
+        output = f"{package_name}.conf"
     with open(output, "wb") as f:
         tomli_w.dump(contents, f, multiline_strings=True)
     yay(f"Configuration file was saved successfully to '{output}'")
