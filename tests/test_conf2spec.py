@@ -56,7 +56,7 @@ def test_archful_flag_is_loaded(config_dir, conf, expected):
 )
 def test_default_generated_specfile(file_regression, config_dir, conf, db):
     # Run the conf2spec converter
-    rendered_file = conf2spec.create_spec_file(config_dir + conf, declarative_buildsystem=db)
+    rendered_file = conf2spec.create_spec_file(config_dir + conf, {"declarative_buildsystem": db})
 
     # Compare the results
     with open(rendered_file, "r", encoding="utf-8") as rendered_f:

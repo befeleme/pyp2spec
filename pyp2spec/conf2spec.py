@@ -204,11 +204,13 @@ def fill_in_template(config: ConfigFile, declarative_buildsystem: bool) -> str:
     return result
 
 
-def save_spec_file(config: ConfigFile, output: str | None, declarative_buildsystem: bool) -> str:
+def save_spec_file(config: ConfigFile, options: dict[str, Any]) -> str:
     """Save the spec file in the current directory if custom output is not set.
     Return the saved file name."""
 
+    declarative_buildsystem = options.get("declarative_buildsystem", False)
     result = fill_in_template(config, declarative_buildsystem)
+    output = options.get("spec_output")
     if output is None:
         output = create_compat_name(config.get_string("python_name"), config.get_string("compat"))
         output += ".spec"
@@ -218,10 +220,10 @@ def save_spec_file(config: ConfigFile, output: str | None, declarative_buildsyst
     return output
 
 
-def create_spec_file(config_file: str, spec_output: str | None=None, declarative_buildsystem: bool=False) -> str | None:
+def create_spec_file(config_file: str, options: dict[str, Any]) -> str | None:
     """Create and save the generate spec file."""
     config = ConfigFile(load_config_file(config_file))
-    return save_spec_file(config, spec_output, declarative_buildsystem)
+    return save_spec_file(config, options)
 
 
 @click.command()
@@ -235,9 +237,9 @@ def create_spec_file(config_file: str, spec_output: str | None=None, declarative
     "--declarative-buildsystem", is_flag=True, default=False,
     help="Create a spec file with pyproject declarative buildsystem (experimental)",
 )
-def main(config: str, spec_output: str, declarative_buildsystem: bool) -> None:
+def main(config: str, **options: dict[str, Any]) -> None:
     try:
-        create_spec_file(config, spec_output, declarative_buildsystem)
+        create_spec_file(config, options)
     except (Pyp2specError, NotImplementedError) as exc:
         warn(f"Fatal exception occurred: {exc}")
         sys.exit(1)

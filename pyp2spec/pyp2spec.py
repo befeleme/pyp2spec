@@ -23,7 +23,7 @@ def main(**options):  # noqa
         if options["automode"] and options["declarative_buildsystem"]:
             raise Pyp2specError("Declarative buildsystem doesn't work with automode")
         config_file = create_config(options)
-        create_spec_file(config_file, options["spec_output"], options["declarative_buildsystem"])
+        create_spec_file(config_file, options)
     except (Pyp2specError, NotImplementedError) as exc:
         warn(f"Fatal exception occurred: {exc}")
         sys.exit(1)
