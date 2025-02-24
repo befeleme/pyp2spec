@@ -15,7 +15,7 @@ except ImportError:
 from jinja2 import Template
 
 from pyp2spec.rpmversion import RpmVersion
-from pyp2spec.utils import Pyp2specError
+from pyp2spec.utils import Pyp2specError, create_compat_name
 from pyp2spec.utils import warn, yay
 
 
@@ -183,12 +183,13 @@ def fill_in_template(config: ConfigFile) -> str:
         archive_name=archive_basename(config, pypi_version),
         automode=config.get_bool("automode"),
         compat=config.get_string("compat"),
+        compat_name=create_compat_name(config.get_string("pypi_name"), config.get_string("compat")),
         extras=",".join(config.get_list("extras")),
         license=license,
         license_notice=license_notice,
         mandate_license=config.get_bool("license_files_present"),
         name=config.get_string("pypi_name"),
-        python_name=config.get_string("python_name"),
+        python_compat_name=create_compat_name(config.get_string("python_name"), config.get_string("compat")),
         pypi_version=pypi_version_or_macro(pypi_version),
         python_alt_version=config.get_string("python_alt_version"),
         source=source(config, pypi_version),
@@ -208,9 +209,7 @@ def save_spec_file(config: ConfigFile, output: str | None) -> str:
 
     result = fill_in_template(config)
     if output is None:
-        output = config.get_string("python_name")
-        if compat := config.get_string("compat"):
-            output += compat
+        output = create_compat_name(config.get_string("python_name"), config.get_string("compat"))
         output += ".spec"
     with open(output, "w", encoding="utf-8") as spec_file:
         spec_file.write(result)

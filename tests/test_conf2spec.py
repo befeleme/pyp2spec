@@ -50,6 +50,7 @@ def test_archful_flag_is_loaded(config_dir, conf, expected):
         "default_python3.9-pello.conf",  # custom Python version
         "default_python-pytest7.2.conf",  # compat version
         "default_python-pytest7.conf",  # compat version - lower granularity
+        "default_python-urllib3_2.conf",  # compat version - pkgname with a digit
     ]
 )
 def test_default_generated_specfile(file_regression, config_dir, conf):

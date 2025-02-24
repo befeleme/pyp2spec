@@ -190,3 +190,11 @@ def resolve_url(urls: dict) -> str:
         if values_list := list(normalized_urls.values()):
             return values_list[0]
         return "..."
+
+
+def create_compat_name(name: str, compat: str | None) -> str:
+    if not compat:
+        return name
+    if name[-1].isdigit():
+        return f"{name}_{compat}"
+    return f"{name}{compat}"
