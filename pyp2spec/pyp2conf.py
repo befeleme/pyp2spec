@@ -53,7 +53,7 @@ def prepare_package_info(data: RawMetadata | dict) -> PackageInfo:
         pypi_version=data.get("version", ""),
         summary=get_summary_or_placeholder(data.get("summary", "")),
         url=resolve_url(project_urls),
-        extras=get_extras(data.get("requires_dist", [])),
+        extras=get_extras(data.get("provides_extra", []), data.get("requires_dist", [])),
         license_files_present=bool(data.get("license_files")),
         license=resolve_license_expression(data)
     )

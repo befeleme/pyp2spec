@@ -99,17 +99,22 @@ def get_summary_or_placeholder(summary: str) -> str:
     return summary
 
 
-def get_extras(requires_dist: list) -> list:
+def get_extras(provides_extra: list, requires_dist: list) -> list:
     """Return the sorted list of the found extras names.
 
     Packages define extras explicitly via `Provides-Extra` and
     indirectly via `Requires-Dist` metadata.
-    PyPI metadata doesn't provide the first one, but it is possible to
-    derive extras names from the `requires_dist` key.
+    Try to read them from `provides_extra` first.
+    PyPI metadata doesn't publish `provides_extra` for the older releases,
+    but it is possible to derive extras names from the `requires_dist` key.
     Example value of `requires_dist`:
     ["sphinxcontrib-websupport ; extra == 'docs'", "flake8>=3.5.0 ; extra == 'lint'"]
-    If package defines an extra with no requirements, we can't detect that.
+    If a package defines an extra with no requirements,
+    we can't detect that from requires_dist.
     """
+    if provides_extra:
+        return sorted(provides_extra)
+
     extra_from_req = re.compile(r'''\bextra\s+==\s+["']([^"']+)["']''')
     extras = set()
     if requires_dist:
