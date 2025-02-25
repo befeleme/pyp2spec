@@ -99,20 +99,19 @@ def create_package_from_source(
 
 
 def create_config_contents(
-    package: str,
-    version: str | None = None,
-    session: Session | None = None,
-    compliant: bool = False,
-    python_alt_version: str | None = None,
-    automode: bool = False,
-    compat: str | None = None,
+    options: dict[str, Any],
+    session: Session | None = None
 ) -> dict:
-    """Use `package` and provided kwargs to create the whole config contents.
+    """Use `package` and provided options to create the whole config contents.
     Return pkg_info dictionary.
     """
 
+    package = options.get("package")
+    version = options.get("version")
+    compat = options.get("compat")
     pkg_info = create_package_from_source(package, version, compat, session)
 
+    python_alt_version = options.get("python_alt_version")
     pkg_info.python_name = prepend_name_with_python(pkg_info.pypi_name, python_alt_version)
 
     if compat is not None:
@@ -128,7 +127,7 @@ def create_config_contents(
     if pkg_info.license is None:
         warn("WARNING: No valid license found. Inspect the project manually to find the license")
     else:
-        if compliant:
+        if options.get("fedora_compliant"):
             is_compliant, results = check_compliance(pkg_info.license, session=session)
             if not is_compliant:
                 warn(f"The license '{pkg_info.license}' is not compliant with Fedora")
@@ -144,7 +143,7 @@ def create_config_contents(
         inform(f"Assuming build for Python: {python_alt_version}")
         pkg_info.python_alt_version = python_alt_version
 
-    if automode:
+    if options.get("automode"):
         pkg_info.automode = True
 
     pkg_dict = asdict(pkg_info)
@@ -170,14 +169,7 @@ def save_config(contents: dict, output: str | None = None) -> str:
 def create_config(options: dict) -> str:
     """Create and save config file."""
 
-    contents = create_config_contents(
-        options["package"],
-        version=options["version"],
-        compliant=options["fedora_compliant"],
-        python_alt_version=options["python_alt_version"],
-        automode=options["automode"],
-        compat=options["compat"]
-    )
+    contents = create_config_contents(options)
     return save_config(contents, options["config_output"])
 
 

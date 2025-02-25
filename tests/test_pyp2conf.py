@@ -16,7 +16,7 @@ from pyp2spec.pypi_loaders import PackageNotFoundError
 def test_non_existent_package(betamax_session):
     with pytest.raises(PackageNotFoundError):
         create_config_contents(
-            package="definitely-nonexisting-package-name",
+            {"package": "definitely-nonexisting-package-name"},
             session=betamax_session)
 
 
@@ -29,8 +29,8 @@ def test_non_existent_package(betamax_session):
 def test_automatically_generated_config_is_valid(betamax_parametrized_session, package, version):
     """Run the config rendering in fully automated mode and compare the results"""
     config = create_config_contents(
-        package=package,
-        version=version,
+        {"package": package,
+        "version": version},
         session=betamax_parametrized_session,
     )
 
@@ -50,9 +50,9 @@ def test_automatically_generated_config_with_alt_python_is_valid(
     ):
     """Run the config rendering in fully automated mode and compare the results"""
     config = create_config_contents(
-        package=package,
-        version=version,
-        python_alt_version=alt_python,
+        {"package": package,
+        "version": version,
+        "python_alt_version": alt_python},
         session=betamax_parametrized_session,
     )
 
@@ -72,9 +72,9 @@ def test_automatically_generated_compat_config_is_valid(
         betamax_parametrized_session, package, compat, version
     ):
     config = create_config_contents(
-        package=package,
-        version=version,
-        compat=compat,
+        {"package": package,
+        "version": version,
+        "compat": compat},
         session=betamax_parametrized_session,
     )
 
@@ -89,16 +89,15 @@ def test_config_with_customization_is_valid(betamax_session):
     This also tests the compliance with Fedora Legal data by making
     a request to the remote resource.
     """
-    package = "aionotion"
     config = create_config_contents(
-        package=package,
-        version="2.0.3",
-        automode=True,
-        compliant=True,
+        {"package": "aionotion",
+        "version": "2.0.3",
+        "automode": True,
+        "compliant": True},
         session=betamax_session,
     )
 
-    with open(f"tests/test_configs/customized_{package}.conf", "rb") as config_file:
+    with open(f"tests/test_configs/customized_aionotion.conf", "rb") as config_file:
         loaded_contents = tomllib.load(config_file)
 
     assert config == loaded_contents
@@ -106,15 +105,14 @@ def test_config_with_customization_is_valid(betamax_session):
 
 def test_archful_package(betamax_session):
     """Generate config for numpy which is archful"""
-    package = "numpy"
     config = create_config_contents(
-        package=package,
-        version="1.25.2",
-        automode=True,
+        {"package": "numpy",
+        "version": "1.25.2",
+        "automode": True},
         session=betamax_session,
     )
 
-    with open(f"tests/test_configs/default_python-{package}.conf", "rb") as config_file:
+    with open(f"tests/test_configs/default_python-numpy.conf", "rb") as config_file:
         loaded_contents = tomllib.load(config_file)
 
     assert config["archful"] == loaded_contents["archful"]
@@ -122,13 +120,12 @@ def test_archful_package(betamax_session):
 
 
 def test_package_with_extras(betamax_session):
-    package = "sphinx"
     config = create_config_contents(
-        package=package,
+        {"package": "sphinx"},
         session=betamax_session,
     )
 
-    with open(f"tests/test_configs/customized_python-{package}.conf", "rb") as config_file:
+    with open(f"tests/test_configs/customized_python-sphinx.conf", "rb") as config_file:
         loaded_contents = tomllib.load(config_file)
 
     assert config["extras"] == loaded_contents["extras"]
