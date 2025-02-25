@@ -37,7 +37,7 @@ def test_python_name(pypi_name, alt_version, expected):
     assert prepend_name_with_python(normalize_name(pypi_name), alt_version) == expected
 
 
-def test_extras_detected_correctly():
+def test_extras_detected_correctly_from_requires_dist():
     requires_dist = [
         "foo ; platform_system == 'Windows'",
         "bar ; python_version < '3.8'",
@@ -49,7 +49,29 @@ def test_extras_detected_correctly():
         "eggs>=2.12; implementation_name != 'pypy' and extra == 'dev'",
     ]
 
-    assert get_extras(requires_dist) == ["dev", "docs", "lint", "test"]
+    assert get_extras([], requires_dist) == ["dev", "docs", "lint", "test"]
+
+
+def test_extras_detected_correctly_from_provides_extra():
+    provides_extra = ['docs', 'lint', 'dev', 'foo']
+    requires_dist = [
+        "foo ; platform_system == 'Windows'",
+        "bar ; python_version < '3.8'",
+        "baz",
+        "foobar ; extra == 'docs'",
+        "foobaz>=5.3.1",
+        "spam>=3.5.0 ; extra == 'lint'",
+        "ham[eggs]>=0.10; extra == 'test'",
+        "eggs>=2.12; implementation_name != 'pypy' and extra == 'dev'",
+    ]
+    assert get_extras(provides_extra, requires_dist) == ["dev", "docs", "foo", "lint"]
+
+
+def test_extras_detected_correctly_from_provides_extra_no_requires():
+    provides_extra = ['docs', 'lint', 'dev', 'foo']
+    # this is improbable, but let's be sure we read from the provides_extra without issues
+    requires_dist = []
+    assert get_extras(provides_extra, requires_dist) == ["dev", "docs", "foo", "lint"]
 
 
 @pytest.mark.parametrize(
