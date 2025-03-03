@@ -1,6 +1,6 @@
 # Changelog
 
-# Unreleased
+# [0.12.0] - 2025-03-03
 ### Added
 - Support for compat packages of various granularity (eg. '7', '7.2').
 Invoke with `--compat <compat-version-string>`
@@ -9,6 +9,7 @@ Invoke with `--compat <compat-version-string>`
 
 ### Changed
 - Package extras are now primarily read from `provides_extra`, only after that's empty from `requires_dist`
+- Updated the list of Trove License Classifiers
 
 
 # [0.11.1] - 2024-11-21

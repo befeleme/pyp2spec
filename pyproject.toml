@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyp2spec"
-version = "0.11.1"
+version = "0.12.0"
 description = "Generate a valid Fedora specfile from Python package from PyPI"
 readme = { file = "README.md", content-type = "text/markdown" }
 authors = [
