@@ -10,7 +10,8 @@ readme = { file = "README.md", content-type = "text/markdown" }
 authors = [
     { name = "Karolina Surma", email = "ksurma@redhat.com" }
 ]
-license = { text = "MIT AND MIT-0" }
+license = "MIT AND MIT-0"
+license-files = ["LICENSE-MIT*"]
 requires-python = ">=3.9"
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -21,8 +22,6 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
     "Operating System :: POSIX :: Linux",
-    "License :: OSI Approved :: MIT License",
-    "License :: OSI Approved :: MIT No Attribution License (MIT-0)",
     "Development Status :: 3 - Alpha"
 ]
 
