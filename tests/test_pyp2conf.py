@@ -277,6 +277,86 @@ def test_prepare_package_info_missing_keys():
     assert result.url == "..."
 
 
+def test_prepare_package_info_only_package_url():
+    data = {
+        "name": "foo",
+        "package_url": "https://example.com",
+    }
+    result = prepare_package_info(data)
+    assert result.pypi_name == "foo"
+    assert result.summary == "..."
+    assert result.license_files_present is False
+    assert result.license is None
+    assert result.extras == []
+    assert result.pypi_version == ""
+    assert result.url == "https://example.com"
+
+
+def test_prepare_package_info_only_project_url():
+    data = {
+        "name": "foo",
+        "project_url": "https://example.com",
+    }
+    result = prepare_package_info(data)
+    assert result.pypi_name == "foo"
+    assert result.summary == "..."
+    assert result.license_files_present is False
+    assert result.license is None
+    assert result.extras == []
+    assert result.pypi_version == ""
+    assert result.url == "https://example.com"
+
+
+def test_prepare_package_info_project_urls_precedance():
+    data = {
+        "name": "foo",
+        "project_url": "https://example1.com",
+        "package_url": "https://example2.com",
+        "project_urls": {"Homepage": "https://example3.com"},
+    }
+    result = prepare_package_info(data)
+    assert result.pypi_name == "foo"
+    assert result.summary == "..."
+    assert result.license_files_present is False
+    assert result.license is None
+    assert result.extras == []
+    assert result.pypi_version == ""
+    assert result.url == "https://example3.com"
+
+
+def test_prepare_package_info_home_page_precedance():
+    data = {
+        "name": "foo",
+        "project_url": "https://example1.com",
+        "package_url": "https://example2.com",
+        "home_page": "https://example3.com",
+    }
+    result = prepare_package_info(data)
+    assert result.pypi_name == "foo"
+    assert result.summary == "..."
+    assert result.license_files_present is False
+    assert result.license is None
+    assert result.extras == []
+    assert result.pypi_version == ""
+    assert result.url == "https://example3.com"
+
+
+def test_prepare_package_info_project_url_precedance():
+    data = {
+        "name": "foo",
+        "project_url": "https://example1.com",
+        "package_url": "https://example2.com",
+    }
+    result = prepare_package_info(data)
+    assert result.pypi_name == "foo"
+    assert result.summary == "..."
+    assert result.license_files_present is False
+    assert result.license is None
+    assert result.extras == []
+    assert result.pypi_version == ""
+    assert result.url == "https://example1.com"
+
+
 def test_gather_package_info_pypi_source():
     pypi = {"info": {
         "name": "example",

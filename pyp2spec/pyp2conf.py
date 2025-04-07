@@ -48,6 +48,10 @@ def prepare_package_info(data: RawMetadata | dict) -> PackageInfo:
     if not (project_urls := data.get("project_urls", {})):
         if (homepage := data.get("home_page", "")):
             project_urls["home_page"] = homepage
+        if (not homepage and (homepage := data.get("project_url", ""))):
+            project_urls["home_page"] = homepage
+        if (not homepage and (homepage := data.get("package_url", ""))):
+            project_urls["home_page"] = homepage
     return PackageInfo(
         pypi_name=normalize_name(data.get("name", "")),
         pypi_version=data.get("version", ""),
