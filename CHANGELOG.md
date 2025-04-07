@@ -1,5 +1,10 @@
 # Changelog
 
+# [0.12.1] - 2025-04-07
+### Fixed
+- If no `project_urls` are present in the package data, try `project_url` and
+fall back to `package_url`
+
 # [0.12.0] - 2025-03-03
 ### Added
 - Support for compat packages of various granularity (eg. '7', '7.2').
