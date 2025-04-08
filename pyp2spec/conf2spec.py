@@ -121,7 +121,9 @@ def archive_basename(config: ConfigFile, pypi_version: str) -> str:
     # First, strip the suffix
     for suffix in (".tar.gz", ".zip"):
         filename = filename.removesuffix(suffix)
-    # Second, get rid of the version string and the delimiter "-"
+    # Second, split paths and keep only the last part of it
+    filename = filename.split("/")[-1]
+    # Last, get rid of the version string and the delimiter "-"
     return filename.replace("-" + pypi_version, "")
 
 
@@ -134,7 +136,7 @@ def is_zip(config: ConfigFile) -> bool:
     return config.get_string("archive_name").endswith(".zip")
 
 
-def source(config: ConfigFile, pypi_version: str) -> str:
+def source(config: ConfigFile) -> str:
     """Return valid pypi_source RPM macro.
 
     %pypi_source takes three optional arguments:
@@ -146,7 +148,9 @@ def source(config: ConfigFile, pypi_version: str) -> str:
     If archive is a zip file, %{pypi_source} must take all three args:
     "%{pypi_source foo %{version} zip}", "{pypi_source foo 1.2-3 zip}"
     """
-    if config.get_string("source") == "PyPI":
+    detected_source = config.get_string("source")
+    if detected_source == "PyPI":
+        pypi_version = config.get_string("pypi_version")
         version_str = pypi_version_or_macro(pypi_version)
         basename = archive_basename(config, pypi_version)
         source_macro_args = basename
@@ -157,8 +161,10 @@ def source(config: ConfigFile, pypi_version: str) -> str:
             if version_str == pypi_version:
                 source_macro_args += f" {version_str}"
         return "%{pypi_source " + source_macro_args + "}"
+    elif detected_source == "local":
+        return config.get_string("archive_name")
     else:
-        raise NotImplementedError("pyp2spec can only construct %pypi_source macros")
+        raise NotImplementedError("pyp2spec can deal with `PyPI` and `local` sources")
 
 
 def pypi_version_or_macro(pypi_version: str) -> str:
@@ -193,7 +199,7 @@ def fill_in_template(config: ConfigFile, declarative_buildsystem: bool) -> str:
         python_compat_name=create_compat_name(config.get_string("python_name"), config.get_string("compat")),
         pypi_version=pypi_version_or_macro(pypi_version),
         python_alt_version=config.get_string("python_alt_version"),
-        source=source(config, pypi_version),
+        source=source(config),
         summary=config.get_string("summary"),
         test_top_level=config.get_bool("test_top_level"),
         python3_pkgversion=python3_pkgversion_or_3(config),

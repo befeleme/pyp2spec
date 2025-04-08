@@ -1,5 +1,9 @@
 # Changelog
 
+# [Unreleased]
+### Added
+- Support for generating spec files from a local path
+
 # [0.12.2] - 2025-04-15
 ### Fixed
 - Also avoid crashing when you get a specifically None `project_urls` from the json

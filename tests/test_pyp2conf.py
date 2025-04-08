@@ -9,7 +9,8 @@ try:
 except ImportError:
     import tomli as tomllib
 
-from pyp2spec.pyp2conf import create_config_contents, prepare_package_info, check_compliance, gather_package_info
+from pyp2spec.pyp2conf import create_config_contents, prepare_package_info, check_compliance
+from pyp2spec.pyp2conf import gather_package_info, create_package_from_pypi, create_package_from_dir
 from pyp2spec.pypi_loaders import PackageNotFoundError
 
 
@@ -100,6 +101,21 @@ def test_config_with_customization_is_valid(betamax_session):
     with open(f"tests/test_configs/customized_aionotion.conf", "rb") as config_file:
         loaded_contents = tomllib.load(config_file)
 
+    assert config == loaded_contents
+
+
+def test_config_from_local_path_is_valid():
+    """Get the metadata from locally stored wheel and sdist
+    """
+    config = create_config_contents(
+        {"package": "local_test",
+        "path": "tests/local"},
+    )
+
+    with open(f"tests/test_configs/default_python-local-test.conf", "rb") as config_file:
+        loaded_contents = tomllib.load(config_file)
+    # Replace the detected value, we don't want to compare the real one
+    config["archive_name"] = "..."
     assert config == loaded_contents
 
 
@@ -307,7 +323,7 @@ def test_prepare_package_info_only_project_url():
     assert result.url == "https://example.com"
 
 
-def test_prepare_package_info_project_urls_precedance():
+def test_prepare_package_info_project_urls_precedence():
     data = {
         "name": "foo",
         "project_url": "https://example1.com",
@@ -324,7 +340,7 @@ def test_prepare_package_info_project_urls_precedance():
     assert result.url == "https://example3.com"
 
 
-def test_prepare_package_info_home_page_precedance():
+def test_prepare_package_info_home_page_precedence():
     data = {
         "name": "foo",
         "project_url": "https://example1.com",
@@ -341,7 +357,7 @@ def test_prepare_package_info_home_page_precedance():
     assert result.url == "https://example3.com"
 
 
-def test_prepare_package_info_project_url_precedance():
+def test_prepare_package_info_project_url_precedence():
     data = {
         "name": "foo",
         "project_url": "https://example1.com",
@@ -357,7 +373,7 @@ def test_prepare_package_info_project_url_precedance():
     assert result.url == "https://example1.com"
 
 
-def test_prepare_package_info_project_url_precedance_with_nulls():
+def test_prepare_package_info_project_url_precedence_with_nulls():
     data = {
         "name": "foo",
         "project_urls": None,
@@ -397,8 +413,6 @@ def test_gather_package_info_pypi_source():
             "filename": "example-0.2-py2.py3-none-any.whl"
         }]}
     result = gather_package_info(None, pypi)
-    assert result.archive_name == "example-0.2-tar.gz"
-    assert result.archful is False
 
 
 def test_gather_package_info_core_metadata():
@@ -441,5 +455,51 @@ def test_gather_package_info_core_metadata():
     assert result.extras == []
     assert result.pypi_version == "1.0.0"
     assert result.url == "https://example.com"
+
+
+def test_create_package_from_pypi():
+    data = {
+        "name": "example",
+        "summary": "A sample project",
+        "license_expression": "MIT",
+        "license": "MIT License",
+        "classifiers": ["License :: OSI Approved :: MIT License"],
+        "requires_dist": ["requests"],
+        "version": "1.0.0",
+        "license_files": ["LICENSE"],
+        "home_page": "https://example.com",
+        "metadata_version": "2.1",
+    }
+    pypi = {"info": {
+        "name": "discarded",
+        "summary": "Deliberately different metadata",
+        "license_expression": "BSD",
+        "license": "BSD",
+        "classifiers": ["License :: OSI Approved :: BSD License"],
+        "requires_dist": ["click"],
+        "version": "7.0.0",
+        "license_files": ["LICENSE.txt"],
+        "project_urls": {"Source": "https://example.com"},
+        "yanked": False,
+        "maintainer": "John Doe",
+        }, "releases": [],
+        "urls": [{
+            "packagetype": "sdist",
+            "filename": "example-7.0-tar.gz"
+        }, {"packagetype": "bdist_wheel",
+            "filename": "example-7.0-cp34-abi3-manylinux1_x86_64.whl"
+        }]}
+    result = create_package_from_pypi(data, pypi)
     assert result.archive_name == "example-7.0-tar.gz"
     assert result.archful is True
+    assert result.source == "PyPI"
+
+
+def test_create_package_from_dir():
+    pkg = create_package_from_dir("local_test", "tests/local/")
+    assert pkg.pypi_name == "local-test"
+    assert pkg.pypi_version == "0.12.2"
+    assert pkg.source == "local"
+    assert pkg.archful is False
+    assert pkg.archive_name.split("/")[-1] == "local_test-0.12.2.tar.gz"
+    assert pkg.license == "MIT AND MIT-0"
