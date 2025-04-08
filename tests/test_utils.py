@@ -1,7 +1,7 @@
 import pytest
 
 from pyp2spec.utils import filter_license_classifiers, prepend_name_with_python
-from pyp2spec.utils import normalize_name, get_extras, is_archful
+from pyp2spec.utils import normalize_name, get_extras, contains_wheel_with_abi_tag
 from pyp2spec.utils import normalize_as_wheel_name, archive_name
 from pyp2spec.utils import resolve_url, SdistNotFoundError, MissingPackageNameError
 from pyp2spec.utils import create_compat_name
@@ -89,7 +89,7 @@ def test_archfulness_is_detected(wheel_name, archful):
             "filename": wheel_name,
         },
     ]
-    assert is_archful(urls) is archful
+    assert contains_wheel_with_abi_tag(urls) is archful
 
 
 def test_archfulness_is_detected_from_multiple_urls_1():
@@ -103,7 +103,7 @@ def test_archfulness_is_detected_from_multiple_urls_1():
             "filename": "sampleproject-3.0.0-py3-none-any.whl",
         },
     ]
-    assert not is_archful(urls)
+    assert not contains_wheel_with_abi_tag(urls)
 
 
 def test_archfulness_is_detected_from_multiple_urls_2():
@@ -117,7 +117,7 @@ def test_archfulness_is_detected_from_multiple_urls_2():
             "filename": "sampleproject-3.0.0-cp312-abi3-manylinux1_x86_64.whl",
         },
     ]
-    assert is_archful(urls)
+    assert contains_wheel_with_abi_tag(urls)
 
 
 
@@ -136,7 +136,7 @@ def test_archfulness_is_detected_from_multiple_urls_3():
             "filename": "sampleproject-3.0.0-py3-none-any.whl",
         },
     ]
-    assert is_archful(urls)
+    assert contains_wheel_with_abi_tag(urls)
 
 
 @pytest.mark.parametrize(

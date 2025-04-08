@@ -11,9 +11,9 @@ Its API may be a subject of change.
 
 ## What it does
 
-`pyp2spec` gathers all the necessary information from PyPI to produce a valid
-Fedora spec file and stores it in the current directory alongside with
-the config file used to produce the spec file.
+`pyp2spec` gathers all the necessary information from PyPI or a local Python
+distribution to produce a valid Fedora spec file and stores it in the current
+directory alongside with the config file used to produce the spec file.
 
 Inside, there are two main parts:
 - *pyp2conf*: gathers of all the necessary information to produce a spec file and stores it in a configuration file
@@ -30,6 +30,20 @@ in the fields that couldn't be determined automatically which are left for
 the packager to fill in.
 The generated spec contains comments helping to locate the missing pieces.
 This is the default mode of pyp2spec.
+
+#### Data source: PyPI
+
+The default source for getting data from is PyPI.
+When invoked via `pyp2spec <pkgname>`, all of the data
+to generate a spec file will be obtained from PyPI APIs.
+
+#### Data source: Locally built distribution
+
+When invoked with `pyp2spec <pkgname> --path dist/`, with `--path` option set
+to a directory with built Python artifacts, all of the data to generate a spec file
+will be obtained from the wheel and sdist.
+pyp2spec requires at least a built **wheel** (`.whl` file) to read the metadata from.
+**sdist** is only used as a reference to a source file, but it's not mandatory.
 
 ### Automode
 
@@ -69,11 +83,13 @@ pip install pyp2spec
 ```
 Then you can run:
 ```
-pyp2spec <pypi_package_name>
+pyp2spec <package_name>  # from PyPI package
+# or
+pyp2spec <package_name> --path /tmp/dist  # from locally built Python artifacts
 ```
 or those two commands which will together produce the same result as `pyp2spec`:
 ```
-pyp2conf <pypi_package_name>
+pyp2conf <package_name>
 conf2spec <config_file>
 ```
 
@@ -94,12 +110,12 @@ python -m pip install -r requirements.txt
 
 To run the script and generate both the config and spec file, type:
 ```
-python -m pyp2spec.pyp2spec <pypi_package_name>
+python -m pyp2spec.pyp2spec <package_name>
 ```
 
 You can run either of the tools separately to generate partial results:
 ```
-python -m pyp2spec.pyp2conf <pypi_package_name>
+python -m pyp2spec.pyp2conf <package_name>
 python -m pyp2spec.conf2spec <config_file>
 ```
 

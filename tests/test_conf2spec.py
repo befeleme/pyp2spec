@@ -52,6 +52,7 @@ def test_archful_flag_is_loaded(config_dir, conf, expected):
         ("default_python-pytest7.conf", False),  # compat version - lower granularity
         ("default_python-urllib3_2.conf", False), # compat version - pkgname with a digit
         ("default_python-pello.conf", True),  # declarative build system
+        ("default_python-local-test.conf", False),  # local build; no sdist name
     ]
 )
 def test_default_generated_specfile(file_regression, config_dir, conf, db):
@@ -142,10 +143,23 @@ def test_license_strings():
         ("0.0.2-beta1", "zip", "%{pypi_source foo 0.0.2-beta1 zip}"),
     ]
 )
-def test_source(version, extension, expected):
-    fake_config_data = {"pypi_name": "foo", "archive_name": f"foo-{version}.{extension}", "source": "PyPI"}
+def test_source_pypi(version, extension, expected):
+    fake_config_data = {"pypi_name": "foo", "archive_name": f"foo-{version}.{extension}", "pypi_version": version, "source": "PyPI"}
     fake_config = conf2spec.ConfigFile(fake_config_data)
-    assert conf2spec.source(fake_config, version) == expected
+    assert conf2spec.source(fake_config) == expected
+
+
+@pytest.mark.parametrize(
+    ("archive_name", "expected"), [
+        ("foo-1.2.tar.gz", "foo-1.2.tar.gz"),
+        ("/tmp/test/foo-1.2.tar.gz", "/tmp/test/foo-1.2.tar.gz"),
+        ("...", "..."),
+    ]
+)
+def test_source_local(archive_name, expected):
+    fake_config_data = {"pypi_name": "foo", "archive_name": archive_name, "source": "local"}
+    fake_config = conf2spec.ConfigFile(fake_config_data)
+    assert conf2spec.source(fake_config) == expected
 
 
 @pytest.mark.parametrize(

@@ -4,19 +4,15 @@ This module takes care of loading all sorts of data from PyPI APIs.
 from __future__ import annotations
 from typing import Any
 
-from packaging.metadata import parse_email, RawMetadata
 from packaging.version import Version
+from packaging.metadata import RawMetadata
 from requests import Response, Session
 
-from pyp2spec.utils import Pyp2specError
+from pyp2spec.utils import Pyp2specError, CoreMetadataNotFoundError, parse_core_metadata
 
 
 class PackageNotFoundError(Pyp2specError):
     """Raised when there's no such package name on PyPI"""
-
-
-class CoreMetadataNotFoundError(Pyp2specError):
-    """Raised when there's no Metadata file available on PyPI API"""
 
 
 class CompatibleVersionNotFoundError(Pyp2specError):
@@ -96,6 +92,4 @@ def load_from_pypi(
 
 def load_core_metadata_from_pypi(pypi_pkg_data: dict[Any, Any], session: Session | None = None) -> RawMetadata:
     metadata = _get_metadata_file(pypi_pkg_data, session=session)
-    raw, _ = parse_email(metadata)
-    # TODO: consider porting to packaging.Metadata instance?
-    return raw
+    return parse_core_metadata(metadata)

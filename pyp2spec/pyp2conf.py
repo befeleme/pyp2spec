@@ -1,6 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass, asdict, field
 from functools import wraps
+from typing import Any
 import sys
 
 import click
@@ -11,9 +12,10 @@ from requests import Session
 from pyp2spec.license_processor import check_compliance, resolve_license_expression
 from pyp2spec.utils import Pyp2specError, normalize_name, get_extras, get_summary_or_placeholder
 from pyp2spec.utils import prepend_name_with_python, archive_name
-from pyp2spec.utils import is_archful, resolve_url, create_compat_name
+from pyp2spec.utils import has_abi_tag, contains_wheel_with_abi_tag, resolve_url, create_compat_name
 from pyp2spec.utils import warn, caution, inform, yay
 from pyp2spec.pypi_loaders import load_from_pypi, load_core_metadata_from_pypi, CoreMetadataNotFoundError
+from pyp2spec.local_loaders import load_dist_data_from_dir
 
 
 @dataclass
@@ -25,8 +27,8 @@ class PackageInfo:
     extras: list
     license_files_present: bool
     license: str | None = None
-    source: str = "PyPI"  # only one default source now
     # These are added later, when the object is already constructed:
+    source: str = field(init=False)
     python_name: str = field(init=False)
     archful: bool = field(init=False)
     archive_name: str = field(init=False)
@@ -34,14 +36,6 @@ class PackageInfo:
     python_alt_version: str | None = field(default=None)
     automode: bool | None = field(default=None)
     compat: str | None = field(default=None)
-
-
-def is_package_name(package: str) -> bool:
-    """Least-effort check whether `package` is a package name or URL.
-    Canonical package names can't contain '/'.
-    """
-
-    return "/" not in package
 
 
 def prepare_package_info(data: RawMetadata | dict) -> PackageInfo:
@@ -63,19 +57,28 @@ def prepare_package_info(data: RawMetadata | dict) -> PackageInfo:
     )
 
 
-def add_archive_data(pkg: PackageInfo, pypi_data: dict) -> PackageInfo:
-    """We can obtain the archive information from PyPI only."""
-    pkg.archful = is_archful(pypi_data["urls"])
-    pkg.archive_name = archive_name(pypi_data["urls"])
-    return pkg
-
-
-def gather_package_info(core_metadata: RawMetadata | None, pypi_package_data: dict) -> PackageInfo:
+def gather_package_info(core_metadata: RawMetadata | None, pypi_package_data: dict[str, str] | None) -> PackageInfo:
     if core_metadata is not None:
         pkg = prepare_package_info(core_metadata)
     else:
         pkg = prepare_package_info(pypi_package_data["info"])
-    pkg = add_archive_data(pkg, pypi_package_data)
+    return pkg
+
+
+def create_package_from_dir(package: str, path: str) -> PackageInfo:
+    sdist_name, wheel_name, core_metadata = load_dist_data_from_dir(package, path)
+    pkg = gather_package_info(core_metadata, None)
+    pkg.archful = has_abi_tag(str(wheel_name))
+    pkg.archive_name = sdist_name
+    pkg.source = "local"
+    return pkg
+
+
+def create_package_from_pypi(core_metadata: RawMetadata | None, pypi_pkg_data: dict) -> PackageInfo:
+    pkg = gather_package_info(core_metadata, pypi_pkg_data)
+    pkg.archful = contains_wheel_with_abi_tag(pypi_pkg_data["urls"])
+    pkg.archive_name = archive_name(pypi_pkg_data["urls"])
+    pkg.source = "PyPI"
     return pkg
 
 
@@ -83,11 +86,14 @@ def create_package_from_source(
     package: str,
     version: str | None,
     compat: str | None,
+    path: str | None,
     session: Session | None
 ) -> PackageInfo:
     """Determine the best source for the given package name and create a PackageInfo instance.
     """
-    if is_package_name(package):
+    if path is not None:
+        pkg = create_package_from_dir(package, path)
+    else:
         # explicit `session` argument is needed for testing
         pypi_pkg_data = load_from_pypi(package, version=version,
         compat=compat, session=session)
@@ -96,10 +102,8 @@ def create_package_from_source(
         # if no core metadata found, we will fall back to PyPI API
         except CoreMetadataNotFoundError:
             core_metadata = None
-    else:
-        raise NotImplementedError("pyp2spec can't currently handle URLs.")
-    # The processed package info is the basis for config contents
-    return gather_package_info(core_metadata, pypi_pkg_data)
+        pkg = create_package_from_pypi(core_metadata, pypi_pkg_data)
+    return pkg
 
 
 def create_config_contents(
@@ -113,7 +117,8 @@ def create_config_contents(
     package = options.get("package")
     version = options.get("version")
     compat = options.get("compat")
-    pkg_info = create_package_from_source(package, version, compat, session)
+    path = options.get("path")
+    pkg_info = create_package_from_source(package, version, compat, path, session)
 
     python_alt_version = options.get("python_alt_version")
     pkg_info.python_name = prepend_name_with_python(pkg_info.pypi_name, python_alt_version)
@@ -123,7 +128,7 @@ def create_config_contents(
         pkg_info.compat = compat
 
     if version is None:
-        inform(f"Assuming the version found on PyPI: '{pkg_info.pypi_version}'")
+        inform(f"No version specified, assuming the version found: '{pkg_info.pypi_version}'")
 
     if pkg_info.archful:
         caution("Package contains compiled extensions - you may need to specify additional build requirements")
@@ -179,6 +184,10 @@ def create_config(options: dict) -> str:
 
 def pypconf_args(func):  # noqa
     @click.argument("package")
+    @click.option(
+        "--path",
+        help="Path to a directory where sdist and wheel are stored locally",
+    )
     @click.option(
         "--config-output", "-c",
         help="Provide custom output for configuration file",

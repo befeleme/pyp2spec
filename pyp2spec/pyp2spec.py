@@ -22,6 +22,8 @@ def main(**options):  # noqa
     try:
         if options["automode"] and options["declarative_buildsystem"]:
             raise Pyp2specError("Declarative buildsystem doesn't work with automode")
+        if options["path"] == "":
+            raise Pyp2specError("Path cannot be empty")
         config_file = create_config(options)
         create_spec_file(config_file, options)
     except (Pyp2specError, NotImplementedError) as exc:

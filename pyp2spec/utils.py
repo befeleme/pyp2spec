@@ -9,6 +9,7 @@ from functools import partial
 
 import click
 
+from packaging.metadata import parse_email, RawMetadata
 from packaging.requirements import Requirement
 
 
@@ -28,6 +29,10 @@ class SdistNotFoundError(Pyp2specError):
 
 class MissingPackageNameError(Pyp2specError):
     """Raised when there's no package name in the metadata"""
+
+
+class CoreMetadataNotFoundError(Pyp2specError):
+    """Raised when there's no Metadata file available on PyPI API"""
 
 
 def normalize_name(package_name: str) -> str:
@@ -138,7 +143,11 @@ def archive_name(archive_urls: list) -> str:
     raise SdistNotFoundError("Sdist not found, valid spec file cannot be produced")
 
 
-def is_archful(archive_urls: list) -> bool:
+def has_abi_tag(wheel_name: str) -> bool:
+    return wheel_name.split("-")[-2] != "none"
+
+
+def contains_wheel_with_abi_tag(archive_urls: list[dict]) -> bool:
     """Determine if package is archful by checking the wheel filenames.
 
     Wheel name consists of defined fields, one of them being an abi tag.
@@ -158,10 +167,8 @@ def is_archful(archive_urls: list) -> bool:
 
     for entry in archive_urls:
         if entry["packagetype"] == "bdist_wheel":
-            abi_tag = entry["filename"].split("-")[-2]
-            if abi_tag != "none":
+            if has_abi_tag(entry["filename"]):
                 return True
-    # all of the found wheel names had 'none' as abi_tag
     return False
 
 
@@ -203,3 +210,9 @@ def create_compat_name(name: str, compat: str | None) -> str:
     if name[-1].isdigit():
         return f"{name}_{compat}"
     return f"{name}{compat}"
+
+
+def parse_core_metadata(metadata: str) -> RawMetadata:
+    raw, _ = parse_email(metadata)
+    # TODO: consider porting to packaging.Metadata instance?
+    return raw

@@ -11,6 +11,9 @@ Summary:        {{summary}}
 {{ license_notice }}
 License:        {{license}}
 URL:            {{url}}
+{% if source == "..." -%}
+# Replace ... with the actual URL/path to the source archive
+{% endif -%}
 Source:         {{source}}
 {% if declarative_buildsystem %}
 BuildSystem:    pyproject
@@ -55,6 +58,9 @@ Provides:       deprecated()
 
 {% if not declarative_buildsystem -%}
 %prep
+{% if source == "..." -%}
+# Replace ... with the actual archive name
+{% endif -%}
 %autosetup -p1 -n {{archive_name}}-{{pypi_version}}
 
 
