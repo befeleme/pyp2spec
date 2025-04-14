@@ -1,5 +1,9 @@
 # Changelog
 
+# [0.12.2] - 2025-04-15
+### Fixed
+- Also avoid crashing when you get a specifically None `project_urls` from the json
+
 # [0.12.1] - 2025-04-07
 ### Fixed
 - If no `project_urls` are present in the package data, try `project_url` and

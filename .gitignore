@@ -3,3 +3,4 @@ __pycache__/
 *.spec
 *.conf
 .tox/
+pyp2spec.egg-info/

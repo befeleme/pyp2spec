@@ -357,6 +357,24 @@ def test_prepare_package_info_project_url_precedance():
     assert result.url == "https://example1.com"
 
 
+def test_prepare_package_info_project_url_precedance_with_nulls():
+    data = {
+        "name": "foo",
+        "project_urls": None,
+        "project_url": None,
+        "home_page": None,
+        "package_url": "https://example1.com",
+    }
+    result = prepare_package_info(data)
+    assert result.pypi_name == "foo"
+    assert result.summary == "..."
+    assert result.license_files_present is False
+    assert result.license is None
+    assert result.extras == []
+    assert result.pypi_version == ""
+    assert result.url == "https://example1.com"
+
+
 def test_gather_package_info_pypi_source():
     pypi = {"info": {
         "name": "example",

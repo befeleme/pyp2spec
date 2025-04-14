@@ -45,7 +45,7 @@ def is_package_name(package: str) -> bool:
 
 
 def prepare_package_info(data: RawMetadata | dict) -> PackageInfo:
-    if not (project_urls := data.get("project_urls", {})):
+    if not (project_urls := data.get("project_urls") or {}):
         if (homepage := data.get("home_page", "")):
             project_urls["home_page"] = homepage
         if (not homepage and (homepage := data.get("project_url", ""))):
