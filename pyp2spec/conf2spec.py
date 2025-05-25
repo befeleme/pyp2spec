@@ -146,7 +146,8 @@ def source(config: ConfigFile, pypi_version: str) -> str:
     If archive is a zip file, %{pypi_source} must take all three args:
     "%{pypi_source foo %{version} zip}", "{pypi_source foo 1.2-3 zip}"
     """
-    if config.get_string("source") == "PyPI":
+    source = config.get_string("source")
+    if source == "PyPI":
         version_str = pypi_version_or_macro(pypi_version)
         basename = archive_basename(config, pypi_version)
         source_macro_args = basename
@@ -157,6 +158,8 @@ def source(config: ConfigFile, pypi_version: str) -> str:
             if version_str == pypi_version:
                 source_macro_args += f" {version_str}"
         return "%{pypi_source " + source_macro_args + "}"
+    elif source == "tar":
+        return config.get_string("archive_name")
     else:
         raise NotImplementedError("pyp2spec can only construct %pypi_source macros")
 

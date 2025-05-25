@@ -25,7 +25,9 @@ class CompatibleVersionNotFoundError(Pyp2specError):
 
 def _get_from_url(url: str, error_str: str, session: Session | None = None) -> Response:
     _session = session or Session()
-    response = _session.get(url)
+    response = _session.get(url, headers={
+        'User-Agent': 'My User Agent 1.0',
+    })
     if not response.ok:
         raise PackageNotFoundError(error_str)
     return response
