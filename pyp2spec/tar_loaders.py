@@ -22,4 +22,3 @@ def load_core_metadata_from_tar(package: str) -> RawMetadata:
         with open(pyproject_path, "rb") as f:
             pyproject = tomllib.load(f)
             return pyproject['project']
-    return raw

@@ -5,7 +5,6 @@ import sys
 
 import click
 import tomli_w
-import tarfile
 from packaging.metadata import RawMetadata
 from requests import Session
 
