@@ -14,7 +14,7 @@ from pyp2spec.utils import prepend_name_with_python, archive_name
 from pyp2spec.utils import is_archful, resolve_url, create_compat_name
 from pyp2spec.utils import warn, caution, inform, yay
 from pyp2spec.pypi_loaders import load_from_pypi, load_core_metadata_from_pypi, CoreMetadataNotFoundError
-
+from pyp2spec.tar_loaders import load_core_metadata_from_tar
 
 @dataclass
 class PackageInfo:
@@ -24,8 +24,8 @@ class PackageInfo:
     url: str
     extras: list
     license_files_present: bool
+    source: str
     license: str | None = None
-    source: str = "PyPI"  # only one default source now
     # These are added later, when the object is already constructed:
     python_name: str = field(init=False)
     archful: bool = field(init=False)
@@ -40,11 +40,14 @@ def is_package_name(package: str) -> bool:
     """Least-effort check whether `package` is a package name or URL.
     Canonical package names can't contain '/'.
     """
-
     return "/" not in package
 
+def is_tarfile(name: str) -> bool:
+    """Return true if the `package` is a tarfile name"""
+    return name.endswith('.tar') or name.endswith('.tar.gz')
 
-def prepare_package_info(data: RawMetadata | dict) -> PackageInfo:
+
+def prepare_package_info(data: RawMetadata | dict, source: str) -> PackageInfo:
     if not (project_urls := data.get("project_urls") or {}):
         if (homepage := data.get("home_page", "")):
             project_urls["home_page"] = homepage
@@ -59,23 +62,25 @@ def prepare_package_info(data: RawMetadata | dict) -> PackageInfo:
         url=resolve_url(project_urls),
         extras=get_extras(data.get("provides_extra", []), data.get("requires_dist", [])),
         license_files_present=bool(data.get("license_files")),
+        source=source,
         license=resolve_license_expression(data)
     )
 
 
-def add_archive_data(pkg: PackageInfo, pypi_data: dict) -> PackageInfo:
+def add_archive_data(pkg: PackageInfo, pypi_data: dict | None) -> PackageInfo:
     """We can obtain the archive information from PyPI only."""
-    pkg.archful = is_archful(pypi_data["urls"])
-    pkg.archive_name = archive_name(pypi_data["urls"])
+    if pypi_data is not None:
+        pkg.archful = is_archful(pypi_data["urls"])
+        pkg.archive_name = archive_name(pypi_data["urls"])
+    else:
+        pkg.archful = False
+        pkg.archive_name = f"{pkg.pypi_name}-{pkg.pypi_version}.tar.gz"
     return pkg
 
 
-def gather_package_info(core_metadata: RawMetadata | None, pypi_package_data: dict) -> PackageInfo:
-    if core_metadata is not None:
-        pkg = prepare_package_info(core_metadata)
-    else:
-        pkg = prepare_package_info(pypi_package_data["info"])
-    pkg = add_archive_data(pkg, pypi_package_data)
+def gather_package_info(core_metadata: RawMetadata, pypi_data: dict | None, source: str) -> PackageInfo:
+    pkg = prepare_package_info(data=core_metadata, source=source)
+    pkg = add_archive_data(pkg, pypi_data)
     return pkg
 
 
@@ -87,19 +92,23 @@ def create_package_from_source(
 ) -> PackageInfo:
     """Determine the best source for the given package name and create a PackageInfo instance.
     """
-    if is_package_name(package):
-        # explicit `session` argument is needed for testing
-        pypi_pkg_data = load_from_pypi(package, version=version,
-        compat=compat, session=session)
+    if is_tarfile(package):
+        core_metadata = load_core_metadata_from_tar(package=package)
+        pypi_data = None
+        source = "tar"
+    elif is_package_name(package):
+        # Explicit `session` argument is needed for testing.
+        pypi_data = load_from_pypi(package, version=version, compat=compat, session=session)
         try:
-            core_metadata = load_core_metadata_from_pypi(pypi_pkg_data, session=session)
-        # if no core metadata found, we will fall back to PyPI API
+            core_metadata = load_core_metadata_from_pypi(pypi_data, session=session)
+        # If no core metadata found, we will fall back to PyPI API.
         except CoreMetadataNotFoundError:
-            core_metadata = None
+            core_metadata = pypi_data["info"]
+        source = "PyPI"
     else:
         raise NotImplementedError("pyp2spec can't currently handle URLs.")
     # The processed package info is the basis for config contents
-    return gather_package_info(core_metadata, pypi_pkg_data)
+    return gather_package_info(core_metadata=core_metadata, pypi_data=pypi_data, source=source)
 
 
 def create_config_contents(
