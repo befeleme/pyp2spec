@@ -20,8 +20,8 @@ from pyp2spec.local_loaders import load_dist_data_from_dir
 
 @dataclass
 class PackageInfo:
-    pypi_name: str
-    pypi_version: str
+    name: str
+    version: str
     summary: str
     url: str
     extras: list
@@ -47,8 +47,8 @@ def prepare_package_info(data: RawMetadata | dict) -> PackageInfo:
         if (not homepage and (homepage := data.get("package_url", ""))):
             project_urls["home_page"] = homepage
     return PackageInfo(
-        pypi_name=normalize_name(data.get("name", "")),
-        pypi_version=data.get("version", ""),
+        name=normalize_name(data.get("name", "")),
+        version=data.get("version", ""),
         summary=get_summary_or_placeholder(data.get("summary", "")),
         url=resolve_url(project_urls),
         extras=get_extras(data.get("provides_extra", []), data.get("requires_dist", [])),
@@ -121,14 +121,14 @@ def create_config_contents(
     pkg_info = create_package_from_source(package, version, compat, path, session)
 
     python_alt_version = options.get("python_alt_version")
-    pkg_info.python_name = prepend_name_with_python(pkg_info.pypi_name, python_alt_version)
+    pkg_info.python_name = prepend_name_with_python(pkg_info.name, python_alt_version)
 
     if compat is not None:
         inform(f"Creating a compat package for version: '{compat}'")
         pkg_info.compat = compat
 
     if version is None:
-        inform(f"No version specified, assuming the version found: '{pkg_info.pypi_version}'")
+        inform(f"No version specified, assuming the version found: '{pkg_info.version}'")
 
     if pkg_info.archful:
         caution("Package contains compiled extensions - you may need to specify additional build requirements")

@@ -73,15 +73,15 @@ def test_default_generated_specfile(file_regression, config_dir, conf, db):
 
 
 @pytest.mark.parametrize(
-    ("pypi_version", "rpm_version"), [
+    ("version", "rpm_version"), [
         ("1.1.0", "1.1.0"),
         ("1!0.2.13", "1:0.2.13"),
         ("0.0.2-beta1", "0.0.2~b1"),
         ("0.5.40-0", "0.5.40^post0"),
     ]
 )
-def test_pypi_version_is_converted_to_rpm(pypi_version, rpm_version):
-    assert conf2spec.convert_version_to_rpm_scheme(pypi_version) == rpm_version
+def test_version_is_converted_to_rpm(version, rpm_version):
+    assert conf2spec.convert_version_to_rpm_scheme(version) == rpm_version
 
 
 @pytest.mark.parametrize(
@@ -144,7 +144,7 @@ def test_license_strings():
     ]
 )
 def test_source_pypi(version, extension, expected):
-    fake_config_data = {"pypi_name": "foo", "archive_name": f"foo-{version}.{extension}", "pypi_version": version, "source": "PyPI"}
+    fake_config_data = {"pypi_name": "foo", "archive_name": f"foo-{version}.{extension}", "version": version, "source": "PyPI"}
     fake_config = conf2spec.ConfigFile(fake_config_data)
     assert conf2spec.source(fake_config) == expected
 
@@ -169,5 +169,5 @@ def test_source_local(archive_name, expected):
         ("0.0.2-beta1", "0.0.2-beta1"),
     ]
 )
-def test_pypi_version_or_macro(version, expected):
-    assert conf2spec.pypi_version_or_macro(version) == expected
+def test_python_version_or_macro(version, expected):
+    assert conf2spec.python_version_or_macro(version) == expected
