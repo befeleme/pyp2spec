@@ -9,7 +9,8 @@ try:
 except ImportError:
     import tomli as tomllib
 
-from pyp2spec.pyp2conf import create_config_contents, prepare_package_info, check_compliance, gather_package_info
+from pyp2spec.pyp2conf import create_config_contents, prepare_package_info, check_compliance
+from pyp2spec.pyp2conf import gather_package_info, create_package_from_pypi, create_package_from_dir
 from pyp2spec.pypi_loaders import PackageNotFoundError
 
 
@@ -103,6 +104,21 @@ def test_config_with_customization_is_valid(betamax_session):
     assert config == loaded_contents
 
 
+def test_config_from_local_path_is_valid():
+    """Get the metadata from locally stored wheel and sdist
+    """
+    config = create_config_contents(
+        {"package": "local_test",
+        "path": "tests/local"},
+    )
+
+    with open(f"tests/test_configs/default_python-local-test.conf", "rb") as config_file:
+        loaded_contents = tomllib.load(config_file)
+    # Replace the detected value, we don't want to compare the real one
+    config["archive_name"] = "..."
+    assert config == loaded_contents
+
+
 def test_archful_package(betamax_session):
     """Generate config for numpy which is archful"""
     config = create_config_contents(
@@ -192,12 +208,12 @@ def test_summary_is_generated_if_upstream_data_is_multiline():
     assert pkg.summary == "..."
 
 
-def test_capitalized_underscored_pypi_name_is_normalized():
+def test_capitalized_underscored_name_is_normalized():
     fake_pkg_data = {
         "name": "Awesome_TestPkg",
     }
     pkg = prepare_package_info(fake_pkg_data)
-    assert pkg.pypi_name == "awesome-testpkg"
+    assert pkg.name == "awesome-testpkg"
 
 
 @pytest.mark.parametrize(
@@ -231,12 +247,12 @@ def test_prepare_package_info_pypi_source():
         "maintainer": "John Doe",
     }, "releases": [],}
     result = prepare_package_info(data["info"])
-    assert result.pypi_name == "example"
+    assert result.name == "example"
     assert result.summary == "A sample project"
     assert result.license_files_present is True
     assert result.license == "MIT"
     assert result.extras == []
-    assert result.pypi_version == "1.0.0"
+    assert result.version == "1.0.0"
     assert result.url == "https://example.com"
 
 
@@ -254,12 +270,12 @@ def test_prepare_package_info_core_metadata():
         "metadata_version": "2.1",
     }
     result = prepare_package_info(data)
-    assert result.pypi_name == "example"
+    assert result.name == "example"
     assert result.summary == "A sample project"
     assert result.license_files_present is True
     assert result.license == "MIT"
     assert result.extras == []
-    assert result.pypi_version == "1.0.0"
+    assert result.version == "1.0.0"
     assert result.url == "https://example.com"
 
 
@@ -268,12 +284,12 @@ def test_prepare_package_info_missing_keys():
         "name": "foo",
     }
     result = prepare_package_info(data)
-    assert result.pypi_name == "foo"
+    assert result.name == "foo"
     assert result.summary == "..."
     assert result.license_files_present is False
     assert result.license is None
     assert result.extras == []
-    assert result.pypi_version == ""
+    assert result.version == ""
     assert result.url == "..."
 
 
@@ -283,12 +299,12 @@ def test_prepare_package_info_only_package_url():
         "package_url": "https://example.com",
     }
     result = prepare_package_info(data)
-    assert result.pypi_name == "foo"
+    assert result.name == "foo"
     assert result.summary == "..."
     assert result.license_files_present is False
     assert result.license is None
     assert result.extras == []
-    assert result.pypi_version == ""
+    assert result.version == ""
     assert result.url == "https://example.com"
 
 
@@ -298,16 +314,16 @@ def test_prepare_package_info_only_project_url():
         "project_url": "https://example.com",
     }
     result = prepare_package_info(data)
-    assert result.pypi_name == "foo"
+    assert result.name == "foo"
     assert result.summary == "..."
     assert result.license_files_present is False
     assert result.license is None
     assert result.extras == []
-    assert result.pypi_version == ""
+    assert result.version == ""
     assert result.url == "https://example.com"
 
 
-def test_prepare_package_info_project_urls_precedance():
+def test_prepare_package_info_project_urls_precedence():
     data = {
         "name": "foo",
         "project_url": "https://example1.com",
@@ -315,16 +331,16 @@ def test_prepare_package_info_project_urls_precedance():
         "project_urls": {"Homepage": "https://example3.com"},
     }
     result = prepare_package_info(data)
-    assert result.pypi_name == "foo"
+    assert result.name == "foo"
     assert result.summary == "..."
     assert result.license_files_present is False
     assert result.license is None
     assert result.extras == []
-    assert result.pypi_version == ""
+    assert result.version == ""
     assert result.url == "https://example3.com"
 
 
-def test_prepare_package_info_home_page_precedance():
+def test_prepare_package_info_home_page_precedence():
     data = {
         "name": "foo",
         "project_url": "https://example1.com",
@@ -332,32 +348,32 @@ def test_prepare_package_info_home_page_precedance():
         "home_page": "https://example3.com",
     }
     result = prepare_package_info(data)
-    assert result.pypi_name == "foo"
+    assert result.name == "foo"
     assert result.summary == "..."
     assert result.license_files_present is False
     assert result.license is None
     assert result.extras == []
-    assert result.pypi_version == ""
+    assert result.version == ""
     assert result.url == "https://example3.com"
 
 
-def test_prepare_package_info_project_url_precedance():
+def test_prepare_package_info_project_url_precedence():
     data = {
         "name": "foo",
         "project_url": "https://example1.com",
         "package_url": "https://example2.com",
     }
     result = prepare_package_info(data)
-    assert result.pypi_name == "foo"
+    assert result.name == "foo"
     assert result.summary == "..."
     assert result.license_files_present is False
     assert result.license is None
     assert result.extras == []
-    assert result.pypi_version == ""
+    assert result.version == ""
     assert result.url == "https://example1.com"
 
 
-def test_prepare_package_info_project_url_precedance_with_nulls():
+def test_prepare_package_info_project_url_precedence_with_nulls():
     data = {
         "name": "foo",
         "project_urls": None,
@@ -366,12 +382,12 @@ def test_prepare_package_info_project_url_precedance_with_nulls():
         "package_url": "https://example1.com",
     }
     result = prepare_package_info(data)
-    assert result.pypi_name == "foo"
+    assert result.name == "foo"
     assert result.summary == "..."
     assert result.license_files_present is False
     assert result.license is None
     assert result.extras == []
-    assert result.pypi_version == ""
+    assert result.version == ""
     assert result.url == "https://example1.com"
 
 
@@ -397,8 +413,6 @@ def test_gather_package_info_pypi_source():
             "filename": "example-0.2-py2.py3-none-any.whl"
         }]}
     result = gather_package_info(None, pypi)
-    assert result.archive_name == "example-0.2-tar.gz"
-    assert result.archful is False
 
 
 def test_gather_package_info_core_metadata():
@@ -434,12 +448,58 @@ def test_gather_package_info_core_metadata():
             "filename": "example-7.0-cp34-abi3-manylinux1_x86_64.whl"
         }]}
     result = gather_package_info(data, pypi)
-    assert result.pypi_name == "example"
+    assert result.name == "example"
     assert result.summary == "A sample project"
     assert result.license_files_present is True
     assert result.license == "MIT"
     assert result.extras == []
-    assert result.pypi_version == "1.0.0"
+    assert result.version == "1.0.0"
     assert result.url == "https://example.com"
+
+
+def test_create_package_from_pypi():
+    data = {
+        "name": "example",
+        "summary": "A sample project",
+        "license_expression": "MIT",
+        "license": "MIT License",
+        "classifiers": ["License :: OSI Approved :: MIT License"],
+        "requires_dist": ["requests"],
+        "version": "1.0.0",
+        "license_files": ["LICENSE"],
+        "home_page": "https://example.com",
+        "metadata_version": "2.1",
+    }
+    pypi = {"info": {
+        "name": "discarded",
+        "summary": "Deliberately different metadata",
+        "license_expression": "BSD",
+        "license": "BSD",
+        "classifiers": ["License :: OSI Approved :: BSD License"],
+        "requires_dist": ["click"],
+        "version": "7.0.0",
+        "license_files": ["LICENSE.txt"],
+        "project_urls": {"Source": "https://example.com"},
+        "yanked": False,
+        "maintainer": "John Doe",
+        }, "releases": [],
+        "urls": [{
+            "packagetype": "sdist",
+            "filename": "example-7.0-tar.gz"
+        }, {"packagetype": "bdist_wheel",
+            "filename": "example-7.0-cp34-abi3-manylinux1_x86_64.whl"
+        }]}
+    result = create_package_from_pypi(data, pypi)
     assert result.archive_name == "example-7.0-tar.gz"
     assert result.archful is True
+    assert result.source == "PyPI"
+
+
+def test_create_package_from_dir():
+    pkg = create_package_from_dir("local_test", "tests/local/")
+    assert pkg.name == "local-test"
+    assert pkg.version == "0.12.2"
+    assert pkg.source == "local"
+    assert pkg.archful is False
+    assert pkg.archive_name.split("/")[-1] == "local_test-0.12.2.tar.gz"
+    assert pkg.license == "MIT AND MIT-0"

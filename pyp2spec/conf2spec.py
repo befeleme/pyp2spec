@@ -103,11 +103,11 @@ def convert_version_to_rpm_scheme(version: str) -> str:
     return str(RpmVersion(version))
 
 
-def same_as_rpm(pypi_version: str) -> bool:
-    return pypi_version == convert_version_to_rpm_scheme(pypi_version)
+def same_as_rpm(version: str) -> bool:
+    return version == convert_version_to_rpm_scheme(version)
 
 
-def archive_basename(config: ConfigFile, pypi_version: str) -> str:
+def archive_basename(config: ConfigFile, version: str) -> str:
     """Return the archive basename.
 
     The filename has been standardized in PEP 625, but many projects out there
@@ -121,8 +121,10 @@ def archive_basename(config: ConfigFile, pypi_version: str) -> str:
     # First, strip the suffix
     for suffix in (".tar.gz", ".zip"):
         filename = filename.removesuffix(suffix)
-    # Second, get rid of the version string and the delimiter "-"
-    return filename.replace("-" + pypi_version, "")
+    # Second, split paths and keep only the last part of it
+    filename = filename.split("/")[-1]
+    # Last, get rid of the version string and the delimiter "-"
+    return filename.replace("-" + version, "")
 
 
 def is_zip(config: ConfigFile) -> bool:
@@ -134,7 +136,7 @@ def is_zip(config: ConfigFile) -> bool:
     return config.get_string("archive_name").endswith(".zip")
 
 
-def source(config: ConfigFile, pypi_version: str) -> str:
+def source(config: ConfigFile) -> str:
     """Return valid pypi_source RPM macro.
 
     %pypi_source takes three optional arguments:
@@ -146,25 +148,29 @@ def source(config: ConfigFile, pypi_version: str) -> str:
     If archive is a zip file, %{pypi_source} must take all three args:
     "%{pypi_source foo %{version} zip}", "{pypi_source foo 1.2-3 zip}"
     """
-    if config.get_string("source") == "PyPI":
-        version_str = pypi_version_or_macro(pypi_version)
-        basename = archive_basename(config, pypi_version)
+    detected_source = config.get_string("source")
+    if detected_source == "PyPI":
+        version = config.get_string("version")
+        version_str = python_version_or_macro(version)
+        basename = archive_basename(config, version)
         source_macro_args = basename
 
         if is_zip(config):
             source_macro_args += f" {version_str} zip"
         else:
-            if version_str == pypi_version:
+            if version_str == version:
                 source_macro_args += f" {version_str}"
         return "%{pypi_source " + source_macro_args + "}"
+    elif detected_source == "local":
+        return config.get_string("archive_name")
     else:
-        raise NotImplementedError("pyp2spec can only construct %pypi_source macros")
+        raise NotImplementedError("pyp2spec can deal with `PyPI` and `local` sources")
 
 
-def pypi_version_or_macro(pypi_version: str) -> str:
-    if same_as_rpm(pypi_version):
+def python_version_or_macro(version: str) -> str:
+    if same_as_rpm(version):
         return "%{version}"
-    return pypi_version
+    return version
 
 
 def fill_in_template(config: ConfigFile, declarative_buildsystem: bool) -> str:
@@ -175,30 +181,30 @@ def fill_in_template(config: ConfigFile, declarative_buildsystem: bool) -> str:
 
     license, license_notice = get_license_string(config)
 
-    pypi_version = config.get_string("pypi_version")
+    version = config.get_string("version")
 
     result = spec_template.render(
         additional_build_requires=list_additional_build_requires(config),
         archful=config.get_bool("archful"),
-        archive_name=archive_basename(config, pypi_version),
+        archive_name=archive_basename(config, version),
         automode=config.get_bool("automode"),
         compat=config.get_string("compat"),
-        compat_name=create_compat_name(config.get_string("pypi_name"), config.get_string("compat")),
+        compat_name=create_compat_name(config.get_string("name"), config.get_string("compat")),
         declarative_buildsystem=declarative_buildsystem,
         extras=",".join(config.get_list("extras")),
         license=license,
         license_notice=license_notice,
         mandate_license=config.get_bool("license_files_present"),
-        name=config.get_string("pypi_name"),
+        name=config.get_string("name"),
         python_compat_name=create_compat_name(config.get_string("python_name"), config.get_string("compat")),
-        pypi_version=pypi_version_or_macro(pypi_version),
+        pypi_version=python_version_or_macro(version),
         python_alt_version=config.get_string("python_alt_version"),
-        source=source(config, pypi_version),
+        source=source(config),
         summary=config.get_string("summary"),
         test_top_level=config.get_bool("test_top_level"),
         python3_pkgversion=python3_pkgversion_or_3(config),
         url=config.get_string("url"),
-        version=convert_version_to_rpm_scheme(pypi_version),
+        version=convert_version_to_rpm_scheme(version),
     )
 
     return result
