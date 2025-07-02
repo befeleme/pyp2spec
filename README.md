@@ -140,9 +140,9 @@ Configuration data is stored in a TOML file.
 
 | Field  | Description | Type |
 | -------- | -------- | -------- |
-| pypi_name | package name as stored in PyPI  | string   |
+| name | package canonical name  | string   |
 | python_name | pypi_name prepended with `python-` and alternative Python version, if `python_alt_version` is defined| string |
-| pypi_version | package version string as on PyPI | string
+| version | package version string | string
 | summary | short package summary | string |
 | license | license name | string |
 | url | project URL | string |
@@ -163,8 +163,8 @@ Configuration data is stored in a TOML file.
 license = "MIT"
 archful = false
 summary = "A simple Python 3 library for Notion Home Monitoring"
-pypi_version = "2024.3.1"
-pypi_name = "aionotion"
+version = "2024.3.1"
+name = "aionotion"
 python_name = "python-aionotion"
 url = "https://github.com/bachya/aionotion"
 source = "PyPI"

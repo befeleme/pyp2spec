@@ -208,12 +208,12 @@ def test_summary_is_generated_if_upstream_data_is_multiline():
     assert pkg.summary == "..."
 
 
-def test_capitalized_underscored_pypi_name_is_normalized():
+def test_capitalized_underscored_name_is_normalized():
     fake_pkg_data = {
         "name": "Awesome_TestPkg",
     }
     pkg = prepare_package_info(fake_pkg_data)
-    assert pkg.pypi_name == "awesome-testpkg"
+    assert pkg.name == "awesome-testpkg"
 
 
 @pytest.mark.parametrize(
@@ -247,12 +247,12 @@ def test_prepare_package_info_pypi_source():
         "maintainer": "John Doe",
     }, "releases": [],}
     result = prepare_package_info(data["info"])
-    assert result.pypi_name == "example"
+    assert result.name == "example"
     assert result.summary == "A sample project"
     assert result.license_files_present is True
     assert result.license == "MIT"
     assert result.extras == []
-    assert result.pypi_version == "1.0.0"
+    assert result.version == "1.0.0"
     assert result.url == "https://example.com"
 
 
@@ -270,12 +270,12 @@ def test_prepare_package_info_core_metadata():
         "metadata_version": "2.1",
     }
     result = prepare_package_info(data)
-    assert result.pypi_name == "example"
+    assert result.name == "example"
     assert result.summary == "A sample project"
     assert result.license_files_present is True
     assert result.license == "MIT"
     assert result.extras == []
-    assert result.pypi_version == "1.0.0"
+    assert result.version == "1.0.0"
     assert result.url == "https://example.com"
 
 
@@ -284,12 +284,12 @@ def test_prepare_package_info_missing_keys():
         "name": "foo",
     }
     result = prepare_package_info(data)
-    assert result.pypi_name == "foo"
+    assert result.name == "foo"
     assert result.summary == "..."
     assert result.license_files_present is False
     assert result.license is None
     assert result.extras == []
-    assert result.pypi_version == ""
+    assert result.version == ""
     assert result.url == "..."
 
 
@@ -299,12 +299,12 @@ def test_prepare_package_info_only_package_url():
         "package_url": "https://example.com",
     }
     result = prepare_package_info(data)
-    assert result.pypi_name == "foo"
+    assert result.name == "foo"
     assert result.summary == "..."
     assert result.license_files_present is False
     assert result.license is None
     assert result.extras == []
-    assert result.pypi_version == ""
+    assert result.version == ""
     assert result.url == "https://example.com"
 
 
@@ -314,12 +314,12 @@ def test_prepare_package_info_only_project_url():
         "project_url": "https://example.com",
     }
     result = prepare_package_info(data)
-    assert result.pypi_name == "foo"
+    assert result.name == "foo"
     assert result.summary == "..."
     assert result.license_files_present is False
     assert result.license is None
     assert result.extras == []
-    assert result.pypi_version == ""
+    assert result.version == ""
     assert result.url == "https://example.com"
 
 
@@ -331,12 +331,12 @@ def test_prepare_package_info_project_urls_precedence():
         "project_urls": {"Homepage": "https://example3.com"},
     }
     result = prepare_package_info(data)
-    assert result.pypi_name == "foo"
+    assert result.name == "foo"
     assert result.summary == "..."
     assert result.license_files_present is False
     assert result.license is None
     assert result.extras == []
-    assert result.pypi_version == ""
+    assert result.version == ""
     assert result.url == "https://example3.com"
 
 
@@ -348,12 +348,12 @@ def test_prepare_package_info_home_page_precedence():
         "home_page": "https://example3.com",
     }
     result = prepare_package_info(data)
-    assert result.pypi_name == "foo"
+    assert result.name == "foo"
     assert result.summary == "..."
     assert result.license_files_present is False
     assert result.license is None
     assert result.extras == []
-    assert result.pypi_version == ""
+    assert result.version == ""
     assert result.url == "https://example3.com"
 
 
@@ -364,12 +364,12 @@ def test_prepare_package_info_project_url_precedence():
         "package_url": "https://example2.com",
     }
     result = prepare_package_info(data)
-    assert result.pypi_name == "foo"
+    assert result.name == "foo"
     assert result.summary == "..."
     assert result.license_files_present is False
     assert result.license is None
     assert result.extras == []
-    assert result.pypi_version == ""
+    assert result.version == ""
     assert result.url == "https://example1.com"
 
 
@@ -382,12 +382,12 @@ def test_prepare_package_info_project_url_precedence_with_nulls():
         "package_url": "https://example1.com",
     }
     result = prepare_package_info(data)
-    assert result.pypi_name == "foo"
+    assert result.name == "foo"
     assert result.summary == "..."
     assert result.license_files_present is False
     assert result.license is None
     assert result.extras == []
-    assert result.pypi_version == ""
+    assert result.version == ""
     assert result.url == "https://example1.com"
 
 
@@ -448,12 +448,12 @@ def test_gather_package_info_core_metadata():
             "filename": "example-7.0-cp34-abi3-manylinux1_x86_64.whl"
         }]}
     result = gather_package_info(data, pypi)
-    assert result.pypi_name == "example"
+    assert result.name == "example"
     assert result.summary == "A sample project"
     assert result.license_files_present is True
     assert result.license == "MIT"
     assert result.extras == []
-    assert result.pypi_version == "1.0.0"
+    assert result.version == "1.0.0"
     assert result.url == "https://example.com"
 
 
@@ -497,8 +497,8 @@ def test_create_package_from_pypi():
 
 def test_create_package_from_dir():
     pkg = create_package_from_dir("local_test", "tests/local/")
-    assert pkg.pypi_name == "local-test"
-    assert pkg.pypi_version == "0.12.2"
+    assert pkg.name == "local-test"
+    assert pkg.version == "0.12.2"
     assert pkg.source == "local"
     assert pkg.archful is False
     assert pkg.archive_name.split("/")[-1] == "local_test-0.12.2.tar.gz"
