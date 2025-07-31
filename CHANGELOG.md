@@ -1,6 +1,6 @@
 # Changelog
 
-# [Unreleased]
+# [0.13.0] - 2025-07-31
 ### Added
 - Support for generating spec files from a local path
 
