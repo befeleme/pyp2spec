@@ -59,9 +59,7 @@ def test_load_core_metadata_from_file():
 def test_load_dist_data_from_dir():
     test_dir = "tests/local"
     sdist, wheel, data = load_dist_data_from_dir("local_test", test_dir)
-    # Keep just the latest parts of the full file paths
-    sdist = sdist.split("/")[-3:]
-    assert sdist == ["tests", "local", "local_test-0.12.2.tar.gz"]
+    assert sdist == "local_test-0.12.2.tar.gz"
     wheel = wheel.split("/")[-1]
     assert wheel == "local_test-0.12.2-py3-none-any.whl"
     assert data["version"] == "0.12.2"

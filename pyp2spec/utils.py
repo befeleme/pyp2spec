@@ -35,23 +35,6 @@ class CoreMetadataNotFoundError(Pyp2specError):
     """Raised when there's no Metadata file available on PyPI API"""
 
 
-def normalize_name(package_name: str) -> str:
-    """Normalize given package name as defined in PEP 503.
-    The resulting string better conforms with Fedora's Packaging Guidelines."""
-
-    if not package_name:
-        raise MissingPackageNameError("Cannot create a package without a name")
-    return re.sub(r"[-_.]+", "-", package_name).lower()
-
-
-def normalize_as_wheel_name(package_name: str) -> str:
-    """Normalize as in the wheel specification:
-    https://packaging.python.org/en/latest/specifications/binary-distribution-format/#escaping-and-unicode
-    PEP 625 specifies sdist names to this format."""
-
-    return normalize_name(package_name).replace("-", "_")
-
-
 def prepend_name_with_python(name: str, python_alt_version: str | None = None) -> str:
     """Create a component name for the specfile.
 

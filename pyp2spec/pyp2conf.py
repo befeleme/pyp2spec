@@ -10,12 +10,14 @@ from packaging.metadata import RawMetadata
 from requests import Session
 
 from pyp2spec.license_processor import check_compliance, resolve_license_expression
-from pyp2spec.utils import Pyp2specError, normalize_name, get_extras, get_summary_or_placeholder
+from pyp2spec.utils import Pyp2specError, get_extras, get_summary_or_placeholder
 from pyp2spec.utils import prepend_name_with_python, archive_name
 from pyp2spec.utils import has_abi_tag, contains_wheel_with_abi_tag, resolve_url, create_compat_name
 from pyp2spec.utils import warn, caution, inform, yay
-from pyp2spec.pypi_loaders import load_from_pypi, load_core_metadata_from_pypi, CoreMetadataNotFoundError
+from pyp2spec.utils import CoreMetadataNotFoundError
+from pyp2spec.pypi_loaders import load_from_pypi, load_core_metadata_from_pypi
 from pyp2spec.local_loaders import load_dist_data_from_dir
+from pyp2spec.sanitizer import sanitize
 
 
 @dataclass
@@ -46,14 +48,23 @@ def prepare_package_info(data: RawMetadata | dict) -> PackageInfo:
             project_urls["home_page"] = homepage
         if (not homepage and (homepage := data.get("package_url", ""))):
             project_urls["home_page"] = homepage
+
+    # Sanitize all PyPI metadata to prevent injection attacks
+    raw_name = data.get("name", "")
+    raw_version = data.get("version", "")
+    raw_summary = get_summary_or_placeholder(data.get("summary", ""))
+    raw_url = resolve_url(project_urls)
+    raw_extras = get_extras(data.get("provides_extra", []), data.get("requires_dist", []))
+    raw_license = resolve_license_expression(data)
+
     return PackageInfo(
-        name=normalize_name(data.get("name", "")),
-        version=data.get("version", ""),
-        summary=get_summary_or_placeholder(data.get("summary", "")),
-        url=resolve_url(project_urls),
-        extras=get_extras(data.get("provides_extra", []), data.get("requires_dist", [])),
+        name=sanitize("name", raw_name),
+        version=sanitize("version", raw_version),
+        summary=sanitize("summary", raw_summary),
+        url=sanitize("url", raw_url),
+        extras=sanitize("extras", raw_extras),
         license_files_present=bool(data.get("license_files")),
-        license=resolve_license_expression(data)
+        license=sanitize("license", raw_license) if raw_license else None
     )
 
 
@@ -66,6 +77,7 @@ def gather_package_info(core_metadata: RawMetadata | None, pypi_package_data: di
 
 
 def create_package_from_dir(package: str, path: str) -> PackageInfo:
+    # sdist_name and wheel_name are sanitized when loaded
     sdist_name, wheel_name, core_metadata = load_dist_data_from_dir(package, path)
     pkg = gather_package_info(core_metadata, None)
     pkg.archful = has_abi_tag(str(wheel_name))
@@ -77,7 +89,7 @@ def create_package_from_dir(package: str, path: str) -> PackageInfo:
 def create_package_from_pypi(core_metadata: RawMetadata | None, pypi_pkg_data: dict) -> PackageInfo:
     pkg = gather_package_info(core_metadata, pypi_pkg_data)
     pkg.archful = contains_wheel_with_abi_tag(pypi_pkg_data["urls"])
-    pkg.archive_name = archive_name(pypi_pkg_data["urls"])
+    pkg.archive_name = sanitize("archive_name", archive_name(pypi_pkg_data["urls"]))
     pkg.source = "PyPI"
     return pkg
 
