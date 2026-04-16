@@ -191,7 +191,7 @@ def check_compliance(
     return (True, checked_identifies)
 
 
-def transform_to_spdx(license_field: str | None, classifiers: list) -> tuple[list[str] | None, str | None]:
+def transform_to_spdx(license_field: str | None, classifiers: list | None) -> tuple[list[str] | None, str | None]:
     """Return SPDX identifiers and expression based on the found
     package license metadata (classifiers or license keyword).
 
@@ -208,7 +208,7 @@ def transform_to_spdx(license_field: str | None, classifiers: list) -> tuple[lis
     return (identifiers, license_field)
 
 
-def generate_spdx_expression(license_field: str | None, classifiers: list) -> str | None:
+def generate_spdx_expression(license_field: str | None, classifiers: list | None) -> str | None:
     """Return the license expression based on detected metadata.
 
     If there are no identifiers, transformation to SPDX was unsuccessful.
@@ -222,10 +222,10 @@ def generate_spdx_expression(license_field: str | None, classifiers: list) -> st
     return expression
 
 
-def resolve_license_expression(data: RawMetadata | dict) -> str | None:
-    if (expression := data.get("license_expression")):
-        return expression
+def resolve_license_expression(data: Metadata) -> str | None:
+    if data.license_expression:
+        return data.license_expression
     return generate_spdx_expression(
-        data.get("license"),
-        filter_license_classifiers(data.get("classifiers", []))
+        data.license,
+        filter_license_classifiers(data.classifiers)
     )

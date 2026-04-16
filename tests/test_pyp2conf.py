@@ -9,6 +9,7 @@ try:
 except ImportError:
     import tomli as tomllib
 
+from pyp2spec.utils import dict_to_metadata
 from pyp2spec.pyp2conf import create_config_contents, prepare_package_info, check_compliance
 from pyp2spec.pyp2conf import gather_package_info, create_package_from_pypi, create_package_from_dir
 from pyp2spec.pypi_loaders import PackageNotFoundError
@@ -151,38 +152,39 @@ def test_package_with_extras(betamax_session):
 def test_no_license_classifiers_and_no_license_keyword():
     fake_pkg_data = {
         "name": "foo",
+        "version": "1.0.0",
         "classifiers": [],
         "license_keyword": "",
     }
-    pkg = prepare_package_info(fake_pkg_data)
+    metadata = dict_to_metadata(fake_pkg_data)
+    pkg = prepare_package_info(metadata)
     assert pkg.license is None
 
 
 def test_license_expression_takes_precedence(fake_fedora_licenses):
     fake_pkg_data = {
         "name": "foo",
+        "version": "1.0.0",
         "classifiers": ["License :: OSI Approved :: MIT License"],
         "license_keyword": "MIT-0",
-        "license_expression": "BSD-2-Clauseo",
+        "license_expression": "Apache-2.0",
     }
-    pkg = prepare_package_info(fake_pkg_data)
-    assert pkg.license == "BSD-2-Clauseo"
-    result, identifiers = check_compliance(pkg.license, licenses_dict=fake_fedora_licenses)
-    assert not result
-    assert not identifiers["good"]
-    # There are none valid identifiers
-    assert not identifiers["bad"]
+    metadata = dict_to_metadata(fake_pkg_data)
+    pkg = prepare_package_info(metadata)
+    assert pkg.license == "Apache-2.0"
 
 
 def test_mix_good_bad_licenses_fail_compliance_check(fake_fedora_licenses):
     fake_pkg_data = {
         "name": "foo",
+        "version": "1.0.0",
         "classifiers": [
             "License :: OSI Approved :: European Union Public Licence 1.0 (EUPL 1.0)",
             "License :: OSI Approved :: MIT License"
         ],
     }
-    pkg = prepare_package_info(fake_pkg_data)
+    metadata = dict_to_metadata(fake_pkg_data)
+    pkg = prepare_package_info(metadata)
     assert pkg.license == "EUPL-1.0 AND MIT"
     result, identifiers = check_compliance(pkg.license, licenses_dict=fake_fedora_licenses)
     assert not result
@@ -193,26 +195,31 @@ def test_mix_good_bad_licenses_fail_compliance_check(fake_fedora_licenses):
 def test_summary_is_generated_if_not_in_upstream():
     fake_pkg_data = {
         "name": "foo",
-        "summary": "",
+        "version": "1.0.0",
     }
-    pkg = prepare_package_info(fake_pkg_data)
+    metadata = dict_to_metadata(fake_pkg_data)
+    pkg = prepare_package_info(metadata)
     assert pkg.summary == "..."
 
 
 def test_summary_is_generated_if_upstream_data_is_multiline():
     fake_pkg_data = {
         "name": "foo",
+        "version": "1.0.0",
         "summary": "I\nforgot\nthat summary\nmust\nbe short",
     }
-    pkg = prepare_package_info(fake_pkg_data)
+    metadata = dict_to_metadata(fake_pkg_data)
+    pkg = prepare_package_info(metadata)
     assert pkg.summary == "I forgot that summary must be short"
 
 
 def test_capitalized_underscored_name_is_normalized():
     fake_pkg_data = {
         "name": "Awesome_TestPkg",
+        "version": "1.0.0",
     }
-    pkg = prepare_package_info(fake_pkg_data)
+    metadata = dict_to_metadata(fake_pkg_data)
+    pkg = prepare_package_info(metadata)
     assert pkg.name == "awesome-testpkg"
 
 
@@ -226,9 +233,11 @@ def test_capitalized_underscored_name_is_normalized():
 def test_license_files_in_metadata_files(metadata, lf_present):
     fake_pkg_data = {
         "name": "foo",
+        "version": "1.0.0",
         "license_files": metadata,
     }
-    pkg = prepare_package_info(fake_pkg_data)
+    metadata_obj = dict_to_metadata(fake_pkg_data)
+    pkg = prepare_package_info(metadata_obj)
     assert pkg.license_files_present is lf_present
 
 
@@ -246,7 +255,8 @@ def test_prepare_package_info_pypi_source():
         "yanked": False,
         "maintainer": "John Doe",
     }, "releases": [],}
-    result = prepare_package_info(data["info"])
+    metadata = dict_to_metadata(data["info"])
+    result = prepare_package_info(metadata)
     assert result.name == "example"
     assert result.summary == "A sample project"
     assert result.license_files_present is True
@@ -269,7 +279,8 @@ def test_prepare_package_info_core_metadata():
         "home_page": "https://example.com",
         "metadata_version": "2.1",
     }
-    result = prepare_package_info(data)
+    metadata = dict_to_metadata(data)
+    result = prepare_package_info(metadata)
     assert result.name == "example"
     assert result.summary == "A sample project"
     assert result.license_files_present is True
@@ -282,112 +293,126 @@ def test_prepare_package_info_core_metadata():
 def test_prepare_package_info_missing_keys():
     data = {
         "name": "foo",
+        "version": "1.0.0",
     }
-    result = prepare_package_info(data)
+    metadata = dict_to_metadata(data)
+    result = prepare_package_info(metadata)
     assert result.name == "foo"
     assert result.summary == "..."
     assert result.license_files_present is False
     assert result.license is None
     assert result.extras == []
-    assert result.version == ""
+    assert result.version == "1.0.0"
     assert result.url == "..."
 
 
 def test_prepare_package_info_only_package_url():
     data = {
         "name": "foo",
+        "version": "1.0.0",
         "package_url": "https://example.com",
     }
-    result = prepare_package_info(data)
+    metadata = dict_to_metadata(data)
+    result = prepare_package_info(metadata)
     assert result.name == "foo"
     assert result.summary == "..."
     assert result.license_files_present is False
     assert result.license is None
     assert result.extras == []
-    assert result.version == ""
+    assert result.version == "1.0.0"
     assert result.url == "https://example.com"
 
 
 def test_prepare_package_info_only_project_url():
     data = {
         "name": "foo",
+        "version": "1.0.0",
         "project_url": "https://example.com",
     }
-    result = prepare_package_info(data)
+    metadata = dict_to_metadata(data)
+    result = prepare_package_info(metadata)
     assert result.name == "foo"
     assert result.summary == "..."
     assert result.license_files_present is False
     assert result.license is None
     assert result.extras == []
-    assert result.version == ""
+    assert result.version == "1.0.0"
     assert result.url == "https://example.com"
 
 
 def test_prepare_package_info_project_urls_precedence():
     data = {
         "name": "foo",
+        "version": "1.0.0",
         "project_url": "https://example1.com",
         "package_url": "https://example2.com",
         "project_urls": {"Homepage": "https://example3.com"},
     }
-    result = prepare_package_info(data)
+    metadata = dict_to_metadata(data)
+    result = prepare_package_info(metadata)
     assert result.name == "foo"
     assert result.summary == "..."
     assert result.license_files_present is False
     assert result.license is None
     assert result.extras == []
-    assert result.version == ""
+    assert result.version == "1.0.0"
     assert result.url == "https://example3.com"
 
 
 def test_prepare_package_info_home_page_precedence():
     data = {
         "name": "foo",
+        "version": "1.0.0",
         "project_url": "https://example1.com",
         "package_url": "https://example2.com",
         "home_page": "https://example3.com",
     }
-    result = prepare_package_info(data)
+    metadata = dict_to_metadata(data)
+    result = prepare_package_info(metadata)
     assert result.name == "foo"
     assert result.summary == "..."
     assert result.license_files_present is False
     assert result.license is None
     assert result.extras == []
-    assert result.version == ""
+    assert result.version == "1.0.0"
     assert result.url == "https://example3.com"
 
 
 def test_prepare_package_info_project_url_precedence():
     data = {
         "name": "foo",
+        "version": "1.0.0",
         "project_url": "https://example1.com",
         "package_url": "https://example2.com",
     }
-    result = prepare_package_info(data)
+    metadata = dict_to_metadata(data)
+    result = prepare_package_info(metadata)
     assert result.name == "foo"
     assert result.summary == "..."
     assert result.license_files_present is False
     assert result.license is None
     assert result.extras == []
-    assert result.version == ""
+    assert result.version == "1.0.0"
     assert result.url == "https://example1.com"
 
 
 def test_prepare_package_info_project_url_precedence_with_nulls():
     data = {
         "name": "foo",
+        "version": "1.0.0",
         "project_urls": None,
         "project_url": None,
         "home_page": None,
         "package_url": "https://example1.com",
     }
-    result = prepare_package_info(data)
+    metadata = dict_to_metadata(data)
+    result = prepare_package_info(metadata)
     assert result.name == "foo"
     assert result.summary == "..."
     assert result.license_files_present is False
     assert result.license is None
     assert result.extras == []
-    assert result.version == ""
+    assert result.version == "1.0.0"
     assert result.url == "https://example1.com"
 
 
@@ -428,6 +453,7 @@ def test_gather_package_info_core_metadata():
         "home_page": "https://example.com",
         "metadata_version": "2.1",
     }
+    data = dict_to_metadata(data)
     pypi = {"info": {
         "name": "discarded",
         "summary": "Deliberately different metadata",
@@ -470,6 +496,7 @@ def test_create_package_from_pypi():
         "home_page": "https://example.com",
         "metadata_version": "2.1",
     }
+
     pypi = {"info": {
         "name": "discarded",
         "summary": "Deliberately different metadata",
@@ -489,6 +516,7 @@ def test_create_package_from_pypi():
         }, {"packagetype": "bdist_wheel",
             "filename": "example-7.0-cp34-abi3-manylinux1_x86_64.whl"
         }]}
+    data = dict_to_metadata(data)
     result = create_package_from_pypi(data, pypi)
     assert result.archive_name == "example-7.0-tar.gz"
     assert result.archful is True

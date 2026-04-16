@@ -6,15 +6,16 @@ import sys
 
 import click
 import tomli_w
-from packaging.metadata import RawMetadata
+from packaging.metadata import Metadata
+from packaging.utils import canonicalize_name, canonicalize_version
 from requests import Session
 
 from pyp2spec.license_processor import check_compliance, resolve_license_expression
-from pyp2spec.utils import Pyp2specError, normalize_name, get_extras, get_summary_or_placeholder
+from pyp2spec.utils import Pyp2specError, get_extras
 from pyp2spec.utils import prepend_name_with_python, archive_name
-from pyp2spec.utils import has_abi_tag, contains_wheel_with_abi_tag, resolve_url, create_compat_name
+from pyp2spec.utils import has_abi_tag, contains_wheel_with_abi_tag, resolve_project_urls, create_compat_name
 from pyp2spec.utils import warn, caution, inform, yay
-from pyp2spec.utils import sanitize_input
+from pyp2spec.utils import sanitize_input, dict_to_metadata
 from pyp2spec.pypi_loaders import load_from_pypi, load_core_metadata_from_pypi, CoreMetadataNotFoundError
 from pyp2spec.local_loaders import load_dist_data_from_dir
 
@@ -39,31 +40,26 @@ class PackageInfo:
     compat: str | None = field(default=None)
 
 
-def prepare_package_info(data: RawMetadata | dict) -> PackageInfo:
-    if not (project_urls := data.get("project_urls") or {}):
-        if (homepage := data.get("home_page", "")):
-            project_urls["home_page"] = homepage
-        if (not homepage and (homepage := data.get("project_url", ""))):
-            project_urls["home_page"] = homepage
-        if (not homepage and (homepage := data.get("package_url", ""))):
-            project_urls["home_page"] = homepage
-    summary = sanitize_input(data.get("summary")) or "..."
+def prepare_package_info(data: Metadata) -> PackageInfo:
+    summary = sanitize_input(data.summary) or "..."
     return PackageInfo(
-        name=normalize_name(data.get("name", "")),
-        version=data.get("version", ""),
+        name=canonicalize_name(data.name, validate=True),
+        version=canonicalize_version(data.version, strip_trailing_zero=False),
         summary=summary,
-        url=sanitize_input(resolve_url(project_urls), url=True),
-        extras=get_extras(data.get("provides_extra", []), data.get("requires_dist", [])),
-        license_files_present=bool(data.get("license_files")),
+        url=resolve_project_urls(data),
+        extras=get_extras(data.provides_extra, data.requires_dist),
+        license_files_present=bool(data.license_files),
         license=resolve_license_expression(data)
     )
 
 
-def gather_package_info(core_metadata: RawMetadata | None, pypi_package_data: dict[str, str] | None) -> PackageInfo:
+def gather_package_info(core_metadata: Metadata | None, pypi_package_data: dict[str, str] | None) -> PackageInfo:
     if core_metadata is not None:
         pkg = prepare_package_info(core_metadata)
     else:
-        pkg = prepare_package_info(pypi_package_data["info"])
+        # Convert PyPI JSON dict to Metadata object
+        metadata = dict_to_metadata(pypi_package_data["info"])
+        pkg = prepare_package_info(metadata)
     return pkg
 
 
@@ -76,7 +72,7 @@ def create_package_from_dir(package: str, path: str) -> PackageInfo:
     return pkg
 
 
-def create_package_from_pypi(core_metadata: RawMetadata | None, pypi_pkg_data: dict) -> PackageInfo:
+def create_package_from_pypi(core_metadata: Metadata | None, pypi_pkg_data: dict) -> PackageInfo:
     pkg = gather_package_info(core_metadata, pypi_pkg_data)
     pkg.archful = contains_wheel_with_abi_tag(pypi_pkg_data["urls"])
     pkg.archive_name = archive_name(pypi_pkg_data["urls"])

@@ -5,10 +5,10 @@ from __future__ import annotations
 from typing import Any
 
 from packaging.version import Version
-from packaging.metadata import RawMetadata
+from packaging.metadata import Metadata
 from requests import Response, Session
 
-from pyp2spec.utils import Pyp2specError, CoreMetadataNotFoundError, parse_core_metadata
+from pyp2spec.utils import Pyp2specError, CoreMetadataNotFoundError
 
 
 class PackageNotFoundError(Pyp2specError):
@@ -90,6 +90,6 @@ def load_from_pypi(
     return _get_versioned_pypi_package_data(package, version=version, session=session)
 
 
-def load_core_metadata_from_pypi(pypi_pkg_data: dict[Any, Any], session: Session | None = None) -> RawMetadata:
+def load_core_metadata_from_pypi(pypi_pkg_data: dict[Any, Any], session: Session | None = None) -> Metadata:
     metadata = _get_metadata_file(pypi_pkg_data, session=session)
-    return parse_core_metadata(metadata)
+    return Metadata.from_email(metadata, validate=False)

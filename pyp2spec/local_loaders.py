@@ -1,10 +1,10 @@
 from pathlib import Path
 from zipfile import ZipFile
 
-from packaging.metadata import RawMetadata
+from packaging.metadata import Metadata
+from packaging.utils import canonicalize_name
 
 from pyp2spec.utils import Pyp2specError, CoreMetadataNotFoundError
-from pyp2spec.utils import parse_core_metadata, normalize_as_wheel_name
 
 
 class DirectoryMissingError(Pyp2specError):
@@ -32,7 +32,7 @@ def _look_up_file_in_dir(package: str, path: Path, suffix: str) -> Path:
     return filelist[0]
 
 
-def load_core_metadata_from_file(wheel_name: str) -> RawMetadata:
+def load_core_metadata_from_file(wheel_name: str) -> Metadata:
     """
     Load core metadata from a wheel file.
     Read the METADATA file from a wheel archive and parse its content.
@@ -47,10 +47,10 @@ def load_core_metadata_from_file(wheel_name: str) -> RawMetadata:
                     break
         else:
             raise CoreMetadataNotFoundError("METADATA file was not found in the wheel")
-    return parse_core_metadata(metadata)
+    return Metadata.from_email(metadata, validate=False)
 
 
-def load_dist_data_from_dir(package: str, path: str) -> tuple[str, str, RawMetadata]:
+def load_dist_data_from_dir(package: str, path: str) -> tuple[str, str, Metadata]:
     """
     Load distribution data from a given directory.
     Return a tuple of sdist name, wheel name, and metadata.
@@ -58,7 +58,7 @@ def load_dist_data_from_dir(package: str, path: str) -> tuple[str, str, RawMetad
     Raise a FileMissingError if the wheel file cannot be found in the directory.
     """
     source_path = _resolve_and_check_if_dir_exists(path)
-    pkgname = normalize_as_wheel_name(package)
+    pkgname = canonicalize_name(package, validate=True).replace("-", "_")
     # sdist name is only needed as a source in specfile
     # if not present, we can still generate a good-enough file
     try:

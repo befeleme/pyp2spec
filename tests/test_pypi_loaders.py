@@ -5,6 +5,8 @@ to prevent loading from the internet on each request.
 
 import pytest
 
+from packaging.utils import canonicalize_version
+
 from pyp2spec.pypi_loaders import load_from_pypi, load_core_metadata_from_pypi
 from pyp2spec.pypi_loaders import PackageNotFoundError, CompatibleVersionNotFoundError
 from pyp2spec.pypi_loaders import _find_available_versions, _find_compatible_version
@@ -29,9 +31,9 @@ def test_load_from_pypi_package_not_found(betamax_session):
 def test_load_core_metadata(betamax_session):
     pypi_pkg_data = load_from_pypi("Sphinx", session=betamax_session)
     result = load_core_metadata_from_pypi(pypi_pkg_data, betamax_session)
-    assert result["name"] == "Sphinx"
-    assert result["version"] == "8.1.3"
-    assert result["provides_extra"] == ["docs", "lint", "test"]
+    assert result.name == "Sphinx"
+    assert canonicalize_version(result.version) == "8.1.3"
+    assert result.provides_extra == ["docs", "lint", "test"]
 
 
 
