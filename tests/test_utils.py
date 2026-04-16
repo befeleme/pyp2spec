@@ -171,6 +171,20 @@ def test_archive_name_empty_list():
         archive_name([])
 
 
+def test_archive_name_path_traversal():
+    archive_urls = [
+        {
+            "packagetype": "bdist_wheel",
+            "filename": "example-1.0.0-py3-none-any.whl"
+        },
+        {
+            "packagetype": "sdist",
+            "filename": "../../example-1.0.0.tar.gz"
+        },
+    ]
+    assert archive_name(archive_urls) == "example-1.0.0.tar.gz"
+
+
 def test_project_urls_valid_single():
     urls = {"homepage": "https://example.com"}
     assert resolve_url(urls) == "https://example.com"

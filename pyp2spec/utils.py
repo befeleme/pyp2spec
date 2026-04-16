@@ -6,6 +6,7 @@ from __future__ import annotations
 import re
 import string
 from functools import partial
+from pathlib import Path
 
 import click
 
@@ -113,7 +114,7 @@ def archive_name(archive_urls: list) -> str:
     """
     for entry in archive_urls:
         if entry["packagetype"] == "sdist":
-            return entry["filename"]
+            return Path(entry["filename"]).name
     raise SdistNotFoundError("Sdist not found, valid spec file cannot be produced")
 
 
