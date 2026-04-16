@@ -205,7 +205,7 @@ def test_summary_is_generated_if_upstream_data_is_multiline():
         "summary": "I\nforgot\nthat summary\nmust\nbe short",
     }
     pkg = prepare_package_info(fake_pkg_data)
-    assert pkg.summary == "..."
+    assert pkg.summary == "I forgot that summary must be short"
 
 
 def test_capitalized_underscored_name_is_normalized():

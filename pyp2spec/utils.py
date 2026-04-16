@@ -19,6 +19,11 @@ inform = partial(click.secho, fg="yellow")
 yay = partial(click.secho, fg="green")
 
 
+# Shell metacharacters to remove (dangerous for command injection)
+# Note: { } are preserved for RPM macros like %%{version}
+DANGEROUS_CHARS = r'[$`|;&<>()\[\]\\\'"]'
+
+
 class Pyp2specError(Exception):
     """Metaexception to derive the custom errors from"""
 
@@ -216,3 +221,36 @@ def parse_core_metadata(metadata: str) -> RawMetadata:
     raw, _ = parse_email(metadata)
     # TODO: consider porting to packaging.Metadata instance?
     return raw
+
+
+def sanitize_input(text: str, url: bool = False) -> str:
+    """Sanitization function for untrusted input fields.
+
+    text: The input text to sanitize
+    url: When sanitizing URL, apply different rules than for free text
+    Returns a sanitized text safe for spec file insertion
+    """
+    if not text:
+        return text
+
+    orig_text = text
+    # Remove newlines (convert to spaces first, then handle below)
+    text = text.replace('\r\n', ' ').replace('\n', ' ').replace('\r', ' ')
+    # Remove control characters
+    text = ''.join(c for c in text if ord(c) >= 32)
+    # Remove dangerous %() execution patterns
+    text = re.sub(r'%\([^)]*\)?', '', text)
+    # Escape % signs for RPM
+    text = text.replace('%', '%%')
+    if url:
+        # No spaces in URLs
+        text = text.replace(' ', '')
+    else:
+        # Remove shell metacharacters from summaries
+        text = re.sub(DANGEROUS_CHARS, '_', text)
+
+    text = text.strip()
+    if text != orig_text:
+        warn(f"Detected text has been cleaned from '{orig_text}' to '{text}'")
+
+    return text
