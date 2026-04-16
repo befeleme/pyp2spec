@@ -1,9 +1,11 @@
 import pytest
 
+from packaging.utils import canonicalize_name
+
 from pyp2spec.utils import filter_license_classifiers, prepend_name_with_python
-from pyp2spec.utils import normalize_name, get_extras, contains_wheel_with_abi_tag
-from pyp2spec.utils import normalize_as_wheel_name, archive_name
-from pyp2spec.utils import resolve_url, SdistNotFoundError, MissingPackageNameError
+from pyp2spec.utils import get_extras, contains_wheel_with_abi_tag
+from pyp2spec.utils import archive_name
+from pyp2spec.utils import resolve_url, SdistNotFoundError
 from pyp2spec.utils import create_compat_name
 
 
@@ -34,7 +36,7 @@ def test_license_classifier_read_correctly():
     ]
 )
 def test_python_name(pypi_name, alt_version, expected):
-    assert prepend_name_with_python(normalize_name(pypi_name), alt_version) == expected
+    assert prepend_name_with_python(canonicalize_name(pypi_name), alt_version) == expected
 
 
 def test_extras_detected_correctly_from_requires_dist():
@@ -49,7 +51,7 @@ def test_extras_detected_correctly_from_requires_dist():
         "eggs>=2.12; implementation_name != 'pypy' and extra == 'dev'",
     ]
 
-    assert get_extras([], requires_dist) == ["dev", "docs", "lint", "test"]
+    assert get_extras(None, requires_dist) == ["dev", "docs", "lint", "test"]
 
 
 def test_extras_detected_correctly_from_provides_extra():
@@ -137,23 +139,6 @@ def test_archfulness_is_detected_from_multiple_urls_3():
         },
     ]
     assert contains_wheel_with_abi_tag(urls)
-
-
-@pytest.mark.parametrize(
-    ("name", "expected"), [
-        ("my-package-foo", "my_package_foo"),
-        ("my.package", "my_package"),
-        ("my_package-", "my_package_"),
-        ("noweirdchars", "noweirdchars"),
-    ]
-)
-def test_normalize_as_wheel_name(name, expected):
-    assert normalize_as_wheel_name(name) == expected
-
-
-def test_empty_package_name_results_in_exception():
-    with pytest.raises(MissingPackageNameError):
-        normalize_as_wheel_name("")
 
 
 def test_archive_name_valid():

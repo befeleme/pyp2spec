@@ -1,6 +1,8 @@
 import pytest
 from pathlib import Path
 
+from packaging.utils import canonicalize_version
+
 from pyp2spec.local_loaders import _resolve_and_check_if_dir_exists, _look_up_file_in_dir
 from pyp2spec.local_loaders import DirectoryMissingError, FileMissingError
 from pyp2spec.local_loaders import load_core_metadata_from_file, load_dist_data_from_dir
@@ -53,7 +55,7 @@ def test_look_up_file_in_dir_multiple_matches(tmp_path):
 
 def test_load_core_metadata_from_file():
     metadata = load_core_metadata_from_file("tests/local/local_test-0.12.2-py3-none-any.whl")
-    assert metadata["version"] == "0.12.2"
+    assert canonicalize_version(metadata.version) == "0.12.2"
 
 
 def test_load_dist_data_from_dir():
@@ -64,4 +66,4 @@ def test_load_dist_data_from_dir():
     assert sdist == ["tests", "local", "local_test-0.12.2.tar.gz"]
     wheel = wheel.split("/")[-1]
     assert wheel == "local_test-0.12.2-py3-none-any.whl"
-    assert data["version"] == "0.12.2"
+    assert canonicalize_version(data.version) == "0.12.2"

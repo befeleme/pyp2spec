@@ -9,9 +9,9 @@ from functools import partial
 
 import click
 
-from packaging.metadata import parse_email, RawMetadata
+from packaging.metadata import Metadata, RawMetadata
 from packaging.requirements import Requirement
-
+from packaging.utils import canonicalize_name
 
 warn = partial(click.secho, fg="red")
 caution = partial(click.secho, fg="magenta")
@@ -27,29 +27,8 @@ class SdistNotFoundError(Pyp2specError):
     """Raised when there's no sdist file in the PyPI metadata"""
 
 
-class MissingPackageNameError(Pyp2specError):
-    """Raised when there's no package name in the metadata"""
-
-
 class CoreMetadataNotFoundError(Pyp2specError):
     """Raised when there's no Metadata file available on PyPI API"""
-
-
-def normalize_name(package_name: str) -> str:
-    """Normalize given package name as defined in PEP 503.
-    The resulting string better conforms with Fedora's Packaging Guidelines."""
-
-    if not package_name:
-        raise MissingPackageNameError("Cannot create a package without a name")
-    return re.sub(r"[-_.]+", "-", package_name).lower()
-
-
-def normalize_as_wheel_name(package_name: str) -> str:
-    """Normalize as in the wheel specification:
-    https://packaging.python.org/en/latest/specifications/binary-distribution-format/#escaping-and-unicode
-    PEP 625 specifies sdist names to this format."""
-
-    return normalize_name(package_name).replace("-", "_")
 
 
 def prepend_name_with_python(name: str, python_alt_version: str | None = None) -> str:
@@ -77,12 +56,13 @@ def prepend_name_with_python(name: str, python_alt_version: str | None = None) -
     return f"python{alt_version}-{name}"
 
 
-def filter_license_classifiers(classifiers_list: list) -> list:
+def filter_license_classifiers(classifiers_list: list | None) -> list:
     """Return the list of license classifiers defined for the package.
 
     Filter out the parent categories `OSI-/DFSG Approved` which don't have any meaning.
     """
-
+    if not classifiers_list:
+        return []
     return  [
         c for c in classifiers_list
         if (
@@ -92,19 +72,7 @@ def filter_license_classifiers(classifiers_list: list) -> list:
     ]
 
 
-def get_summary_or_placeholder(summary: str) -> str:
-    """Return either a summary or a "..." string.
-
-    Summary is an optional field, so it may be empty or it can consist of
-    multi-line strings which we can't use.
-    """
-
-    if not summary or len(summary.split("\n")) > 1:
-        summary = "..."
-    return summary
-
-
-def get_extras(provides_extra: list, requires_dist: list) -> list:
+def get_extras(provides_extra: list | None, requires_dist: list | None) -> list:
     """Return the sorted list of the found extras names.
 
     Packages define extras explicitly via `Provides-Extra` and
@@ -117,19 +85,20 @@ def get_extras(provides_extra: list, requires_dist: list) -> list:
     If a package defines an extra with no requirements,
     we can't detect that from requires_dist.
     """
-    if provides_extra:
-        return sorted(provides_extra)
+    if provides_extra is not None:
+        return sorted([canonicalize_name(n, validate=True) for n in provides_extra])
 
     extra_from_req = re.compile(r'''\bextra\s+==\s+["']([^"']+)["']''')
     extras = set()
-    if requires_dist:
+    if requires_dist is not None:
         for required_dist in requires_dist:
+            if isinstance(required_dist, str):
+                required_dist = Requirement(required_dist)
             # packaging.Requirement can parse the markers, but it
             # doesn't provide their string representations,
             # hence we need to use regex to pick them out
-            req = Requirement(required_dist)
-            if found := re.search(extra_from_req, str(req.marker)):
-                extras.add(found.group(1))
+            if found := re.search(extra_from_req, str(required_dist.marker)):
+                extras.add(canonicalize_name(found.group(1), validate=True))
     return sorted(extras)
 
 
@@ -204,6 +173,13 @@ def resolve_url(urls: dict) -> str:
         return "..."
 
 
+def resolve_project_urls(data: Metadata) -> str:
+    project_urls = data.project_urls or {}
+    if not project_urls and (homepage := data.home_page):
+        project_urls = {"home_page": homepage}
+    return resolve_url(project_urls)
+
+
 def create_compat_name(name: str, compat: str | None) -> str:
     if not compat:
         return name
@@ -212,7 +188,39 @@ def create_compat_name(name: str, compat: str | None) -> str:
     return f"{name}{compat}"
 
 
-def parse_core_metadata(metadata: str) -> RawMetadata:
-    raw, _ = parse_email(metadata)
-    # TODO: consider porting to packaging.Metadata instance?
-    return raw
+def dict_to_metadata(data: dict) -> Metadata:
+    """Convert PyPI JSON info dict to Metadata object.
+
+    Maps PyPI API response fields to RawMetadata format
+    that packaging.metadata.Metadata.from_raw expects.
+    """
+    raw: RawMetadata = {}
+
+    # Single-value fields
+    for field in ['name', 'version', 'home_page', 'author', 'author_email',
+                  'maintainer', 'maintainer_email', 'license', 'license_expression',
+                  'requires_python', 'description', 'description_content_type']:
+        if value := data.get(field):
+            raw[field] = value
+
+    # Summary needs newline normalization
+    if summary := data.get("summary"):
+        raw["summary"] = summary.replace('\r\n', ' ').replace('\n', ' ').replace('\r', ' ')
+
+    # Multi-value fields (lists → tuples)
+    for field in ["classifiers", "license_files", "provides_extra", "requires_dist"]:
+        if value := data.get(field):
+            raw[field] = tuple(value)
+
+    # Project URLs: pass as dict
+    if project_urls := data.get("project_urls"):
+        raw["project_urls"] = project_urls
+    elif not data.get("home_page"):
+        # Only add non-standard PyPI URL fields if home_page wasn't already added
+        if project_url := data.get("project_url"):
+            raw["project_urls"] = {"Homepage": project_url}
+        elif package_url := data.get("package_url"):
+            raw["project_urls"] = {"Homepage": package_url}
+
+    return Metadata.from_raw(raw, validate=False)
+
