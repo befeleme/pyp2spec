@@ -14,6 +14,7 @@ from pyp2spec.utils import Pyp2specError, normalize_name, get_extras, get_summar
 from pyp2spec.utils import prepend_name_with_python, archive_name
 from pyp2spec.utils import has_abi_tag, contains_wheel_with_abi_tag, resolve_url, create_compat_name
 from pyp2spec.utils import warn, caution, inform, yay
+from pyp2spec.utils import sanitize_input
 from pyp2spec.pypi_loaders import load_from_pypi, load_core_metadata_from_pypi, CoreMetadataNotFoundError
 from pyp2spec.local_loaders import load_dist_data_from_dir
 
@@ -46,11 +47,12 @@ def prepare_package_info(data: RawMetadata | dict) -> PackageInfo:
             project_urls["home_page"] = homepage
         if (not homepage and (homepage := data.get("package_url", ""))):
             project_urls["home_page"] = homepage
+    summary = sanitize_input(data.get("summary")) or "..."
     return PackageInfo(
         name=normalize_name(data.get("name", "")),
         version=data.get("version", ""),
-        summary=get_summary_or_placeholder(data.get("summary", "")),
-        url=resolve_url(project_urls),
+        summary=summary,
+        url=sanitize_input(resolve_url(project_urls), url=True),
         extras=get_extras(data.get("provides_extra", []), data.get("requires_dist", [])),
         license_files_present=bool(data.get("license_files")),
         license=resolve_license_expression(data)
