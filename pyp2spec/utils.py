@@ -19,6 +19,11 @@ inform = partial(click.secho, fg="yellow")
 yay = partial(click.secho, fg="green")
 
 
+# Shell metacharacters to remove (dangerous for command injection)
+# Note: { } are preserved for RPM macros like %%{version}
+DANGEROUS_CHARS = r'[$`|;&<>()\[\]\\\'"]'
+
+
 class Pyp2specError(Exception):
     """Metaexception to derive the custom errors from"""
 
@@ -177,7 +182,7 @@ def resolve_project_urls(data: Metadata) -> str:
     project_urls = data.project_urls or {}
     if not project_urls and (homepage := data.home_page):
         project_urls = {"home_page": homepage}
-    return resolve_url(project_urls)
+    return sanitize_input(resolve_url(project_urls))
 
 
 def create_compat_name(name: str, compat: str | None) -> str:
@@ -224,3 +229,27 @@ def dict_to_metadata(data: dict) -> Metadata:
 
     return Metadata.from_raw(raw, validate=False)
 
+
+def sanitize_input(text: str, allow_spaces: bool = False) -> str:
+    """Sanitization function for untrusted input fields.
+
+    text: The input text to sanitize
+    allow_spaces: Whether to preserve spaces
+    Returns a sanitized text safe for spec file insertion
+    """
+    if not text:
+        return text
+
+    # Remove newlines (convert to spaces first, then handle below)
+    text = text.replace('\r\n', ' ').replace('\n', ' ').replace('\r', ' ')
+    # Remove control characters
+    text = ''.join(c for c in text if ord(c) >= 32)
+    # Remove dangerous %() execution patterns
+    text = re.sub(r'%\([^)]*\)?', '', text)
+    # Escape % signs for RPM
+    text = text.replace('%', '%%')
+    # Remove shell metacharacters (preserves Unicode)
+    text = re.sub(DANGEROUS_CHARS, '_', text)
+    if not allow_spaces:
+        text = text.replace(' ', '')
+    return text.strip()

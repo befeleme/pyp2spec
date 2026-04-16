@@ -15,7 +15,7 @@ from pyp2spec.utils import Pyp2specError, get_extras
 from pyp2spec.utils import prepend_name_with_python, archive_name
 from pyp2spec.utils import has_abi_tag, contains_wheel_with_abi_tag, resolve_project_urls, create_compat_name
 from pyp2spec.utils import warn, caution, inform, yay
-from pyp2spec.utils import dict_to_metadata
+from pyp2spec.utils import dict_to_metadata, sanitize_input
 from pyp2spec.pypi_loaders import load_from_pypi, load_core_metadata_from_pypi, CoreMetadataNotFoundError
 from pyp2spec.local_loaders import load_dist_data_from_dir
 
@@ -41,7 +41,7 @@ class PackageInfo:
 
 
 def prepare_package_info(data: Metadata) -> PackageInfo:
-    summary = data.summary or "..."
+    summary = sanitize_input(data.summary, allow_spaces=True) if data.summary else "..."
     return PackageInfo(
         name=canonicalize_name(data.name, validate=True),
         version=canonicalize_version(data.version, strip_trailing_zero=False),
