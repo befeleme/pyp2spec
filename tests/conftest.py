@@ -11,6 +11,10 @@ config.cassette_library_dir = "tests/fixtures/cassettes"
 # this is to prevent packaging issues in the offline environment (like rpm build)
 # change to 'once' to enable recording new cassettes when writing new tests
 config.default_cassette_options["record_mode"] = "none"
+# Preserve exact body bytes for binary files like wheels
+config.default_cassette_options["preserve_exact_body_bytes"] = True
+# Match on URI and method only (not body/headers which may vary)
+config.default_cassette_options["match_requests_on"] = ["uri", "method"]
 
 
 @pytest.fixture(scope="session")
