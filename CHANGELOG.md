@@ -1,5 +1,9 @@
 # Changelog
 
+# [0.14.1] - 2026-04-20
+### Added
+- Sanitization for the loaded metadata fields, preventing injection attacks
+
 # [0.13.0] - 2025-07-31
 ### Added
 - Support for generating spec files from a local path
