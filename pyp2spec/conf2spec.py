@@ -183,6 +183,11 @@ def fill_in_template(config: ConfigFile, declarative_buildsystem: bool) -> str:
 
     version = config.get_string("version")
 
+    file_list = config.get_list("file_list")
+    file_list_str = " ".join(file_list) if file_list else None
+
+    scripts = config.get_list("scripts")
+
     result = spec_template.render(
         additional_build_requires=list_additional_build_requires(config),
         archful=config.get_bool("archful"),
@@ -192,6 +197,7 @@ def fill_in_template(config: ConfigFile, declarative_buildsystem: bool) -> str:
         compat_name=create_compat_name(config.get_string("name"), config.get_string("compat")),
         declarative_buildsystem=declarative_buildsystem,
         extras=",".join(config.get_list("extras")),
+        file_list=file_list_str,
         license=license,
         license_notice=license_notice,
         mandate_license=config.get_bool("license_files_present"),
@@ -199,6 +205,7 @@ def fill_in_template(config: ConfigFile, declarative_buildsystem: bool) -> str:
         python_compat_name=create_compat_name(config.get_string("python_name"), config.get_string("compat")),
         pypi_version=python_version_or_macro(version),
         python_alt_version=config.get_string("python_alt_version"),
+        scripts=scripts,
         source=source(config),
         summary=config.get_string("summary"),
         test_top_level=config.get_bool("test_top_level"),
