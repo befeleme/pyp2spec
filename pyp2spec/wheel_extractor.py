@@ -29,7 +29,7 @@ def _find_wheel_url(pypi_pkg_data: dict[Any, Any]) -> str | None:
     for entry in pypi_pkg_data["urls"]:
         if entry["packagetype"] == "bdist_wheel":
             filename = entry["filename"]
-            if "py3-none-any" in filename or "py2.py3-none-any" in filename:
+            if "py3-none-any" in filename:
                 pure_python_wheels.append(entry["url"])
             else:
                 other_wheels.append(entry["url"])
