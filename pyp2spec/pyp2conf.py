@@ -17,7 +17,7 @@ from pyp2spec.utils import warn, caution, inform, yay
 from pyp2spec.utils import sanitize_input
 from pyp2spec.pypi_loaders import load_from_pypi, load_core_metadata_from_pypi, CoreMetadataNotFoundError
 from pyp2spec.local_loaders import load_dist_data_from_dir
-from pyp2spec.wheel_extractor import download_and_extract_files, WheelNotFoundError
+from pyp2spec.wheel_extractor import download_and_extract_files, extract_files_from_wheel, WheelNotFoundError
 
 
 @dataclass
@@ -40,6 +40,7 @@ class PackageInfo:
     compat: str | None = field(default=None)
     file_list: list[str] | None = field(default=None)
     scripts: list[str] | None = field(default=None)
+    wheel_path: str | None = field(default=None)
 
 
 def prepare_package_info(data: RawMetadata | dict) -> PackageInfo:
@@ -76,6 +77,7 @@ def create_package_from_dir(package: str, path: str) -> PackageInfo:
     pkg.archful = has_abi_tag(str(wheel_name))
     pkg.archive_name = sdist_name
     pkg.source = "local"
+    pkg.wheel_path = wheel_name
     return pkg
 
 
@@ -160,18 +162,26 @@ def create_config_contents(
     if options.get("automode"):
         pkg_info.automode = True
 
-    # Extract file list from wheel if auto_files is enabled
-    if options.get("auto_files") and path is None:
-        # Only works for PyPI packages, not local ones
-        try:
-            # Need to get the full package data for wheel extraction
+    # Extract file list from wheel (works for both PyPI and local packages)
+    try:
+        if pkg_info.wheel_path:
+            # Local package: use the stored wheel path
+            extracted = extract_files_from_wheel(pkg_info.wheel_path)
+        else:
+            # PyPI package: download wheel
             pypi_pkg_data = load_from_pypi(package, version=version, compat=compat, session=session)
             extracted = download_and_extract_files(pypi_pkg_data, session=session)
-            pkg_info.file_list = extracted["modules"]
-            pkg_info.scripts = extracted["scripts"]
-        except WheelNotFoundError as e:
-            warn(f"Could not extract file list from wheel: {e}")
-            inform("The spec file will need manual editing to add module names")
+
+        pkg_info.file_list = extracted["modules"]
+        pkg_info.scripts = extracted["scripts"]
+    except WheelNotFoundError as e:
+        # Gracefully handle missing wheel - template will use placeholders
+        inform(f"Could not extract file list from wheel: {e}")
+        inform("The spec file will use placeholder values for file list")
+    except Exception as e:
+        # Catch any other errors to prevent failures
+        warn(f"Error extracting files from wheel: {e}")
+        inform("The spec file will use placeholder values for file list")
 
     pkg_dict = asdict(pkg_info)
     # sort the dictionary alphabetically for output consistency
@@ -229,10 +239,6 @@ def pypconf_args(func):  # noqa
     @click.option(
         "--compat",
         help="Create a compat package for a given version",
-    )
-    @click.option(
-        "--auto-files", is_flag=True, default=False,
-        help="Automatically extract file list from wheel (PyPI packages only)",
     )
     @wraps(func)
     def wrapper(*args, **kwargs): # noqa
