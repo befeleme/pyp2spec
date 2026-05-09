@@ -4,8 +4,8 @@ Module for downloading and extracting file information from Python wheels.
 from __future__ import annotations
 
 import configparser
-import os
 import tempfile
+from pathlib import Path
 from zipfile import ZipFile
 from typing import Any
 
@@ -106,6 +106,28 @@ def _extract_scripts_from_wheel(wheel_path: str) -> list[str]:
     return sorted(scripts)
 
 
+def extract_files_from_wheel(wheel_path: str | Path) -> dict[str, list[str]]:
+    """Extract modules and scripts from a local wheel file.
+
+    Args:
+        wheel_path: Path to a wheel file (local or downloaded)
+
+    Returns:
+        Dictionary with 'modules' and 'scripts' keys, each containing a list of names
+
+    Raises:
+        WheelNotFoundError: If wheel file doesn't exist or can't be read
+    """
+    wheel_path = Path(wheel_path)
+    if not wheel_path.exists():
+        raise WheelNotFoundError(f"Wheel file not found: {wheel_path}")
+
+    modules = _extract_modules_from_wheel(str(wheel_path))
+    scripts = _extract_scripts_from_wheel(str(wheel_path))
+    inform(f"Extracted {len(modules)} top-level modules and {len(scripts)} scripts from wheel")
+    return {"modules": modules, "scripts": scripts}
+
+
 def download_and_extract_files(
     pypi_pkg_data: dict[Any, Any],
     session: Session | None = None
@@ -149,11 +171,9 @@ def download_and_extract_files(
         tmp_path = tmp_file.name
 
     try:
-        modules = _extract_modules_from_wheel(tmp_path)
-        scripts = _extract_scripts_from_wheel(tmp_path)
-        inform(f"Extracted {len(modules)} top-level modules and {len(scripts)} scripts from wheel")
-        return {"modules": modules, "scripts": scripts}
+        return extract_files_from_wheel(tmp_path)
     finally:
         # Clean up temporary file
-        if os.path.exists(tmp_path):
-            os.unlink(tmp_path)
+        tmp_path_obj = Path(tmp_path)
+        if tmp_path_obj.exists():
+            tmp_path_obj.unlink()
