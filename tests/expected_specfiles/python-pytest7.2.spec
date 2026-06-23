@@ -48,8 +48,8 @@ Provides:       deprecated()
 
 %install
 %pyproject_install
-# Add top-level Python module names here as arguments, you can use globs
-%pyproject_save_files -l ...
+# Automatically extracted from wheel
+%pyproject_save_files -l _pytest py pytest
 
 
 %check
@@ -57,6 +57,8 @@ Provides:       deprecated()
 
 
 %files -n python3-pytest7.2 -f %{pyproject_files}
+%{_bindir}/py.test
+%{_bindir}/pytest
 
 
 %changelog

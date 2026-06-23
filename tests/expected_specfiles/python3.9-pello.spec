@@ -43,8 +43,8 @@ This is package 'pello' generated automatically by pyp2spec.}
 
 %install
 %pyproject_install
-# Add top-level Python module names here as arguments, you can use globs
-%pyproject_save_files -l ...
+# Automatically extracted from wheel
+%pyproject_save_files -l pello
 
 
 %check
@@ -52,6 +52,7 @@ This is package 'pello' generated automatically by pyp2spec.}
 
 
 %files -n python%{python3_pkgversion}-pello -f %{pyproject_files}
+%{_bindir}/pello_greeting
 
 
 %changelog

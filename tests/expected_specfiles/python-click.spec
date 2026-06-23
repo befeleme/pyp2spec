@@ -40,8 +40,8 @@ Summary:        %{summary}
 
 %install
 %pyproject_install
-# Add top-level Python module names here as arguments, you can use globs
-%pyproject_save_files -l ...
+# Automatically extracted from wheel
+%pyproject_save_files -l click
 
 
 %check

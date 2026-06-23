@@ -11,8 +11,8 @@ URL:            https://github.com/fedora-python/Pello
 Source:         %{pypi_source Pello}
 
 BuildSystem:    pyproject
-# Replace ... with top-level Python module names as arguments, you can use globs
-BuildOption(install):  -l ...
+# Automatically extracted from wheel
+BuildOption(install):  -l pello
 # Keep only those extras which you actually want to package or use during tests
 # If you don't want to package any of them, erase the whole line
 BuildOption(generate_buildrequires): -x color
@@ -38,6 +38,7 @@ Summary:        %{summary}
 
 
 %files -n python3-pello -f %{pyproject_files}
+%{_bindir}/pello_greeting
 
 
 %changelog
