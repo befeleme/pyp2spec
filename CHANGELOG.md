@@ -1,6 +1,6 @@
 # Changelog
 
-# Unreleased
+# [0.15.0] - 2026-06-23
 ### Added
 - top level modules and scripts extraction from wheel files, courtesy @gordonmessmer
 
