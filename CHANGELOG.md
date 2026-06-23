@@ -1,5 +1,9 @@
 # Changelog
 
+# Unreleased
+### Added
+- top level modules and scripts extraction from wheel files, courtesy @gordonmessmer
+
 # [0.14.1] - 2026-04-20
 ### Added
 - Sanitization for the loaded metadata fields, preventing injection attacks
