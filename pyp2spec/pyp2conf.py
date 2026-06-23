@@ -163,6 +163,8 @@ def create_config_contents(
         if pkg_info.wheel_path:
             # Local package: use the stored wheel path
             extracted = extract_files_from_wheel(pkg_info.wheel_path)
+            # Don't store the wheel_path in the resulting config file
+            pkg_info.wheel_path = None
         else:
             # PyPI package: download wheel
             pypi_pkg_data = load_from_pypi(package, version=version, compat=compat, session=session)

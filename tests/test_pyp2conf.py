@@ -117,6 +117,7 @@ def test_config_from_local_path_is_valid():
         loaded_contents = tomllib.load(config_file)
     # Replace the detected value, we don't want to compare the real one
     config["archive_name"] = "..."
+
     assert config == loaded_contents
 
 

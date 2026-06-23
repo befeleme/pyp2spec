@@ -47,8 +47,8 @@ Summary:        %{summary}
 
 %install
 %pyproject_install
-# Add top-level Python module names here as arguments, you can use globs
-%pyproject_save_files -l ...
+# Automatically extracted from wheel
+%pyproject_save_files -l local_test
 
 
 %check
@@ -56,6 +56,9 @@ Summary:        %{summary}
 
 
 %files -n python3-local-test -f %{pyproject_files}
+%{_bindir}/conf2spec
+%{_bindir}/pyp2conf
+%{_bindir}/pyp2spec
 
 
 %changelog

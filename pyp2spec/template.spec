@@ -105,7 +105,7 @@ Provides:       deprecated()
 
 {% endif -%}
 %files -n python{{python3_pkgversion}}-{{compat_name}} -f %{pyproject_files}
-{%- if scripts %}
+{%- if scripts -%}
 {% for script in scripts %}
 %{_bindir}/{{ script }}
 {%- endfor %}
