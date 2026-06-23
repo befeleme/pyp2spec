@@ -122,7 +122,7 @@ def test_config_from_local_path_is_valid():
 
 
 def test_archful_package(betamax_session):
-    """Generate config for numpy which is archful"""
+    """Generate config for numpy which is archful and contains many wheel files"""
     config = create_config_contents(
         {"package": "numpy",
         "version": "1.25.2",
@@ -148,6 +148,16 @@ def test_package_with_extras(betamax_session):
 
     assert config["extras"] == loaded_contents["extras"]
     assert config == loaded_contents
+
+
+def test_package_without_wheels(betamax_session):
+    config = create_config_contents(
+        {"package": "uwsgi"},
+        session=betamax_session,
+    )
+    # There's no wheel file to extract this data from, keys shouldn't be present
+    assert config.get("scripts") is None
+    assert config.get("top_level_modules") is None
 
 
 def test_no_license_classifiers_and_no_license_keyword():

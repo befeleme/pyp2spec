@@ -50,6 +50,9 @@ Summary:        %{summary}
 
 
 %files -n python3-numpy -f %{pyproject_files}
+%{_bindir}/f2py
+%{_bindir}/f2py3
+%{_bindir}/f2py3.10
 
 
 %changelog
