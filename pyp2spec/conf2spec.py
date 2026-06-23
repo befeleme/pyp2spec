@@ -183,8 +183,8 @@ def fill_in_template(config: ConfigFile, declarative_buildsystem: bool) -> str:
 
     version = config.get_string("version")
 
-    file_list = config.get_list("file_list")
-    file_list_str = " ".join(file_list) if file_list else None
+    top_level_modules = config.get_list("top_level_modules")
+    top_level_modules_str = " ".join(top_level_modules) if top_level_modules else None
 
     scripts = config.get_list("scripts")
 
@@ -197,7 +197,7 @@ def fill_in_template(config: ConfigFile, declarative_buildsystem: bool) -> str:
         compat_name=create_compat_name(config.get_string("name"), config.get_string("compat")),
         declarative_buildsystem=declarative_buildsystem,
         extras=",".join(config.get_list("extras")),
-        file_list=file_list_str,
+        top_level_modules=top_level_modules_str,
         license=license,
         license_notice=license_notice,
         mandate_license=config.get_bool("license_files_present"),

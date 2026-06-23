@@ -39,7 +39,7 @@ class PackageInfo:
     python_alt_version: str | None = field(default=None)
     automode: bool | None = field(default=None)
     compat: str | None = field(default=None)
-    file_list: list[str] | None = field(default=None)
+    top_level_modules: list[str] | None = field(default=None)
     scripts: list[str] | None = field(default=None)
     wheel_path: str | None = field(default=None)
 
@@ -170,16 +170,16 @@ def create_config_contents(
             pypi_pkg_data = load_from_pypi(package, version=version, compat=compat, session=session)
             extracted = download_and_extract_files(pypi_pkg_data, session=session)
 
-        pkg_info.file_list = extracted["modules"]
+        pkg_info.top_level_modules = extracted["modules"]
         pkg_info.scripts = extracted["scripts"]
     except WheelNotFoundError as e:
         # Gracefully handle missing wheel - template will use placeholders
-        inform(f"Could not extract file list from wheel: {e}")
-        inform("The spec file will use placeholder values for file list")
+        inform(f"Could not extract modules list from wheel: {e}")
+        inform("The spec file will use placeholder values for modules list")
     except Exception as e:
         # Catch any other errors to prevent failures
-        warn(f"Error extracting files from wheel: {e}")
-        inform("The spec file will use placeholder values for file list")
+        warn(f"Error extracting modules from wheel: {e}")
+        inform("The spec file will use placeholder values for modules list")
 
     pkg_dict = asdict(pkg_info)
     # sort the dictionary alphabetically for output consistency

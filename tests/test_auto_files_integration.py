@@ -18,8 +18,8 @@ class TestAutoFilesIntegration:
     These tests use betamax cassettes for recorded HTTP interactions.
     """
 
-    def test_config_includes_file_list_when_enabled(self, betamax_session):
-        """Test that file_list is included in config when --auto-files is enabled."""
+    def test_config_includes_top_level_modules_when_enabled(self, betamax_session):
+        """Test that top_level_modules is included in config when --auto-files is enabled."""
         options = {
             "package": "click",
             "version": "8.1.3",
@@ -33,11 +33,11 @@ class TestAutoFilesIntegration:
 
         config = create_config_contents(options, session=betamax_session)
 
-        assert "file_list" in config
-        assert "click" in config["file_list"]
+        assert "top_level_modules" in config
+        assert "click" in config["top_level_modules"]
 
-    def test_config_excludes_file_list_when_disabled(self, betamax_session):
-        """Test that file_list is not in config when --auto-files is disabled."""
+    def test_config_excludes_top_level_modules_when_disabled(self, betamax_session):
+        """Test that top_level_modules is not in config when --auto-files is disabled."""
         options = {
             "package": "click",
             "version": "8.1.3",
@@ -51,7 +51,7 @@ class TestAutoFilesIntegration:
 
         config = create_config_contents(options, session=betamax_session)
 
-        assert "file_list" not in config
+        assert "top_level_modules" not in config
 
     def test_spec_file_contains_module_names(self, betamax_session):
         """Test that the generated spec file contains actual module names."""

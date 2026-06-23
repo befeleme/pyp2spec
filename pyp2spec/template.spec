@@ -17,9 +17,9 @@ URL:            {{url}}
 Source:         {{source}}
 {% if declarative_buildsystem %}
 BuildSystem:    pyproject
-{% if file_list -%}
+{% if top_level_modules -%}
 # Automatically extracted from wheel
-BuildOption(install): {% if mandate_license %} -l{% endif %} {{ file_list }}
+BuildOption(install): {% if mandate_license %} -l{% endif %} {{ top_level_modules }}
 {%- else -%}
 # Replace ... with top-level Python module names as arguments, you can use globs
 BuildOption(install): {% if mandate_license %} -l{% endif %} ...
@@ -86,9 +86,9 @@ Provides:       deprecated()
 # For official Fedora packages, including files with '*' +auto is not allowed
 # Replace it with a list of relevant Python modules/globs and list extra files in %%files
 %pyproject_save_files '*' +auto
-{%- elif file_list -%}
+{%- elif top_level_modules -%}
 # Automatically extracted from wheel
-%pyproject_save_files{% if mandate_license %} -l{% endif %} {{ file_list }}
+%pyproject_save_files{% if mandate_license %} -l{% endif %} {{ top_level_modules }}
 {%- else -%}
 # Add top-level Python module names here as arguments, you can use globs
 %pyproject_save_files{% if mandate_license %} -l{% endif %} ...
