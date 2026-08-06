@@ -44,6 +44,11 @@ test = [
     "pytest-regressions",
     "betamax"
 ]
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocstrings[python]>=0.20.0",
+    "pymdown-extensions>=9.0"
+]
 
 [project.scripts]
 pyp2spec = "pyp2spec.pyp2spec:main"
