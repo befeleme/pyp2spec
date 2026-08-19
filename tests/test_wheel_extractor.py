@@ -158,6 +158,54 @@ class TestExtractModulesFromWheel:
         finally:
             os.unlink(tmp_file.name)
 
+    def test_sanitizes_malicious_module_name(self):
+        """Test that dangerous characters in top_level.txt are neutralized."""
+        wheel_path = self._create_test_wheel("click\nevil$(whoami)\n")
+        try:
+            modules = _extract_modules_from_wheel(wheel_path)
+            # Shell metacharacters must not survive into the spec file.
+            assert modules == ['click', 'evil__whoami_']
+        finally:
+            os.unlink(wheel_path)
+
+    def test_sanitizes_rpm_macro_in_module_name(self):
+        """Test that RPM macros in top_level.txt are escaped."""
+        wheel_path = self._create_test_wheel("%{lua:os.execute('id')}\n")
+        try:
+            modules = _extract_modules_from_wheel(wheel_path)
+            # Every '%' must be doubled so RPM won't expand the macro, and the
+            # quotes wrapping the payload must be gone.
+            assert modules == ["%%{lua:os.execute__id__}"]
+        finally:
+            os.unlink(wheel_path)
+
+    def test_sanitizes_macro_only_module_name_dropped(self):
+        """Test that a name reduced to empty by sanitization is dropped."""
+        wheel_path = self._create_test_wheel("click\n%(id)\n")
+        try:
+            modules = _extract_modules_from_wheel(wheel_path)
+            assert modules == ["click"]
+        finally:
+            os.unlink(wheel_path)
+
+    def test_sanitizes_malicious_module_name_in_record_fallback(self):
+        """Test that RECORD-fallback module names are sanitized too."""
+        tmp_file = tempfile.NamedTemporaryFile(suffix='.whl', delete=False)
+        tmp_file.close()
+
+        with ZipFile(tmp_file.name, 'w') as wheel:
+            wheel.writestr(
+                'test_package-1.0.0.dist-info/RECORD',
+                'evil$(whoami)/__init__.py,sha256=xxx,123\n'
+                'test_package-1.0.0.dist-info/METADATA,sha256=zzz,789\n'
+            )
+
+        try:
+            modules = _extract_modules_from_wheel(tmp_file.name)
+            assert modules == ["evil__whoami_"]
+        finally:
+            os.unlink(tmp_file.name)
+
 
 class TestExtractScriptsFromWheel:
     """Test _extract_scripts_from_wheel with mock wheel files."""
@@ -220,6 +268,20 @@ class TestExtractScriptsFromWheel:
             assert scripts == []
         finally:
             os.unlink(tmp_file.name)
+
+    def test_sanitizes_malicious_script_name(self):
+        """Test that dangerous characters in entry_points.txt are neutralized."""
+        entry_points = (
+            "[console_scripts]\n"
+            "good = good.cli:main\n"
+            "evil$(whoami) = evil.cli:main\n"
+        )
+        wheel_path = self._create_test_wheel_with_scripts(entry_points)
+        try:
+            scripts = _extract_scripts_from_wheel(wheel_path)
+            assert scripts == ['evil__whoami_', 'good']
+        finally:
+            os.unlink(wheel_path)
 
 
 class TestDownloadAndExtractFiles:

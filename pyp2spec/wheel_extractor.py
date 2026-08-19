@@ -11,7 +11,7 @@ from typing import Any
 
 from requests import Session
 
-from pyp2spec.utils import Pyp2specError, inform
+from pyp2spec.utils import Pyp2specError, inform, sanitize_input
 
 
 class WheelNotFoundError(Pyp2specError):
@@ -56,7 +56,8 @@ def _extract_modules_from_wheel(wheel_path: str) -> list[str]:
             if name.endswith('.dist-info/top_level.txt'):
                 content = wheel.read(name).decode('utf-8')
                 for line in content.strip().split('\n'):
-                    line = line.strip()
+                    # Wheel contents are untrusted input
+                    line = sanitize_input(line.strip())
                     if line:
                         modules.add(line)
                 break
@@ -74,7 +75,9 @@ def _extract_modules_from_wheel(wheel_path: str) -> list[str]:
                             # Remove .py extension if it's a single file
                             module_name = parts[0].replace('.py', '')
                             if module_name and not module_name.startswith('__pycache__'):
-                                modules.add(module_name)
+                                module_name = sanitize_input(module_name)
+                                if module_name:
+                                    modules.add(module_name)
                     break
 
     return sorted(modules)
@@ -100,7 +103,9 @@ def _extract_scripts_from_wheel(wheel_path: str) -> list[str]:
                 # Extract console_scripts section
                 if 'console_scripts' in config:
                     for script_name in config['console_scripts']:
-                        scripts.add(script_name)
+                        script_name = sanitize_input(script_name)
+                        if script_name:
+                            scripts.add(script_name)
                 break
 
     return sorted(scripts)
