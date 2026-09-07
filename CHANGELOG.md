@@ -1,5 +1,9 @@
 # Changelog
 
+# [0.16.0] - 2026-09-07
+### Added
+- Sanitization for the top_level.txt and entry_points.txt inputs
+
 # [0.15.0] - 2026-06-23
 ### Added
 - top level modules and scripts extraction from wheel files, courtesy @gordonmessmer
