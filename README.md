@@ -192,7 +192,6 @@ URL:            https://github.com/bachya/aionotion
 Source:         %{pypi_source aionotion}
 
 BuildArch:      noarch
-BuildRequires:  python3-devel
 
 
 # Fill in the actual package description to submit package to Fedora
@@ -259,7 +258,6 @@ BuildOption(install):  ...
 BuildOption(generate_buildrequires): -x build,lint,test
 
 BuildArch:      noarch
-BuildRequires:  python3-devel
 
 
 # Fill in the actual package description to submit package to Fedora

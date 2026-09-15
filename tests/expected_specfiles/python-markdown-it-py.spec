@@ -11,7 +11,6 @@ URL:            https://github.com/executablebooks/markdown-it-py
 Source:         %{pypi_source markdown-it-py}
 
 BuildArch:      noarch
-BuildRequires:  python3-devel
 
 
 # Fill in the actual package description to submit package to Fedora

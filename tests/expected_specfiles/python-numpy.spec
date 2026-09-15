@@ -10,7 +10,6 @@ License:        BSD-3-Clause
 URL:            https://github.com/numpy/numpy
 Source:         %{pypi_source numpy}
 
-BuildRequires:  python3-devel
 BuildRequires:  gcc
 
 

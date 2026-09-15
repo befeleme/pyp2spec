@@ -13,7 +13,6 @@ URL:            https://github.com/fedora-python/Pello
 Source:         %{pypi_source Pello}
 
 BuildArch:      noarch
-BuildRequires:  python%{python3_pkgversion}-devel
 
 
 # Fill in the actual package description to submit package to Fedora

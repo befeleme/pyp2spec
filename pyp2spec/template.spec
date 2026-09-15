@@ -34,7 +34,6 @@ BuildOption(generate_buildrequires): -x {{extras}}
 {% if not archful %}
 BuildArch:      noarch
 {%- endif %}
-BuildRequires:  python{{python3_pkgversion}}-devel
 {% for br in additional_build_requires -%}
 BuildRequires:  {{br}}
 {% endfor %}
