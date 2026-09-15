@@ -10,7 +10,6 @@ URL:            https://www.sphinx-doc.org/
 Source:         %{pypi_source sphinx}
 
 BuildArch:      noarch
-BuildRequires:  python3-devel
 
 
 # Fill in the actual package description to submit package to Fedora

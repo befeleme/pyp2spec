@@ -11,7 +11,6 @@ URL:            https://github.com/pytest-dev/pytest
 Source:         %{pypi_source pytest}
 
 BuildArch:      noarch
-BuildRequires:  python3-devel
 
 
 # Fill in the actual package description to submit package to Fedora

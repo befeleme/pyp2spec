@@ -18,7 +18,6 @@ BuildOption(install):  -l pello
 BuildOption(generate_buildrequires): -x color
 
 BuildArch:      noarch
-BuildRequires:  python3-devel
 
 
 # Fill in the actual package description to submit package to Fedora
